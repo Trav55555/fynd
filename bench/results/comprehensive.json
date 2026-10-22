@@ -1,0 +1,348 @@
+{
+  "schema": "fynd.comprehensive-index/1",
+  "validation": {
+    "workloads": 107,
+    "configurations": 1778,
+    "timed": 16002,
+    "warmups": 963,
+    "cpu_crosscheck_max_difference_ms": 20.909,
+    "doubled_cpu_control": "coherently doubled heavy sample rejected by independent GNU-time crosscheck in both runs",
+    "expected_reference_hashes": "all verified",
+    "manifest_hashes": "all verified",
+    "fixtures_cleaned": true
+  },
+  "archive": {
+    "path": "bench/results/comprehensive-data.json.gz",
+    "sha256": "256eb705d13ed524087041d72ce398baadfe8cb268ee544a77922fa89a10ab64",
+    "uncompressed_sha256": "1a9b999b061ff332bf55d6623bb74e38b7cac2f8a987d315e507f2f72eec52da",
+    "uncompressed_bytes": 14057552
+  },
+  "summary_csv": "bench/results/comprehensive-summary.csv",
+  "runs": {
+    "primary": {
+      "status": "SUCCESS",
+      "cases": 86,
+      "configurations": 1436,
+      "samples": 12924,
+      "warmups": 774,
+      "tools": {
+        "fynd": {
+          "path": "/home/travers/projects/fynd/build/coarse-traversal/prototype/build/verification/run.XXAMxe/source/fynd/build/native/fynd",
+          "sha256": "efbddf419f4f7ddb42a414b81b14e9da4cfa6627f26889e305312b1f3bef1291",
+          "version": "fynd 0.1.0"
+        },
+        "fd": {
+          "path": "/home/travers/.local/opt/fd-v10.3.0/bin/fd",
+          "sha256": "9f48273b6c780a5f4f084ef30bc67d98cbd7d10c55c4605cf3a6ee29b741af87",
+          "version": "fd 10.3.0"
+        },
+        "find": {
+          "path": "/usr/bin/find",
+          "sha256": "57bfc7c7725ab979e685b6cb625e0da3d5d30ee01c764814cae5088dea8c6f36",
+          "version": "find (GNU findutils) 4.10.0\nCopyright (C) 2024 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Eric B. Decker, James Youngman, and Kevin Dalley.\nFeatures enabled: D_TYPE O_NOFOLLOW(enabled) LEAF_OPTIMISATION FTS(FTS_CWDFD) CBO(level=1)"
+        },
+        "time": {
+          "path": "/usr/bin/time",
+          "sha256": "acc7bb5fc9250d5a6abe1974c39fe4e11ca4e9454f3994e3117aceae1b988d57",
+          "version": "time (GNU Time) UNKNOWN\nCopyright (C) 2018 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by David Keppel, David MacKenzie, and Assaf Gordon."
+        },
+        "baseline": {
+          "path": "/home/travers/projects/fynd/build/verification/run.cjDJRE/source/fynd/build/native/fynd",
+          "sha256": "7948b72fb70c06166200f5c2d188344a4762e54c3dd72751d41175b10877112d",
+          "version": "fynd 0.1.0"
+        }
+      },
+      "limits": {
+        "memory_max": "3221225472",
+        "swap_max": "0",
+        "nice": 15,
+        "core_limit": [
+          0,
+          0
+        ]
+      },
+      "qualification": {
+        "receipt": "/home/travers/projects/fynd/build/coarse-traversal/prototype/build/verification/run.XXAMxe",
+        "source_hashes": {
+          "CUTILS_REVISION": "8142246274f22d9f0104282f0eadc1d40926bb73d50c99226317c049789246bd",
+          "cmd/main.c": "4107161189f3e7b423fab84d6f188cc418910d9aba801319fdcf1e9fe3102547",
+          "include/fynd.h": "13cfe556c4479baaa75aacfd04b9d750f94f68f720c3d766d9b6ae5b2e44e945",
+          "src/coarse.inc": "40565b0c9d76a72ac8b51039ed40d70f6d3cb9ce59c32d4b068d7122a384d2aa",
+          "src/fynd.c": "837c088a1edd487b8cc37f4c17b9b9ea2f8d9b70722b8dc774fdd17305700906",
+          "src/ignore.inc": "d5a5c02a0a4326164bc31d7103a2fe6094de94623c1d96535966e4e207557fab",
+          "src/listing.inc": "a7f997e69a4b6dc0c30cfea7f8ec2eb254d3ca723e03f87566a08019aaedd0a4"
+        }
+      },
+      "load_before": [
+        1.3818359375,
+        2.00390625,
+        2.99658203125
+      ],
+      "load_after": [
+        5.39501953125,
+        5.41796875,
+        4.228515625
+      ]
+    },
+    "matched": {
+      "status": "SUCCESS",
+      "cases": 21,
+      "configurations": 342,
+      "samples": 3078,
+      "warmups": 189,
+      "tools": {
+        "fynd": {
+          "path": "/home/travers/projects/fynd/build/coarse-traversal/prototype/build/verification/run.XXAMxe/source/fynd/build/native/fynd",
+          "sha256": "efbddf419f4f7ddb42a414b81b14e9da4cfa6627f26889e305312b1f3bef1291",
+          "version": "fynd 0.1.0"
+        },
+        "fd": {
+          "path": "/home/travers/.local/opt/fd-v10.3.0/bin/fd",
+          "sha256": "9f48273b6c780a5f4f084ef30bc67d98cbd7d10c55c4605cf3a6ee29b741af87",
+          "version": "fd 10.3.0"
+        },
+        "find": {
+          "path": "/usr/bin/find",
+          "sha256": "57bfc7c7725ab979e685b6cb625e0da3d5d30ee01c764814cae5088dea8c6f36",
+          "version": "find (GNU findutils) 4.10.0\nCopyright (C) 2024 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Eric B. Decker, James Youngman, and Kevin Dalley.\nFeatures enabled: D_TYPE O_NOFOLLOW(enabled) LEAF_OPTIMISATION FTS(FTS_CWDFD) CBO(level=1)"
+        },
+        "time": {
+          "path": "/usr/bin/time",
+          "sha256": "acc7bb5fc9250d5a6abe1974c39fe4e11ca4e9454f3994e3117aceae1b988d57",
+          "version": "time (GNU Time) UNKNOWN\nCopyright (C) 2018 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by David Keppel, David MacKenzie, and Assaf Gordon."
+        },
+        "baseline": {
+          "path": "/home/travers/projects/fynd/build/verification/run.cjDJRE/source/fynd/build/native/fynd",
+          "sha256": "7948b72fb70c06166200f5c2d188344a4762e54c3dd72751d41175b10877112d",
+          "version": "fynd 0.1.0"
+        }
+      },
+      "limits": {
+        "memory_max": "3221225472",
+        "swap_max": "0",
+        "nice": 15,
+        "core_limit": [
+          0,
+          0
+        ]
+      },
+      "qualification": {
+        "receipt": "/home/travers/projects/fynd/build/coarse-traversal/prototype/build/verification/run.XXAMxe",
+        "source_hashes": {
+          "CUTILS_REVISION": "8142246274f22d9f0104282f0eadc1d40926bb73d50c99226317c049789246bd",
+          "cmd/main.c": "4107161189f3e7b423fab84d6f188cc418910d9aba801319fdcf1e9fe3102547",
+          "include/fynd.h": "13cfe556c4479baaa75aacfd04b9d750f94f68f720c3d766d9b6ae5b2e44e945",
+          "src/coarse.inc": "40565b0c9d76a72ac8b51039ed40d70f6d3cb9ce59c32d4b068d7122a384d2aa",
+          "src/fynd.c": "837c088a1edd487b8cc37f4c17b9b9ea2f8d9b70722b8dc774fdd17305700906",
+          "src/ignore.inc": "d5a5c02a0a4326164bc31d7103a2fe6094de94623c1d96535966e4e207557fab",
+          "src/listing.inc": "a7f997e69a4b6dc0c30cfea7f8ec2eb254d3ca723e03f87566a08019aaedd0a4"
+        }
+      },
+      "load_before": [
+        3.98193359375,
+        5.08056640625,
+        4.16015625
+      ],
+      "load_after": [
+        5.40625,
+        5.27978515625,
+        4.38232421875
+      ]
+    }
+  },
+  "manifests": [
+    {
+      "run": "primary",
+      "dataset": "empty",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/empty.bin.gz",
+      "uncompressed_sha256": "af871d6bd61dd3507947c5b50507fd43f1b9fbe5e04dac3310b96ed2f97ac643"
+    },
+    {
+      "run": "primary",
+      "dataset": "tiny",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/tiny.bin.gz",
+      "uncompressed_sha256": "44425ce919d4c6febedcac0cb15308b820c7299f87afda2decdb11fdd4056860"
+    },
+    {
+      "run": "primary",
+      "dataset": "flat10k",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/flat10k.bin.gz",
+      "uncompressed_sha256": "1353f02c60f20187a03af313958586e07c32f628f1bb9cab412b6e2de3a25511"
+    },
+    {
+      "run": "primary",
+      "dataset": "flat100k",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/flat100k.bin.gz",
+      "uncompressed_sha256": "ebb8840f8513b54c6abc20be64ce67ca1361848a8ff943ba3827b3eac29b6baf"
+    },
+    {
+      "run": "primary",
+      "dataset": "flat1m",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/flat1m.bin.gz",
+      "uncompressed_sha256": "8ef9f5e0e8a805043193502e50d090216cc7aa7f4e64a50c93010aae16a1be1c"
+    },
+    {
+      "run": "primary",
+      "dataset": "deep",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/deep.bin.gz",
+      "uncompressed_sha256": "aae09c62b19d7bb3bc43858809c726038be282634717acadcc718ea651db8a3c"
+    },
+    {
+      "run": "primary",
+      "dataset": "balanced",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/balanced.bin.gz",
+      "uncompressed_sha256": "7f45e9ec1abefd023ced0ce51f48e1db843e53871ec730eca6841cf19281e236"
+    },
+    {
+      "run": "primary",
+      "dataset": "manydirs",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/manydirs.bin.gz",
+      "uncompressed_sha256": "5c5fbcb5cf1ae1aaf59c05e5df552f7825e56f0db3c69557a652481091c616ca"
+    },
+    {
+      "run": "primary",
+      "dataset": "prefix",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/prefix.bin.gz",
+      "uncompressed_sha256": "554880b4043093a3502fe2131e3af1f6ed0beac6cab8a285d63826a6bdcbdb32"
+    },
+    {
+      "run": "primary",
+      "dataset": "skew",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/skew.bin.gz",
+      "uncompressed_sha256": "758c09ac9d86a3a95c32de0a5908a4f0b899970c751e061b961f76fef45b95df"
+    },
+    {
+      "run": "primary",
+      "dataset": "output",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/output.bin.gz",
+      "uncompressed_sha256": "b14e186b63779d2951cc1a417359b4bcb75e94922350d1f79543d0ee88156ce3"
+    },
+    {
+      "run": "primary",
+      "dataset": "sharedprefix",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/sharedprefix.bin.gz",
+      "uncompressed_sha256": "7165be606b041145a18894ee9d2a8568102d289d55b9f5493edea2f83d03c183"
+    },
+    {
+      "run": "primary",
+      "dataset": "raw",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/raw.bin.gz",
+      "uncompressed_sha256": "0be3f05a6ab69c5f10c813341e27dedae5992e06db9f5f3cb9aec77b2fbe46bc"
+    },
+    {
+      "run": "primary",
+      "dataset": "ignore-prune",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/ignore-prune.bin.gz",
+      "uncompressed_sha256": "25398225b8e6531ff7cb314eabda34adc6bc52827a18a795f780a23805f00446"
+    },
+    {
+      "run": "primary",
+      "dataset": "ignore64",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/ignore64.bin.gz",
+      "uncompressed_sha256": "5c2a9f313f0e7ec82f77cfe176a9d7dc7aeec4a4a59fc4cf924d86eb4603f382"
+    },
+    {
+      "run": "primary",
+      "dataset": "ignore512",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/ignore512.bin.gz",
+      "uncompressed_sha256": "5c2a9f313f0e7ec82f77cfe176a9d7dc7aeec4a4a59fc4cf924d86eb4603f382"
+    },
+    {
+      "run": "primary",
+      "dataset": "real-cutils",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/real-cutils.bin.gz",
+      "uncompressed_sha256": "5fedccfb9d3d5b4972861ee41122dd4585d85c7c3a7ab09aaee1308df77b763b"
+    },
+    {
+      "run": "primary",
+      "dataset": "real-cgrep",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/real-cgrep.bin.gz",
+      "uncompressed_sha256": "10a992362af8b13c63ef0070a38092a960e4c9291ab455b31f449af49a74fa32"
+    },
+    {
+      "run": "primary",
+      "dataset": "real-toolchain",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/real-toolchain.bin.gz",
+      "uncompressed_sha256": "0ecf9079ec30eb5d4552a4d08252467f61915cc335462b426f3e2bd96e58dd18"
+    },
+    {
+      "run": "primary",
+      "dataset": "real-web",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/real-web.bin.gz",
+      "uncompressed_sha256": "ffc48a28192bd0da00de2c4c8c791b50dc75ed9cc0f928d37a79251730320d68"
+    },
+    {
+      "run": "primary",
+      "dataset": "packages",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/packages.bin.gz",
+      "uncompressed_sha256": "7600d16e51a534c2f2432b0c83f9981a5db47add242e22998648c6f643b4437b"
+    },
+    {
+      "run": "primary",
+      "dataset": "node-packages",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/node-packages.bin.gz",
+      "uncompressed_sha256": "8d511b0550592fa50286f2ceb745cd083390ea758a6b938432a34fd03559c0dc"
+    },
+    {
+      "run": "primary",
+      "dataset": "ram-flat",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/ram-flat.bin.gz",
+      "uncompressed_sha256": "ebb8840f8513b54c6abc20be64ce67ca1361848a8ff943ba3827b3eac29b6baf"
+    },
+    {
+      "run": "primary",
+      "dataset": "ram-manydirs",
+      "path": "bench/results/comprehensive-manifests/run-1hvreac0/ram-manydirs.bin.gz",
+      "uncompressed_sha256": "38a35da952102df837bb73c1611af0bf3a6479918ed40c4cf584cb0b343168dc"
+    },
+    {
+      "run": "matched",
+      "dataset": "skew-branch",
+      "path": "bench/results/comprehensive-manifests/supplement-k4c3_vvp/skew-branch.bin.gz",
+      "uncompressed_sha256": "b4323a4495e9bf95ab68bc0b8698673b8bb202634d4dd11cecc7ba021d27bd78"
+    },
+    {
+      "run": "matched",
+      "dataset": "store-ext4",
+      "path": "bench/results/comprehensive-manifests/supplement-k4c3_vvp/store-ext4.bin.gz",
+      "uncompressed_sha256": "38a35da952102df837bb73c1611af0bf3a6479918ed40c4cf584cb0b343168dc"
+    },
+    {
+      "run": "matched",
+      "dataset": "store-ramx",
+      "path": "bench/results/comprehensive-manifests/supplement-k4c3_vvp/store-ramx.bin.gz",
+      "uncompressed_sha256": "38a35da952102df837bb73c1611af0bf3a6479918ed40c4cf584cb0b343168dc"
+    },
+    {
+      "run": "matched",
+      "dataset": "matched-ignore00",
+      "path": "bench/results/comprehensive-manifests/supplement-k4c3_vvp/matched-ignore00.bin.gz",
+      "uncompressed_sha256": "5c2a9f313f0e7ec82f77cfe176a9d7dc7aeec4a4a59fc4cf924d86eb4603f382"
+    },
+    {
+      "run": "matched",
+      "dataset": "matched-ignore64",
+      "path": "bench/results/comprehensive-manifests/supplement-k4c3_vvp/matched-ignore64.bin.gz",
+      "uncompressed_sha256": "5c2a9f313f0e7ec82f77cfe176a9d7dc7aeec4a4a59fc4cf924d86eb4603f382"
+    },
+    {
+      "run": "matched",
+      "dataset": "matched-ignore512",
+      "path": "bench/results/comprehensive-manifests/supplement-k4c3_vvp/matched-ignore512.bin.gz",
+      "uncompressed_sha256": "5c2a9f313f0e7ec82f77cfe176a9d7dc7aeec4a4a59fc4cf924d86eb4603f382"
+    }
+  ],
+  "caveats": [
+    "shared3GiB cap includes Python driver and metadata cache; inspect resource observations",
+    "preheated/group-warmed, not guaranteed full-residency or controlled cold cache",
+    "primary ram-manydirs and manydirs differ in depth; use matched store-ext4/store-ramx instead",
+    "primary ignore-prune has fewer kept files; use matched ignore00/64/512 controls for rule scaling",
+    "GNU find uses compiled equivalent predicates, not native ignore parsing",
+    "FD suffix cases use byte-regex adapter and directory-only cases use --format{}",
+    "layout captures preserve paths/kinds, not contents/sizes/executable bits or live-workspace behavior",
+    "fd-j1 is one traversal worker, not one total process thread",
+    "validated pipe includes draining/capture, not /dev/null performance",
+    "uncontrolled host activity and substantial wall-time spread; CPU and elapsed can tell different stories",
+    "runs remain separate; samples are not pooled across primary and matched controls"
+  ]
+}

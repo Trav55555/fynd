@@ -1,0 +1,4996 @@
+{
+  "schema": "fynd.large-thread-matrix/1",
+  "status": "SUCCESS",
+  "completed_at": "2026-10-18T20:11:03.581816+00:00",
+  "os": "Linux-6.17.0-41-generic-x86_64-with-glibc2.42",
+  "cpu": "AMD Ryzen 5 7600 6-Core Processor",
+  "python": "3.12.7 (main, Oct  2 2024, 16:35:10) [Clang 18.1.8 ]",
+  "locale": "C",
+  "fixture": {
+    "parameters": {
+      "wide_files": 100000,
+      "deep_levels": 96,
+      "deep_files_per_level": 32,
+      "mixed_fanout": 6,
+      "mixed_populated_levels": 5,
+      "mixed_files_per_directory": 32,
+      "manydirs_fanout": 6,
+      "manydirs_populated_levels": 6,
+      "manydirs_files_per_directory": 4,
+      "name_rule": "dot prefix every seventh; needle prefix every eleventh; six-digit index"
+    },
+    "shapes": {
+      "wide": {
+        "files": 100000,
+        "directories": 1,
+        "bytes_per_file": 0,
+        "needle_files": 9091,
+        "manifest_sha256": "f4ead16fdfce8a12ea85f3846491f85a0e0dfb4e784a8ac11caa6be7ada7c137"
+      },
+      "deep": {
+        "files": 3072,
+        "directories": 97,
+        "bytes_per_file": 0,
+        "needle_files": 288,
+        "manifest_sha256": "6c5aaaf11f5a62168ff7fe068a285a67072354d6a6524d0a476f07c7ce10f47f"
+      },
+      "mixed": {
+        "files": 49760,
+        "directories": 1555,
+        "bytes_per_file": 0,
+        "needle_files": 4665,
+        "manifest_sha256": "8ccaa839200bf3d0f7d918a719066c83f4fb450d6bed6ccd4f57e5f790f2ba48"
+      },
+      "manydirs": {
+        "files": 37324,
+        "directories": 9331,
+        "bytes_per_file": 0,
+        "needle_files": 9331,
+        "manifest_sha256": "0394407ec830b4158a8568487a58c3b09b23fc0781162d4f8bd50979b2494ac3"
+      }
+    }
+  },
+  "cache_policy": "WARM: creation and all-tool validation preheat; no cache dropping",
+  "semantics": "selected-file-set equality (including multiplicity), not ordered traversal parity",
+  "metric": "perf_counter_ns end-to-end: process startup, GNU time wrapper and output-file I/O included; not pure walk",
+  "rss_unit": "KiB (GNU time %M)",
+  "order": [
+    [
+      "wide-all-fynd-j1",
+      "wide-all-fynd-j2",
+      "wide-all-fynd-j4",
+      "wide-all-fynd-j8",
+      "wide-all-find",
+      "wide-all-fd-j1",
+      "wide-all-fd-j4",
+      "wide-all-fd-default",
+      "wide-needle-fynd-j1",
+      "wide-needle-fynd-j2",
+      "wide-needle-fynd-j4",
+      "wide-needle-fynd-j8",
+      "wide-needle-find",
+      "wide-needle-fd-j1",
+      "wide-needle-fd-j4",
+      "wide-needle-fd-default",
+      "deep-all-fynd-j1",
+      "deep-all-fynd-j2",
+      "deep-all-fynd-j4",
+      "deep-all-fynd-j8",
+      "deep-all-find",
+      "deep-all-fd-j1",
+      "deep-all-fd-j4",
+      "deep-all-fd-default",
+      "deep-needle-fynd-j1",
+      "deep-needle-fynd-j2",
+      "deep-needle-fynd-j4",
+      "deep-needle-fynd-j8",
+      "deep-needle-find",
+      "deep-needle-fd-j1",
+      "deep-needle-fd-j4",
+      "deep-needle-fd-default",
+      "mixed-all-fynd-j1",
+      "mixed-all-fynd-j2",
+      "mixed-all-fynd-j4",
+      "mixed-all-fynd-j8",
+      "mixed-all-find",
+      "mixed-all-fd-j1",
+      "mixed-all-fd-j4",
+      "mixed-all-fd-default",
+      "mixed-needle-fynd-j1",
+      "mixed-needle-fynd-j2",
+      "mixed-needle-fynd-j4",
+      "mixed-needle-fynd-j8",
+      "mixed-needle-find",
+      "mixed-needle-fd-j1",
+      "mixed-needle-fd-j4",
+      "mixed-needle-fd-default",
+      "manydirs-all-fynd-j1",
+      "manydirs-all-fynd-j2",
+      "manydirs-all-fynd-j4",
+      "manydirs-all-fynd-j8",
+      "manydirs-all-find",
+      "manydirs-all-fd-j1",
+      "manydirs-all-fd-j4",
+      "manydirs-all-fd-default",
+      "manydirs-needle-fynd-j1",
+      "manydirs-needle-fynd-j2",
+      "manydirs-needle-fynd-j4",
+      "manydirs-needle-fynd-j8",
+      "manydirs-needle-find",
+      "manydirs-needle-fd-j1",
+      "manydirs-needle-fd-j4",
+      "manydirs-needle-fd-default"
+    ],
+    [
+      "wide-needle-fynd-j2",
+      "wide-needle-fynd-j4",
+      "wide-needle-fynd-j8",
+      "wide-needle-find",
+      "wide-needle-fd-j1",
+      "wide-needle-fd-j4",
+      "wide-needle-fd-default",
+      "wide-needle-fynd-j1",
+      "deep-all-fynd-j2",
+      "deep-all-fynd-j4",
+      "deep-all-fynd-j8",
+      "deep-all-find",
+      "deep-all-fd-j1",
+      "deep-all-fd-j4",
+      "deep-all-fd-default",
+      "deep-all-fynd-j1",
+      "deep-needle-fynd-j2",
+      "deep-needle-fynd-j4",
+      "deep-needle-fynd-j8",
+      "deep-needle-find",
+      "deep-needle-fd-j1",
+      "deep-needle-fd-j4",
+      "deep-needle-fd-default",
+      "deep-needle-fynd-j1",
+      "mixed-all-fynd-j2",
+      "mixed-all-fynd-j4",
+      "mixed-all-fynd-j8",
+      "mixed-all-find",
+      "mixed-all-fd-j1",
+      "mixed-all-fd-j4",
+      "mixed-all-fd-default",
+      "mixed-all-fynd-j1",
+      "mixed-needle-fynd-j2",
+      "mixed-needle-fynd-j4",
+      "mixed-needle-fynd-j8",
+      "mixed-needle-find",
+      "mixed-needle-fd-j1",
+      "mixed-needle-fd-j4",
+      "mixed-needle-fd-default",
+      "mixed-needle-fynd-j1",
+      "manydirs-all-fynd-j2",
+      "manydirs-all-fynd-j4",
+      "manydirs-all-fynd-j8",
+      "manydirs-all-find",
+      "manydirs-all-fd-j1",
+      "manydirs-all-fd-j4",
+      "manydirs-all-fd-default",
+      "manydirs-all-fynd-j1",
+      "manydirs-needle-fynd-j2",
+      "manydirs-needle-fynd-j4",
+      "manydirs-needle-fynd-j8",
+      "manydirs-needle-find",
+      "manydirs-needle-fd-j1",
+      "manydirs-needle-fd-j4",
+      "manydirs-needle-fd-default",
+      "manydirs-needle-fynd-j1",
+      "wide-all-fynd-j2",
+      "wide-all-fynd-j4",
+      "wide-all-fynd-j8",
+      "wide-all-find",
+      "wide-all-fd-j1",
+      "wide-all-fd-j4",
+      "wide-all-fd-default",
+      "wide-all-fynd-j1"
+    ],
+    [
+      "deep-all-fynd-j4",
+      "deep-all-fynd-j8",
+      "deep-all-find",
+      "deep-all-fd-j1",
+      "deep-all-fd-j4",
+      "deep-all-fd-default",
+      "deep-all-fynd-j1",
+      "deep-all-fynd-j2",
+      "deep-needle-fynd-j4",
+      "deep-needle-fynd-j8",
+      "deep-needle-find",
+      "deep-needle-fd-j1",
+      "deep-needle-fd-j4",
+      "deep-needle-fd-default",
+      "deep-needle-fynd-j1",
+      "deep-needle-fynd-j2",
+      "mixed-all-fynd-j4",
+      "mixed-all-fynd-j8",
+      "mixed-all-find",
+      "mixed-all-fd-j1",
+      "mixed-all-fd-j4",
+      "mixed-all-fd-default",
+      "mixed-all-fynd-j1",
+      "mixed-all-fynd-j2",
+      "mixed-needle-fynd-j4",
+      "mixed-needle-fynd-j8",
+      "mixed-needle-find",
+      "mixed-needle-fd-j1",
+      "mixed-needle-fd-j4",
+      "mixed-needle-fd-default",
+      "mixed-needle-fynd-j1",
+      "mixed-needle-fynd-j2",
+      "manydirs-all-fynd-j4",
+      "manydirs-all-fynd-j8",
+      "manydirs-all-find",
+      "manydirs-all-fd-j1",
+      "manydirs-all-fd-j4",
+      "manydirs-all-fd-default",
+      "manydirs-all-fynd-j1",
+      "manydirs-all-fynd-j2",
+      "manydirs-needle-fynd-j4",
+      "manydirs-needle-fynd-j8",
+      "manydirs-needle-find",
+      "manydirs-needle-fd-j1",
+      "manydirs-needle-fd-j4",
+      "manydirs-needle-fd-default",
+      "manydirs-needle-fynd-j1",
+      "manydirs-needle-fynd-j2",
+      "wide-all-fynd-j4",
+      "wide-all-fynd-j8",
+      "wide-all-find",
+      "wide-all-fd-j1",
+      "wide-all-fd-j4",
+      "wide-all-fd-default",
+      "wide-all-fynd-j1",
+      "wide-all-fynd-j2",
+      "wide-needle-fynd-j4",
+      "wide-needle-fynd-j8",
+      "wide-needle-find",
+      "wide-needle-fd-j1",
+      "wide-needle-fd-j4",
+      "wide-needle-fd-default",
+      "wide-needle-fynd-j1",
+      "wide-needle-fynd-j2"
+    ],
+    [
+      "deep-needle-fynd-j8",
+      "deep-needle-find",
+      "deep-needle-fd-j1",
+      "deep-needle-fd-j4",
+      "deep-needle-fd-default",
+      "deep-needle-fynd-j1",
+      "deep-needle-fynd-j2",
+      "deep-needle-fynd-j4",
+      "mixed-all-fynd-j8",
+      "mixed-all-find",
+      "mixed-all-fd-j1",
+      "mixed-all-fd-j4",
+      "mixed-all-fd-default",
+      "mixed-all-fynd-j1",
+      "mixed-all-fynd-j2",
+      "mixed-all-fynd-j4",
+      "mixed-needle-fynd-j8",
+      "mixed-needle-find",
+      "mixed-needle-fd-j1",
+      "mixed-needle-fd-j4",
+      "mixed-needle-fd-default",
+      "mixed-needle-fynd-j1",
+      "mixed-needle-fynd-j2",
+      "mixed-needle-fynd-j4",
+      "manydirs-all-fynd-j8",
+      "manydirs-all-find",
+      "manydirs-all-fd-j1",
+      "manydirs-all-fd-j4",
+      "manydirs-all-fd-default",
+      "manydirs-all-fynd-j1",
+      "manydirs-all-fynd-j2",
+      "manydirs-all-fynd-j4",
+      "manydirs-needle-fynd-j8",
+      "manydirs-needle-find",
+      "manydirs-needle-fd-j1",
+      "manydirs-needle-fd-j4",
+      "manydirs-needle-fd-default",
+      "manydirs-needle-fynd-j1",
+      "manydirs-needle-fynd-j2",
+      "manydirs-needle-fynd-j4",
+      "wide-all-fynd-j8",
+      "wide-all-find",
+      "wide-all-fd-j1",
+      "wide-all-fd-j4",
+      "wide-all-fd-default",
+      "wide-all-fynd-j1",
+      "wide-all-fynd-j2",
+      "wide-all-fynd-j4",
+      "wide-needle-fynd-j8",
+      "wide-needle-find",
+      "wide-needle-fd-j1",
+      "wide-needle-fd-j4",
+      "wide-needle-fd-default",
+      "wide-needle-fynd-j1",
+      "wide-needle-fynd-j2",
+      "wide-needle-fynd-j4",
+      "deep-all-fynd-j8",
+      "deep-all-find",
+      "deep-all-fd-j1",
+      "deep-all-fd-j4",
+      "deep-all-fd-default",
+      "deep-all-fynd-j1",
+      "deep-all-fynd-j2",
+      "deep-all-fynd-j4"
+    ],
+    [
+      "mixed-all-find",
+      "mixed-all-fd-j1",
+      "mixed-all-fd-j4",
+      "mixed-all-fd-default",
+      "mixed-all-fynd-j1",
+      "mixed-all-fynd-j2",
+      "mixed-all-fynd-j4",
+      "mixed-all-fynd-j8",
+      "mixed-needle-find",
+      "mixed-needle-fd-j1",
+      "mixed-needle-fd-j4",
+      "mixed-needle-fd-default",
+      "mixed-needle-fynd-j1",
+      "mixed-needle-fynd-j2",
+      "mixed-needle-fynd-j4",
+      "mixed-needle-fynd-j8",
+      "manydirs-all-find",
+      "manydirs-all-fd-j1",
+      "manydirs-all-fd-j4",
+      "manydirs-all-fd-default",
+      "manydirs-all-fynd-j1",
+      "manydirs-all-fynd-j2",
+      "manydirs-all-fynd-j4",
+      "manydirs-all-fynd-j8",
+      "manydirs-needle-find",
+      "manydirs-needle-fd-j1",
+      "manydirs-needle-fd-j4",
+      "manydirs-needle-fd-default",
+      "manydirs-needle-fynd-j1",
+      "manydirs-needle-fynd-j2",
+      "manydirs-needle-fynd-j4",
+      "manydirs-needle-fynd-j8",
+      "wide-all-find",
+      "wide-all-fd-j1",
+      "wide-all-fd-j4",
+      "wide-all-fd-default",
+      "wide-all-fynd-j1",
+      "wide-all-fynd-j2",
+      "wide-all-fynd-j4",
+      "wide-all-fynd-j8",
+      "wide-needle-find",
+      "wide-needle-fd-j1",
+      "wide-needle-fd-j4",
+      "wide-needle-fd-default",
+      "wide-needle-fynd-j1",
+      "wide-needle-fynd-j2",
+      "wide-needle-fynd-j4",
+      "wide-needle-fynd-j8",
+      "deep-all-find",
+      "deep-all-fd-j1",
+      "deep-all-fd-j4",
+      "deep-all-fd-default",
+      "deep-all-fynd-j1",
+      "deep-all-fynd-j2",
+      "deep-all-fynd-j4",
+      "deep-all-fynd-j8",
+      "deep-needle-find",
+      "deep-needle-fd-j1",
+      "deep-needle-fd-j4",
+      "deep-needle-fd-default",
+      "deep-needle-fynd-j1",
+      "deep-needle-fynd-j2",
+      "deep-needle-fynd-j4",
+      "deep-needle-fynd-j8"
+    ],
+    [
+      "mixed-needle-fd-j1",
+      "mixed-needle-fd-j4",
+      "mixed-needle-fd-default",
+      "mixed-needle-fynd-j1",
+      "mixed-needle-fynd-j2",
+      "mixed-needle-fynd-j4",
+      "mixed-needle-fynd-j8",
+      "mixed-needle-find",
+      "manydirs-all-fd-j1",
+      "manydirs-all-fd-j4",
+      "manydirs-all-fd-default",
+      "manydirs-all-fynd-j1",
+      "manydirs-all-fynd-j2",
+      "manydirs-all-fynd-j4",
+      "manydirs-all-fynd-j8",
+      "manydirs-all-find",
+      "manydirs-needle-fd-j1",
+      "manydirs-needle-fd-j4",
+      "manydirs-needle-fd-default",
+      "manydirs-needle-fynd-j1",
+      "manydirs-needle-fynd-j2",
+      "manydirs-needle-fynd-j4",
+      "manydirs-needle-fynd-j8",
+      "manydirs-needle-find",
+      "wide-all-fd-j1",
+      "wide-all-fd-j4",
+      "wide-all-fd-default",
+      "wide-all-fynd-j1",
+      "wide-all-fynd-j2",
+      "wide-all-fynd-j4",
+      "wide-all-fynd-j8",
+      "wide-all-find",
+      "wide-needle-fd-j1",
+      "wide-needle-fd-j4",
+      "wide-needle-fd-default",
+      "wide-needle-fynd-j1",
+      "wide-needle-fynd-j2",
+      "wide-needle-fynd-j4",
+      "wide-needle-fynd-j8",
+      "wide-needle-find",
+      "deep-all-fd-j1",
+      "deep-all-fd-j4",
+      "deep-all-fd-default",
+      "deep-all-fynd-j1",
+      "deep-all-fynd-j2",
+      "deep-all-fynd-j4",
+      "deep-all-fynd-j8",
+      "deep-all-find",
+      "deep-needle-fd-j1",
+      "deep-needle-fd-j4",
+      "deep-needle-fd-default",
+      "deep-needle-fynd-j1",
+      "deep-needle-fynd-j2",
+      "deep-needle-fynd-j4",
+      "deep-needle-fynd-j8",
+      "deep-needle-find",
+      "mixed-all-fd-j1",
+      "mixed-all-fd-j4",
+      "mixed-all-fd-default",
+      "mixed-all-fynd-j1",
+      "mixed-all-fynd-j2",
+      "mixed-all-fynd-j4",
+      "mixed-all-fynd-j8",
+      "mixed-all-find"
+    ],
+    [
+      "manydirs-all-fd-j4",
+      "manydirs-all-fd-default",
+      "manydirs-all-fynd-j1",
+      "manydirs-all-fynd-j2",
+      "manydirs-all-fynd-j4",
+      "manydirs-all-fynd-j8",
+      "manydirs-all-find",
+      "manydirs-all-fd-j1",
+      "manydirs-needle-fd-j4",
+      "manydirs-needle-fd-default",
+      "manydirs-needle-fynd-j1",
+      "manydirs-needle-fynd-j2",
+      "manydirs-needle-fynd-j4",
+      "manydirs-needle-fynd-j8",
+      "manydirs-needle-find",
+      "manydirs-needle-fd-j1",
+      "wide-all-fd-j4",
+      "wide-all-fd-default",
+      "wide-all-fynd-j1",
+      "wide-all-fynd-j2",
+      "wide-all-fynd-j4",
+      "wide-all-fynd-j8",
+      "wide-all-find",
+      "wide-all-fd-j1",
+      "wide-needle-fd-j4",
+      "wide-needle-fd-default",
+      "wide-needle-fynd-j1",
+      "wide-needle-fynd-j2",
+      "wide-needle-fynd-j4",
+      "wide-needle-fynd-j8",
+      "wide-needle-find",
+      "wide-needle-fd-j1",
+      "deep-all-fd-j4",
+      "deep-all-fd-default",
+      "deep-all-fynd-j1",
+      "deep-all-fynd-j2",
+      "deep-all-fynd-j4",
+      "deep-all-fynd-j8",
+      "deep-all-find",
+      "deep-all-fd-j1",
+      "deep-needle-fd-j4",
+      "deep-needle-fd-default",
+      "deep-needle-fynd-j1",
+      "deep-needle-fynd-j2",
+      "deep-needle-fynd-j4",
+      "deep-needle-fynd-j8",
+      "deep-needle-find",
+      "deep-needle-fd-j1",
+      "mixed-all-fd-j4",
+      "mixed-all-fd-default",
+      "mixed-all-fynd-j1",
+      "mixed-all-fynd-j2",
+      "mixed-all-fynd-j4",
+      "mixed-all-fynd-j8",
+      "mixed-all-find",
+      "mixed-all-fd-j1",
+      "mixed-needle-fd-j4",
+      "mixed-needle-fd-default",
+      "mixed-needle-fynd-j1",
+      "mixed-needle-fynd-j2",
+      "mixed-needle-fynd-j4",
+      "mixed-needle-fynd-j8",
+      "mixed-needle-find",
+      "mixed-needle-fd-j1"
+    ],
+    [
+      "manydirs-needle-fd-default",
+      "manydirs-needle-fynd-j1",
+      "manydirs-needle-fynd-j2",
+      "manydirs-needle-fynd-j4",
+      "manydirs-needle-fynd-j8",
+      "manydirs-needle-find",
+      "manydirs-needle-fd-j1",
+      "manydirs-needle-fd-j4",
+      "wide-all-fd-default",
+      "wide-all-fynd-j1",
+      "wide-all-fynd-j2",
+      "wide-all-fynd-j4",
+      "wide-all-fynd-j8",
+      "wide-all-find",
+      "wide-all-fd-j1",
+      "wide-all-fd-j4",
+      "wide-needle-fd-default",
+      "wide-needle-fynd-j1",
+      "wide-needle-fynd-j2",
+      "wide-needle-fynd-j4",
+      "wide-needle-fynd-j8",
+      "wide-needle-find",
+      "wide-needle-fd-j1",
+      "wide-needle-fd-j4",
+      "deep-all-fd-default",
+      "deep-all-fynd-j1",
+      "deep-all-fynd-j2",
+      "deep-all-fynd-j4",
+      "deep-all-fynd-j8",
+      "deep-all-find",
+      "deep-all-fd-j1",
+      "deep-all-fd-j4",
+      "deep-needle-fd-default",
+      "deep-needle-fynd-j1",
+      "deep-needle-fynd-j2",
+      "deep-needle-fynd-j4",
+      "deep-needle-fynd-j8",
+      "deep-needle-find",
+      "deep-needle-fd-j1",
+      "deep-needle-fd-j4",
+      "mixed-all-fd-default",
+      "mixed-all-fynd-j1",
+      "mixed-all-fynd-j2",
+      "mixed-all-fynd-j4",
+      "mixed-all-fynd-j8",
+      "mixed-all-find",
+      "mixed-all-fd-j1",
+      "mixed-all-fd-j4",
+      "mixed-needle-fd-default",
+      "mixed-needle-fynd-j1",
+      "mixed-needle-fynd-j2",
+      "mixed-needle-fynd-j4",
+      "mixed-needle-fynd-j8",
+      "mixed-needle-find",
+      "mixed-needle-fd-j1",
+      "mixed-needle-fd-j4",
+      "manydirs-all-fd-default",
+      "manydirs-all-fynd-j1",
+      "manydirs-all-fynd-j2",
+      "manydirs-all-fynd-j4",
+      "manydirs-all-fynd-j8",
+      "manydirs-all-find",
+      "manydirs-all-fd-j1",
+      "manydirs-all-fd-j4"
+    ]
+  ],
+  "medians": {
+    "wide-all-fynd-j1": {
+      "elapsed_ns": 54472599.5,
+      "peak_rss_kib": 13372.0
+    },
+    "wide-all-fynd-j2": {
+      "elapsed_ns": 56605765.0,
+      "peak_rss_kib": 13372.0
+    },
+    "wide-all-fynd-j4": {
+      "elapsed_ns": 56246609.5,
+      "peak_rss_kib": 13500.0
+    },
+    "wide-all-fynd-j8": {
+      "elapsed_ns": 56339138.0,
+      "peak_rss_kib": 13488.0
+    },
+    "wide-all-find": {
+      "elapsed_ns": 73545876.0,
+      "peak_rss_kib": 32214.0
+    },
+    "wide-all-fd-j1": {
+      "elapsed_ns": 75142987.0,
+      "peak_rss_kib": 41588.0
+    },
+    "wide-all-fd-j4": {
+      "elapsed_ns": 42726337.5,
+      "peak_rss_kib": 7732.0
+    },
+    "wide-all-fd-default": {
+      "elapsed_ns": 42444131.0,
+      "peak_rss_kib": 12148.0
+    },
+    "wide-needle-fynd-j1": {
+      "elapsed_ns": 51857938.0,
+      "peak_rss_kib": 13244.0
+    },
+    "wide-needle-fynd-j2": {
+      "elapsed_ns": 52062641.0,
+      "peak_rss_kib": 13500.0
+    },
+    "wide-needle-fynd-j4": {
+      "elapsed_ns": 54095735.0,
+      "peak_rss_kib": 13500.0
+    },
+    "wide-needle-fynd-j8": {
+      "elapsed_ns": 52269187.0,
+      "peak_rss_kib": 13500.0
+    },
+    "wide-needle-find": {
+      "elapsed_ns": 73080821.5,
+      "peak_rss_kib": 32296.0
+    },
+    "wide-needle-fd-j1": {
+      "elapsed_ns": 67894105.0,
+      "peak_rss_kib": 41524.0
+    },
+    "wide-needle-fd-j4": {
+      "elapsed_ns": 39999818.5,
+      "peak_rss_kib": 6260.0
+    },
+    "wide-needle-fd-default": {
+      "elapsed_ns": 41336592.0,
+      "peak_rss_kib": 7924.0
+    },
+    "deep-all-fynd-j1": {
+      "elapsed_ns": 5209525.0,
+      "peak_rss_kib": 2876.0
+    },
+    "deep-all-fynd-j2": {
+      "elapsed_ns": 6001239.5,
+      "peak_rss_kib": 2492.0
+    },
+    "deep-all-fynd-j4": {
+      "elapsed_ns": 5845398.0,
+      "peak_rss_kib": 2480.0
+    },
+    "deep-all-fynd-j8": {
+      "elapsed_ns": 6611670.5,
+      "peak_rss_kib": 2300.0
+    },
+    "deep-all-find": {
+      "elapsed_ns": 5108005.5,
+      "peak_rss_kib": 3112.0
+    },
+    "deep-all-fd-j1": {
+      "elapsed_ns": 7027522.0,
+      "peak_rss_kib": 6708.0
+    },
+    "deep-all-fd-j4": {
+      "elapsed_ns": 7178249.0,
+      "peak_rss_kib": 7412.0
+    },
+    "deep-all-fd-default": {
+      "elapsed_ns": 8062136.0,
+      "peak_rss_kib": 8884.0
+    },
+    "deep-needle-fynd-j1": {
+      "elapsed_ns": 4515553.5,
+      "peak_rss_kib": 2876.0
+    },
+    "deep-needle-fynd-j2": {
+      "elapsed_ns": 5321910.5,
+      "peak_rss_kib": 2428.0
+    },
+    "deep-needle-fynd-j4": {
+      "elapsed_ns": 5847387.0,
+      "peak_rss_kib": 2428.0
+    },
+    "deep-needle-fynd-j8": {
+      "elapsed_ns": 7468426.5,
+      "peak_rss_kib": 2364.0
+    },
+    "deep-needle-find": {
+      "elapsed_ns": 4746484.5,
+      "peak_rss_kib": 3224.0
+    },
+    "deep-needle-fd-j1": {
+      "elapsed_ns": 6837026.5,
+      "peak_rss_kib": 5428.0
+    },
+    "deep-needle-fd-j4": {
+      "elapsed_ns": 7242188.5,
+      "peak_rss_kib": 5684.0
+    },
+    "deep-needle-fd-default": {
+      "elapsed_ns": 7915767.5,
+      "peak_rss_kib": 6772.0
+    },
+    "mixed-all-fynd-j1": {
+      "elapsed_ns": 28738959.5,
+      "peak_rss_kib": 1724.0
+    },
+    "mixed-all-fynd-j2": {
+      "elapsed_ns": 30036134.5,
+      "peak_rss_kib": 1724.0
+    },
+    "mixed-all-fynd-j4": {
+      "elapsed_ns": 30188314.0,
+      "peak_rss_kib": 1852.0
+    },
+    "mixed-all-fynd-j8": {
+      "elapsed_ns": 33637028.0,
+      "peak_rss_kib": 1788.0
+    },
+    "mixed-all-find": {
+      "elapsed_ns": 35145221.0,
+      "peak_rss_kib": 2728.0
+    },
+    "mixed-all-fd-j1": {
+      "elapsed_ns": 38235817.5,
+      "peak_rss_kib": 5492.0
+    },
+    "mixed-all-fd-j4": {
+      "elapsed_ns": 18411827.0,
+      "peak_rss_kib": 7476.0
+    },
+    "mixed-all-fd-default": {
+      "elapsed_ns": 13285968.0,
+      "peak_rss_kib": 12596.0
+    },
+    "mixed-needle-fynd-j1": {
+      "elapsed_ns": 24600285.5,
+      "peak_rss_kib": 1724.0
+    },
+    "mixed-needle-fynd-j2": {
+      "elapsed_ns": 25585091.5,
+      "peak_rss_kib": 1724.0
+    },
+    "mixed-needle-fynd-j4": {
+      "elapsed_ns": 26784923.5,
+      "peak_rss_kib": 1724.0
+    },
+    "mixed-needle-fynd-j8": {
+      "elapsed_ns": 28488687.0,
+      "peak_rss_kib": 1724.0
+    },
+    "mixed-needle-find": {
+      "elapsed_ns": 33385849.0,
+      "peak_rss_kib": 2674.0
+    },
+    "mixed-needle-fd-j1": {
+      "elapsed_ns": 32866087.0,
+      "peak_rss_kib": 4788.0
+    },
+    "mixed-needle-fd-j4": {
+      "elapsed_ns": 15333830.0,
+      "peak_rss_kib": 5940.0
+    },
+    "mixed-needle-fd-default": {
+      "elapsed_ns": 11748204.0,
+      "peak_rss_kib": 8884.0
+    },
+    "manydirs-all-fynd-j1": {
+      "elapsed_ns": 69619043.0,
+      "peak_rss_kib": 1724.0
+    },
+    "manydirs-all-fynd-j2": {
+      "elapsed_ns": 69491881.0,
+      "peak_rss_kib": 1724.0
+    },
+    "manydirs-all-fynd-j4": {
+      "elapsed_ns": 71190860.5,
+      "peak_rss_kib": 1788.0
+    },
+    "manydirs-all-fynd-j8": {
+      "elapsed_ns": 87231481.5,
+      "peak_rss_kib": 1724.0
+    },
+    "manydirs-all-find": {
+      "elapsed_ns": 109067029.5,
+      "peak_rss_kib": 2648.0
+    },
+    "manydirs-all-fd-j1": {
+      "elapsed_ns": 87908130.0,
+      "peak_rss_kib": 4980.0
+    },
+    "manydirs-all-fd-j4": {
+      "elapsed_ns": 56087615.5,
+      "peak_rss_kib": 6452.0
+    },
+    "manydirs-all-fd-default": {
+      "elapsed_ns": 25060651.0,
+      "peak_rss_kib": 11956.0
+    },
+    "manydirs-needle-fynd-j1": {
+      "elapsed_ns": 68953279.0,
+      "peak_rss_kib": 1724.0
+    },
+    "manydirs-needle-fynd-j2": {
+      "elapsed_ns": 69189641.5,
+      "peak_rss_kib": 1848.0
+    },
+    "manydirs-needle-fynd-j4": {
+      "elapsed_ns": 69302696.5,
+      "peak_rss_kib": 1724.0
+    },
+    "manydirs-needle-fynd-j8": {
+      "elapsed_ns": 81241923.5,
+      "peak_rss_kib": 1724.0
+    },
+    "manydirs-needle-find": {
+      "elapsed_ns": 104425933.0,
+      "peak_rss_kib": 2600.0
+    },
+    "manydirs-needle-fd-j1": {
+      "elapsed_ns": 81179702.0,
+      "peak_rss_kib": 4724.0
+    },
+    "manydirs-needle-fd-j4": {
+      "elapsed_ns": 53122675.5,
+      "peak_rss_kib": 5744.0
+    },
+    "manydirs-needle-fd-default": {
+      "elapsed_ns": 22898791.0,
+      "peak_rss_kib": 8244.0
+    }
+  },
+  "filesystem": "/dev/nvme0n1p2 ext4",
+  "loadavg_before": [
+    2.791015625,
+    2.2587890625,
+    1.5419921875
+  ],
+  "loadavg_after": [
+    3.23876953125,
+    2.4453125,
+    1.63720703125
+  ],
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "configurations": [
+    "fynd-j1",
+    "fynd-j2",
+    "fynd-j4",
+    "fynd-j8",
+    "find",
+    "fd-j1",
+    "fd-j4",
+    "fd-default"
+  ],
+  "driver_sha256": "aeadb01572ebf40ddb64a55de0f301be7581093efc19b91a761aaa0251ae7ecd",
+  "accepted_receipt": "build/verification/run.2Qgzaa",
+  "cutils_revision": "eafa795805fa997e2db91f9182c4e0f86fa32fb4",
+  "limits": {
+    "memory_max_bytes": 3221225472,
+    "memory_swap_max_bytes": 0,
+    "nice": 15,
+    "core_dumps": false
+  },
+  "repeats": 8,
+  "tools": {
+    "fynd": {
+      "sha256": "70d615ffa1de160822b834e413842ab2738ff72125fb87de55d928ddbafb17bd",
+      "version": "fynd 0.1.0"
+    },
+    "fd": {
+      "sha256": "9f48273b6c780a5f4f084ef30bc67d98cbd7d10c55c4605cf3a6ee29b741af87",
+      "version": "fd 10.3.0"
+    },
+    "find": {
+      "sha256": "57bfc7c7725ab979e685b6cb625e0da3d5d30ee01c764814cae5088dea8c6f36",
+      "version": "find (GNU findutils) 4.10.0\nCopyright (C) 2024 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Eric B. Decker, James Youngman, and Kevin Dalley.\nFeatures enabled: D_TYPE O_NOFOLLOW(enabled) LEAF_OPTIMISATION FTS(FTS_CWDFD) CBO(level=1)"
+    },
+    "time": {
+      "sha256": "acc7bb5fc9250d5a6abe1974c39fe4e11ca4e9454f3994e3117aceae1b988d57",
+      "version": "time (GNU Time) UNKNOWN\nCopyright (C) 2018 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by David Keppel, David MacKenzie, and Assaf Gordon."
+    }
+  },
+  "validation": [
+    {
+      "job": "wide-all-fynd-j1",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j1",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "wide"
+      ]
+    },
+    {
+      "job": "wide-all-fynd-j2",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j2",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "wide"
+      ]
+    },
+    {
+      "job": "wide-all-fynd-j4",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j4",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "wide"
+      ]
+    },
+    {
+      "job": "wide-all-fynd-j8",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j8",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "wide"
+      ]
+    },
+    {
+      "job": "wide-all-find",
+      "argv": [
+        "find",
+        "wide",
+        "-type",
+        "f",
+        "-name",
+        "**",
+        "-print0"
+      ]
+    },
+    {
+      "job": "wide-all-fd-j1",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "1",
+        "",
+        "wide"
+      ]
+    },
+    {
+      "job": "wide-all-fd-j4",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "4",
+        "",
+        "wide"
+      ]
+    },
+    {
+      "job": "wide-all-fd-default",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "",
+        "wide"
+      ]
+    },
+    {
+      "job": "wide-needle-fynd-j1",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j1",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "wide"
+      ]
+    },
+    {
+      "job": "wide-needle-fynd-j2",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j2",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "wide"
+      ]
+    },
+    {
+      "job": "wide-needle-fynd-j4",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j4",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "wide"
+      ]
+    },
+    {
+      "job": "wide-needle-fynd-j8",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j8",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "wide"
+      ]
+    },
+    {
+      "job": "wide-needle-find",
+      "argv": [
+        "find",
+        "wide",
+        "-type",
+        "f",
+        "-name",
+        "*needle*",
+        "-print0"
+      ]
+    },
+    {
+      "job": "wide-needle-fd-j1",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "1",
+        "needle",
+        "wide"
+      ]
+    },
+    {
+      "job": "wide-needle-fd-j4",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "4",
+        "needle",
+        "wide"
+      ]
+    },
+    {
+      "job": "wide-needle-fd-default",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "needle",
+        "wide"
+      ]
+    },
+    {
+      "job": "deep-all-fynd-j1",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j1",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "deep"
+      ]
+    },
+    {
+      "job": "deep-all-fynd-j2",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j2",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "deep"
+      ]
+    },
+    {
+      "job": "deep-all-fynd-j4",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j4",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "deep"
+      ]
+    },
+    {
+      "job": "deep-all-fynd-j8",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j8",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "deep"
+      ]
+    },
+    {
+      "job": "deep-all-find",
+      "argv": [
+        "find",
+        "deep",
+        "-type",
+        "f",
+        "-name",
+        "**",
+        "-print0"
+      ]
+    },
+    {
+      "job": "deep-all-fd-j1",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "1",
+        "",
+        "deep"
+      ]
+    },
+    {
+      "job": "deep-all-fd-j4",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "4",
+        "",
+        "deep"
+      ]
+    },
+    {
+      "job": "deep-all-fd-default",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "",
+        "deep"
+      ]
+    },
+    {
+      "job": "deep-needle-fynd-j1",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j1",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "deep"
+      ]
+    },
+    {
+      "job": "deep-needle-fynd-j2",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j2",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "deep"
+      ]
+    },
+    {
+      "job": "deep-needle-fynd-j4",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j4",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "deep"
+      ]
+    },
+    {
+      "job": "deep-needle-fynd-j8",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j8",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "deep"
+      ]
+    },
+    {
+      "job": "deep-needle-find",
+      "argv": [
+        "find",
+        "deep",
+        "-type",
+        "f",
+        "-name",
+        "*needle*",
+        "-print0"
+      ]
+    },
+    {
+      "job": "deep-needle-fd-j1",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "1",
+        "needle",
+        "deep"
+      ]
+    },
+    {
+      "job": "deep-needle-fd-j4",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "4",
+        "needle",
+        "deep"
+      ]
+    },
+    {
+      "job": "deep-needle-fd-default",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "needle",
+        "deep"
+      ]
+    },
+    {
+      "job": "mixed-all-fynd-j1",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j1",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "mixed"
+      ]
+    },
+    {
+      "job": "mixed-all-fynd-j2",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j2",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "mixed"
+      ]
+    },
+    {
+      "job": "mixed-all-fynd-j4",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j4",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "mixed"
+      ]
+    },
+    {
+      "job": "mixed-all-fynd-j8",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j8",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "mixed"
+      ]
+    },
+    {
+      "job": "mixed-all-find",
+      "argv": [
+        "find",
+        "mixed",
+        "-type",
+        "f",
+        "-name",
+        "**",
+        "-print0"
+      ]
+    },
+    {
+      "job": "mixed-all-fd-j1",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "1",
+        "",
+        "mixed"
+      ]
+    },
+    {
+      "job": "mixed-all-fd-j4",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "4",
+        "",
+        "mixed"
+      ]
+    },
+    {
+      "job": "mixed-all-fd-default",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "",
+        "mixed"
+      ]
+    },
+    {
+      "job": "mixed-needle-fynd-j1",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j1",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "mixed"
+      ]
+    },
+    {
+      "job": "mixed-needle-fynd-j2",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j2",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "mixed"
+      ]
+    },
+    {
+      "job": "mixed-needle-fynd-j4",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j4",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "mixed"
+      ]
+    },
+    {
+      "job": "mixed-needle-fynd-j8",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j8",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "mixed"
+      ]
+    },
+    {
+      "job": "mixed-needle-find",
+      "argv": [
+        "find",
+        "mixed",
+        "-type",
+        "f",
+        "-name",
+        "*needle*",
+        "-print0"
+      ]
+    },
+    {
+      "job": "mixed-needle-fd-j1",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "1",
+        "needle",
+        "mixed"
+      ]
+    },
+    {
+      "job": "mixed-needle-fd-j4",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "4",
+        "needle",
+        "mixed"
+      ]
+    },
+    {
+      "job": "mixed-needle-fd-default",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "needle",
+        "mixed"
+      ]
+    },
+    {
+      "job": "manydirs-all-fynd-j1",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j1",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "manydirs"
+      ]
+    },
+    {
+      "job": "manydirs-all-fynd-j2",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j2",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "manydirs"
+      ]
+    },
+    {
+      "job": "manydirs-all-fynd-j4",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j4",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "manydirs"
+      ]
+    },
+    {
+      "job": "manydirs-all-fynd-j8",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j8",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "",
+        "manydirs"
+      ]
+    },
+    {
+      "job": "manydirs-all-find",
+      "argv": [
+        "find",
+        "manydirs",
+        "-type",
+        "f",
+        "-name",
+        "**",
+        "-print0"
+      ]
+    },
+    {
+      "job": "manydirs-all-fd-j1",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "1",
+        "",
+        "manydirs"
+      ]
+    },
+    {
+      "job": "manydirs-all-fd-j4",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "4",
+        "",
+        "manydirs"
+      ]
+    },
+    {
+      "job": "manydirs-all-fd-default",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "",
+        "manydirs"
+      ]
+    },
+    {
+      "job": "manydirs-needle-fynd-j1",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j1",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "manydirs"
+      ]
+    },
+    {
+      "job": "manydirs-needle-fynd-j2",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j2",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "manydirs"
+      ]
+    },
+    {
+      "job": "manydirs-needle-fynd-j4",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j4",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "manydirs"
+      ]
+    },
+    {
+      "job": "manydirs-needle-fynd-j8",
+      "argv": [
+        "fynd",
+        "--no-ignore",
+        "-j8",
+        "-0",
+        "-H",
+        "-t",
+        "f",
+        "needle",
+        "manydirs"
+      ]
+    },
+    {
+      "job": "manydirs-needle-find",
+      "argv": [
+        "find",
+        "manydirs",
+        "-type",
+        "f",
+        "-name",
+        "*needle*",
+        "-print0"
+      ]
+    },
+    {
+      "job": "manydirs-needle-fd-j1",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "1",
+        "needle",
+        "manydirs"
+      ]
+    },
+    {
+      "job": "manydirs-needle-fd-j4",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "--threads",
+        "4",
+        "needle",
+        "manydirs"
+      ]
+    },
+    {
+      "job": "manydirs-needle-fd-default",
+      "argv": [
+        "fd",
+        "-0",
+        "-H",
+        "-I",
+        "--no-ignore-parent",
+        "--case-sensitive",
+        "--fixed-strings",
+        "--color",
+        "never",
+        "-t",
+        "f",
+        "needle",
+        "manydirs"
+      ]
+    }
+  ],
+  "samples": [
+    {
+      "job": "wide-all-fynd-j1",
+      "repeat": 0,
+      "elapsed_ns": 52219843,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-all-fynd-j2",
+      "repeat": 0,
+      "elapsed_ns": 61354533,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-all-fynd-j4",
+      "repeat": 0,
+      "elapsed_ns": 57918653,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-all-fynd-j8",
+      "repeat": 0,
+      "elapsed_ns": 56712709,
+      "peak_rss_kib": 13372
+    },
+    {
+      "job": "wide-all-find",
+      "repeat": 0,
+      "elapsed_ns": 73557386,
+      "peak_rss_kib": 32024
+    },
+    {
+      "job": "wide-all-fd-j1",
+      "repeat": 0,
+      "elapsed_ns": 71861867,
+      "peak_rss_kib": 41652
+    },
+    {
+      "job": "wide-all-fd-j4",
+      "repeat": 0,
+      "elapsed_ns": 42362923,
+      "peak_rss_kib": 7860
+    },
+    {
+      "job": "wide-all-fd-default",
+      "repeat": 0,
+      "elapsed_ns": 43232428,
+      "peak_rss_kib": 13364
+    },
+    {
+      "job": "wide-needle-fynd-j1",
+      "repeat": 0,
+      "elapsed_ns": 51198705,
+      "peak_rss_kib": 13456
+    },
+    {
+      "job": "wide-needle-fynd-j2",
+      "repeat": 0,
+      "elapsed_ns": 50438564,
+      "peak_rss_kib": 13348
+    },
+    {
+      "job": "wide-needle-fynd-j4",
+      "repeat": 0,
+      "elapsed_ns": 51259058,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-fynd-j8",
+      "repeat": 0,
+      "elapsed_ns": 50928590,
+      "peak_rss_kib": 13564
+    },
+    {
+      "job": "wide-needle-find",
+      "repeat": 0,
+      "elapsed_ns": 70680379,
+      "peak_rss_kib": 32296
+    },
+    {
+      "job": "wide-needle-fd-j1",
+      "repeat": 0,
+      "elapsed_ns": 65309484,
+      "peak_rss_kib": 41524
+    },
+    {
+      "job": "wide-needle-fd-j4",
+      "repeat": 0,
+      "elapsed_ns": 41349729,
+      "peak_rss_kib": 6324
+    },
+    {
+      "job": "wide-needle-fd-default",
+      "repeat": 0,
+      "elapsed_ns": 42999833,
+      "peak_rss_kib": 7604
+    },
+    {
+      "job": "deep-all-fynd-j1",
+      "repeat": 0,
+      "elapsed_ns": 5573856,
+      "peak_rss_kib": 2872
+    },
+    {
+      "job": "deep-all-fynd-j2",
+      "repeat": 0,
+      "elapsed_ns": 5927507,
+      "peak_rss_kib": 2556
+    },
+    {
+      "job": "deep-all-fynd-j4",
+      "repeat": 0,
+      "elapsed_ns": 5911436,
+      "peak_rss_kib": 2492
+    },
+    {
+      "job": "deep-all-fynd-j8",
+      "repeat": 0,
+      "elapsed_ns": 6247685,
+      "peak_rss_kib": 2364
+    },
+    {
+      "job": "deep-all-find",
+      "repeat": 0,
+      "elapsed_ns": 5152799,
+      "peak_rss_kib": 3048
+    },
+    {
+      "job": "deep-all-fd-j1",
+      "repeat": 0,
+      "elapsed_ns": 7101000,
+      "peak_rss_kib": 6708
+    },
+    {
+      "job": "deep-all-fd-j4",
+      "repeat": 0,
+      "elapsed_ns": 7082776,
+      "peak_rss_kib": 6964
+    },
+    {
+      "job": "deep-all-fd-default",
+      "repeat": 0,
+      "elapsed_ns": 7474728,
+      "peak_rss_kib": 9140
+    },
+    {
+      "job": "deep-needle-fynd-j1",
+      "repeat": 0,
+      "elapsed_ns": 4077239,
+      "peak_rss_kib": 2852
+    },
+    {
+      "job": "deep-needle-fynd-j2",
+      "repeat": 0,
+      "elapsed_ns": 5256353,
+      "peak_rss_kib": 2172
+    },
+    {
+      "job": "deep-needle-fynd-j4",
+      "repeat": 0,
+      "elapsed_ns": 5548338,
+      "peak_rss_kib": 2236
+    },
+    {
+      "job": "deep-needle-fynd-j8",
+      "repeat": 0,
+      "elapsed_ns": 6691013,
+      "peak_rss_kib": 2108
+    },
+    {
+      "job": "deep-needle-find",
+      "repeat": 0,
+      "elapsed_ns": 4186262,
+      "peak_rss_kib": 3300
+    },
+    {
+      "job": "deep-needle-fd-j1",
+      "repeat": 0,
+      "elapsed_ns": 5991577,
+      "peak_rss_kib": 5428
+    },
+    {
+      "job": "deep-needle-fd-j4",
+      "repeat": 0,
+      "elapsed_ns": 6939818,
+      "peak_rss_kib": 5556
+    },
+    {
+      "job": "deep-needle-fd-default",
+      "repeat": 0,
+      "elapsed_ns": 8240509,
+      "peak_rss_kib": 6452
+    },
+    {
+      "job": "mixed-all-fynd-j1",
+      "repeat": 0,
+      "elapsed_ns": 28355407,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-all-fynd-j2",
+      "repeat": 0,
+      "elapsed_ns": 32626659,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-all-fynd-j4",
+      "repeat": 0,
+      "elapsed_ns": 29617195,
+      "peak_rss_kib": 1904
+    },
+    {
+      "job": "mixed-all-fynd-j8",
+      "repeat": 0,
+      "elapsed_ns": 28486643,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "mixed-all-find",
+      "repeat": 0,
+      "elapsed_ns": 32631728,
+      "peak_rss_kib": 2732
+    },
+    {
+      "job": "mixed-all-fd-j1",
+      "repeat": 0,
+      "elapsed_ns": 36546183,
+      "peak_rss_kib": 5428
+    },
+    {
+      "job": "mixed-all-fd-j4",
+      "repeat": 0,
+      "elapsed_ns": 16940146,
+      "peak_rss_kib": 7220
+    },
+    {
+      "job": "mixed-all-fd-default",
+      "repeat": 0,
+      "elapsed_ns": 11603523,
+      "peak_rss_kib": 12216
+    },
+    {
+      "job": "mixed-needle-fynd-j1",
+      "repeat": 0,
+      "elapsed_ns": 24148075,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j2",
+      "repeat": 0,
+      "elapsed_ns": 24387533,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j4",
+      "repeat": 0,
+      "elapsed_ns": 25795634,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j8",
+      "repeat": 0,
+      "elapsed_ns": 26252368,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "mixed-needle-find",
+      "repeat": 0,
+      "elapsed_ns": 31190145,
+      "peak_rss_kib": 2732
+    },
+    {
+      "job": "mixed-needle-fd-j1",
+      "repeat": 0,
+      "elapsed_ns": 32892166,
+      "peak_rss_kib": 4788
+    },
+    {
+      "job": "mixed-needle-fd-j4",
+      "repeat": 0,
+      "elapsed_ns": 14988058,
+      "peak_rss_kib": 6068
+    },
+    {
+      "job": "mixed-needle-fd-default",
+      "repeat": 0,
+      "elapsed_ns": 9429260,
+      "peak_rss_kib": 8116
+    },
+    {
+      "job": "manydirs-all-fynd-j1",
+      "repeat": 0,
+      "elapsed_ns": 65948198,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j2",
+      "repeat": 0,
+      "elapsed_ns": 67509665,
+      "peak_rss_kib": 1720
+    },
+    {
+      "job": "manydirs-all-fynd-j4",
+      "repeat": 0,
+      "elapsed_ns": 70581696,
+      "peak_rss_kib": 1788
+    },
+    {
+      "job": "manydirs-all-fynd-j8",
+      "repeat": 0,
+      "elapsed_ns": 81340591,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-find",
+      "repeat": 0,
+      "elapsed_ns": 109929404,
+      "peak_rss_kib": 2600
+    },
+    {
+      "job": "manydirs-all-fd-j1",
+      "repeat": 0,
+      "elapsed_ns": 84510013,
+      "peak_rss_kib": 4788
+    },
+    {
+      "job": "manydirs-all-fd-j4",
+      "repeat": 0,
+      "elapsed_ns": 56130681,
+      "peak_rss_kib": 6964
+    },
+    {
+      "job": "manydirs-all-fd-default",
+      "repeat": 0,
+      "elapsed_ns": 24852392,
+      "peak_rss_kib": 12340
+    },
+    {
+      "job": "manydirs-needle-fynd-j1",
+      "repeat": 0,
+      "elapsed_ns": 68182062,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j2",
+      "repeat": 0,
+      "elapsed_ns": 68080331,
+      "peak_rss_kib": 1912
+    },
+    {
+      "job": "manydirs-needle-fynd-j4",
+      "repeat": 0,
+      "elapsed_ns": 69253263,
+      "peak_rss_kib": 1788
+    },
+    {
+      "job": "manydirs-needle-fynd-j8",
+      "repeat": 0,
+      "elapsed_ns": 84862452,
+      "peak_rss_kib": 1892
+    },
+    {
+      "job": "manydirs-needle-find",
+      "repeat": 0,
+      "elapsed_ns": 102952417,
+      "peak_rss_kib": 2600
+    },
+    {
+      "job": "manydirs-needle-fd-j1",
+      "repeat": 0,
+      "elapsed_ns": 81561153,
+      "peak_rss_kib": 4532
+    },
+    {
+      "job": "manydirs-needle-fd-j4",
+      "repeat": 0,
+      "elapsed_ns": 53319127,
+      "peak_rss_kib": 5556
+    },
+    {
+      "job": "manydirs-needle-fd-default",
+      "repeat": 0,
+      "elapsed_ns": 22370694,
+      "peak_rss_kib": 8756
+    },
+    {
+      "job": "wide-needle-fynd-j2",
+      "repeat": 1,
+      "elapsed_ns": 53258123,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-fynd-j4",
+      "repeat": 1,
+      "elapsed_ns": 56074937,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-fynd-j8",
+      "repeat": 1,
+      "elapsed_ns": 55037248,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-find",
+      "repeat": 1,
+      "elapsed_ns": 71885482,
+      "peak_rss_kib": 32168
+    },
+    {
+      "job": "wide-needle-fd-j1",
+      "repeat": 1,
+      "elapsed_ns": 67480610,
+      "peak_rss_kib": 41396
+    },
+    {
+      "job": "wide-needle-fd-j4",
+      "repeat": 1,
+      "elapsed_ns": 39910701,
+      "peak_rss_kib": 6580
+    },
+    {
+      "job": "wide-needle-fd-default",
+      "repeat": 1,
+      "elapsed_ns": 40493129,
+      "peak_rss_kib": 7988
+    },
+    {
+      "job": "wide-needle-fynd-j1",
+      "repeat": 1,
+      "elapsed_ns": 51278995,
+      "peak_rss_kib": 13244
+    },
+    {
+      "job": "deep-all-fynd-j2",
+      "repeat": 1,
+      "elapsed_ns": 6074972,
+      "peak_rss_kib": 2492
+    },
+    {
+      "job": "deep-all-fynd-j4",
+      "repeat": 1,
+      "elapsed_ns": 5918330,
+      "peak_rss_kib": 2684
+    },
+    {
+      "job": "deep-all-fynd-j8",
+      "repeat": 1,
+      "elapsed_ns": 6583693,
+      "peak_rss_kib": 2492
+    },
+    {
+      "job": "deep-all-find",
+      "repeat": 1,
+      "elapsed_ns": 6021272,
+      "peak_rss_kib": 3112
+    },
+    {
+      "job": "deep-all-fd-j1",
+      "repeat": 1,
+      "elapsed_ns": 6648935,
+      "peak_rss_kib": 6580
+    },
+    {
+      "job": "deep-all-fd-j4",
+      "repeat": 1,
+      "elapsed_ns": 8349904,
+      "peak_rss_kib": 7220
+    },
+    {
+      "job": "deep-all-fd-default",
+      "repeat": 1,
+      "elapsed_ns": 7624318,
+      "peak_rss_kib": 8756
+    },
+    {
+      "job": "deep-all-fynd-j1",
+      "repeat": 1,
+      "elapsed_ns": 6354004,
+      "peak_rss_kib": 2876
+    },
+    {
+      "job": "deep-needle-fynd-j2",
+      "repeat": 1,
+      "elapsed_ns": 5443081,
+      "peak_rss_kib": 2492
+    },
+    {
+      "job": "deep-needle-fynd-j4",
+      "repeat": 1,
+      "elapsed_ns": 5809406,
+      "peak_rss_kib": 2364
+    },
+    {
+      "job": "deep-needle-fynd-j8",
+      "repeat": 1,
+      "elapsed_ns": 9276706,
+      "peak_rss_kib": 2364
+    },
+    {
+      "job": "deep-needle-find",
+      "repeat": 1,
+      "elapsed_ns": 5185159,
+      "peak_rss_kib": 3252
+    },
+    {
+      "job": "deep-needle-fd-j1",
+      "repeat": 1,
+      "elapsed_ns": 7274845,
+      "peak_rss_kib": 5428
+    },
+    {
+      "job": "deep-needle-fd-j4",
+      "repeat": 1,
+      "elapsed_ns": 7153728,
+      "peak_rss_kib": 5684
+    },
+    {
+      "job": "deep-needle-fd-default",
+      "repeat": 1,
+      "elapsed_ns": 8006292,
+      "peak_rss_kib": 6836
+    },
+    {
+      "job": "deep-needle-fynd-j1",
+      "repeat": 1,
+      "elapsed_ns": 4859060,
+      "peak_rss_kib": 2876
+    },
+    {
+      "job": "mixed-all-fynd-j2",
+      "repeat": 1,
+      "elapsed_ns": 37095971,
+      "peak_rss_kib": 1912
+    },
+    {
+      "job": "mixed-all-fynd-j4",
+      "repeat": 1,
+      "elapsed_ns": 33443386,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "mixed-all-fynd-j8",
+      "repeat": 1,
+      "elapsed_ns": 41620496,
+      "peak_rss_kib": 1916
+    },
+    {
+      "job": "mixed-all-find",
+      "repeat": 1,
+      "elapsed_ns": 34445158,
+      "peak_rss_kib": 2728
+    },
+    {
+      "job": "mixed-all-fd-j1",
+      "repeat": 1,
+      "elapsed_ns": 39922794,
+      "peak_rss_kib": 5556
+    },
+    {
+      "job": "mixed-all-fd-j4",
+      "repeat": 1,
+      "elapsed_ns": 21132139,
+      "peak_rss_kib": 8116
+    },
+    {
+      "job": "mixed-all-fd-default",
+      "repeat": 1,
+      "elapsed_ns": 14907908,
+      "peak_rss_kib": 14004
+    },
+    {
+      "job": "mixed-all-fynd-j1",
+      "repeat": 1,
+      "elapsed_ns": 34843451,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j2",
+      "repeat": 1,
+      "elapsed_ns": 25553171,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j4",
+      "repeat": 1,
+      "elapsed_ns": 27433976,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j8",
+      "repeat": 1,
+      "elapsed_ns": 41319123,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "mixed-needle-find",
+      "repeat": 1,
+      "elapsed_ns": 34552919,
+      "peak_rss_kib": 2684
+    },
+    {
+      "job": "mixed-needle-fd-j1",
+      "repeat": 1,
+      "elapsed_ns": 41663767,
+      "peak_rss_kib": 4916
+    },
+    {
+      "job": "mixed-needle-fd-j4",
+      "repeat": 1,
+      "elapsed_ns": 17858753,
+      "peak_rss_kib": 5940
+    },
+    {
+      "job": "mixed-needle-fd-default",
+      "repeat": 1,
+      "elapsed_ns": 11678885,
+      "peak_rss_kib": 9268
+    },
+    {
+      "job": "mixed-needle-fynd-j1",
+      "repeat": 1,
+      "elapsed_ns": 25607153,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j2",
+      "repeat": 1,
+      "elapsed_ns": 68869737,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j4",
+      "repeat": 1,
+      "elapsed_ns": 68507179,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j8",
+      "repeat": 1,
+      "elapsed_ns": 82035810,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-find",
+      "repeat": 1,
+      "elapsed_ns": 107401772,
+      "peak_rss_kib": 2680
+    },
+    {
+      "job": "manydirs-all-fd-j1",
+      "repeat": 1,
+      "elapsed_ns": 87879219,
+      "peak_rss_kib": 4660
+    },
+    {
+      "job": "manydirs-all-fd-j4",
+      "repeat": 1,
+      "elapsed_ns": 56044550,
+      "peak_rss_kib": 6324
+    },
+    {
+      "job": "manydirs-all-fd-default",
+      "repeat": 1,
+      "elapsed_ns": 25324503,
+      "peak_rss_kib": 11828
+    },
+    {
+      "job": "manydirs-all-fynd-j1",
+      "repeat": 1,
+      "elapsed_ns": 69261899,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j2",
+      "repeat": 1,
+      "elapsed_ns": 68082606,
+      "peak_rss_kib": 1848
+    },
+    {
+      "job": "manydirs-needle-fynd-j4",
+      "repeat": 1,
+      "elapsed_ns": 69301223,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j8",
+      "repeat": 1,
+      "elapsed_ns": 80505079,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-find",
+      "repeat": 1,
+      "elapsed_ns": 102565334,
+      "peak_rss_kib": 2600
+    },
+    {
+      "job": "manydirs-needle-fd-j1",
+      "repeat": 1,
+      "elapsed_ns": 80456369,
+      "peak_rss_kib": 4660
+    },
+    {
+      "job": "manydirs-needle-fd-j4",
+      "repeat": 1,
+      "elapsed_ns": 53258735,
+      "peak_rss_kib": 5812
+    },
+    {
+      "job": "manydirs-needle-fd-default",
+      "repeat": 1,
+      "elapsed_ns": 23426888,
+      "peak_rss_kib": 7732
+    },
+    {
+      "job": "manydirs-needle-fynd-j1",
+      "repeat": 1,
+      "elapsed_ns": 69083887,
+      "peak_rss_kib": 1712
+    },
+    {
+      "job": "wide-all-fynd-j2",
+      "repeat": 1,
+      "elapsed_ns": 56634573,
+      "peak_rss_kib": 13372
+    },
+    {
+      "job": "wide-all-fynd-j4",
+      "repeat": 1,
+      "elapsed_ns": 57409671,
+      "peak_rss_kib": 13372
+    },
+    {
+      "job": "wide-all-fynd-j8",
+      "repeat": 1,
+      "elapsed_ns": 54717220,
+      "peak_rss_kib": 13628
+    },
+    {
+      "job": "wide-all-find",
+      "repeat": 1,
+      "elapsed_ns": 73309253,
+      "peak_rss_kib": 32296
+    },
+    {
+      "job": "wide-all-fd-j1",
+      "repeat": 1,
+      "elapsed_ns": 82520567,
+      "peak_rss_kib": 41524
+    },
+    {
+      "job": "wide-all-fd-j4",
+      "repeat": 1,
+      "elapsed_ns": 62477572,
+      "peak_rss_kib": 10420
+    },
+    {
+      "job": "wide-all-fd-default",
+      "repeat": 1,
+      "elapsed_ns": 45427471,
+      "peak_rss_kib": 13364
+    },
+    {
+      "job": "wide-all-fynd-j1",
+      "repeat": 1,
+      "elapsed_ns": 56572977,
+      "peak_rss_kib": 13372
+    },
+    {
+      "job": "deep-all-fynd-j4",
+      "repeat": 2,
+      "elapsed_ns": 6272722,
+      "peak_rss_kib": 2468
+    },
+    {
+      "job": "deep-all-fynd-j8",
+      "repeat": 2,
+      "elapsed_ns": 10300609,
+      "peak_rss_kib": 2492
+    },
+    {
+      "job": "deep-all-find",
+      "repeat": 2,
+      "elapsed_ns": 4935643,
+      "peak_rss_kib": 3320
+    },
+    {
+      "job": "deep-all-fd-j1",
+      "repeat": 2,
+      "elapsed_ns": 7080691,
+      "peak_rss_kib": 6708
+    },
+    {
+      "job": "deep-all-fd-j4",
+      "repeat": 2,
+      "elapsed_ns": 8473324,
+      "peak_rss_kib": 7476
+    },
+    {
+      "job": "deep-all-fd-default",
+      "repeat": 2,
+      "elapsed_ns": 9249234,
+      "peak_rss_kib": 9140
+    },
+    {
+      "job": "deep-all-fynd-j1",
+      "repeat": 2,
+      "elapsed_ns": 5827019,
+      "peak_rss_kib": 2940
+    },
+    {
+      "job": "deep-all-fynd-j2",
+      "repeat": 2,
+      "elapsed_ns": 5722664,
+      "peak_rss_kib": 2428
+    },
+    {
+      "job": "deep-needle-fynd-j4",
+      "repeat": 2,
+      "elapsed_ns": 6473537,
+      "peak_rss_kib": 2364
+    },
+    {
+      "job": "deep-needle-fynd-j8",
+      "repeat": 2,
+      "elapsed_ns": 8399406,
+      "peak_rss_kib": 2492
+    },
+    {
+      "job": "deep-needle-find",
+      "repeat": 2,
+      "elapsed_ns": 4291570,
+      "peak_rss_kib": 2984
+    },
+    {
+      "job": "deep-needle-fd-j1",
+      "repeat": 2,
+      "elapsed_ns": 6523461,
+      "peak_rss_kib": 5428
+    },
+    {
+      "job": "deep-needle-fd-j4",
+      "repeat": 2,
+      "elapsed_ns": 6936152,
+      "peak_rss_kib": 5812
+    },
+    {
+      "job": "deep-needle-fd-default",
+      "repeat": 2,
+      "elapsed_ns": 8337180,
+      "peak_rss_kib": 6708
+    },
+    {
+      "job": "deep-needle-fynd-j1",
+      "repeat": 2,
+      "elapsed_ns": 4488778,
+      "peak_rss_kib": 2876
+    },
+    {
+      "job": "deep-needle-fynd-j2",
+      "repeat": 2,
+      "elapsed_ns": 4720661,
+      "peak_rss_kib": 2492
+    },
+    {
+      "job": "mixed-all-fynd-j4",
+      "repeat": 2,
+      "elapsed_ns": 27444897,
+      "peak_rss_kib": 1620
+    },
+    {
+      "job": "mixed-all-fynd-j8",
+      "repeat": 2,
+      "elapsed_ns": 27300296,
+      "peak_rss_kib": 1700
+    },
+    {
+      "job": "mixed-all-find",
+      "repeat": 2,
+      "elapsed_ns": 35845284,
+      "peak_rss_kib": 2584
+    },
+    {
+      "job": "mixed-all-fd-j1",
+      "repeat": 2,
+      "elapsed_ns": 40988224,
+      "peak_rss_kib": 5556
+    },
+    {
+      "job": "mixed-all-fd-j4",
+      "repeat": 2,
+      "elapsed_ns": 19287452,
+      "peak_rss_kib": 7476
+    },
+    {
+      "job": "mixed-all-fd-default",
+      "repeat": 2,
+      "elapsed_ns": 13415360,
+      "peak_rss_kib": 11828
+    },
+    {
+      "job": "mixed-all-fynd-j1",
+      "repeat": 2,
+      "elapsed_ns": 27757570,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-all-fynd-j2",
+      "repeat": 2,
+      "elapsed_ns": 29153399,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j4",
+      "repeat": 2,
+      "elapsed_ns": 25184913,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j8",
+      "repeat": 2,
+      "elapsed_ns": 27906058,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-find",
+      "repeat": 2,
+      "elapsed_ns": 35353816,
+      "peak_rss_kib": 2664
+    },
+    {
+      "job": "mixed-needle-fd-j1",
+      "repeat": 2,
+      "elapsed_ns": 32840008,
+      "peak_rss_kib": 4788
+    },
+    {
+      "job": "mixed-needle-fd-j4",
+      "repeat": 2,
+      "elapsed_ns": 15433541,
+      "peak_rss_kib": 5940
+    },
+    {
+      "job": "mixed-needle-fd-default",
+      "repeat": 2,
+      "elapsed_ns": 10887296,
+      "peak_rss_kib": 7988
+    },
+    {
+      "job": "mixed-needle-fynd-j1",
+      "repeat": 2,
+      "elapsed_ns": 25052496,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j2",
+      "repeat": 2,
+      "elapsed_ns": 29352701,
+      "peak_rss_kib": 1848
+    },
+    {
+      "job": "manydirs-all-fynd-j4",
+      "repeat": 2,
+      "elapsed_ns": 90343886,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "manydirs-all-fynd-j8",
+      "repeat": 2,
+      "elapsed_ns": 136089762,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "manydirs-all-find",
+      "repeat": 2,
+      "elapsed_ns": 115545320,
+      "peak_rss_kib": 2616
+    },
+    {
+      "job": "manydirs-all-fd-j1",
+      "repeat": 2,
+      "elapsed_ns": 122572702,
+      "peak_rss_kib": 5172
+    },
+    {
+      "job": "manydirs-all-fd-j4",
+      "repeat": 2,
+      "elapsed_ns": 64207135,
+      "peak_rss_kib": 6836
+    },
+    {
+      "job": "manydirs-all-fd-default",
+      "repeat": 2,
+      "elapsed_ns": 27911770,
+      "peak_rss_kib": 12084
+    },
+    {
+      "job": "manydirs-all-fynd-j1",
+      "repeat": 2,
+      "elapsed_ns": 70668448,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j2",
+      "repeat": 2,
+      "elapsed_ns": 71036928,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "manydirs-needle-fynd-j4",
+      "repeat": 2,
+      "elapsed_ns": 68733894,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j8",
+      "repeat": 2,
+      "elapsed_ns": 82093659,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-find",
+      "repeat": 2,
+      "elapsed_ns": 101243464,
+      "peak_rss_kib": 2600
+    },
+    {
+      "job": "manydirs-needle-fd-j1",
+      "repeat": 2,
+      "elapsed_ns": 88563780,
+      "peak_rss_kib": 4788
+    },
+    {
+      "job": "manydirs-needle-fd-j4",
+      "repeat": 2,
+      "elapsed_ns": 52986616,
+      "peak_rss_kib": 5556
+    },
+    {
+      "job": "manydirs-needle-fd-default",
+      "repeat": 2,
+      "elapsed_ns": 23961056,
+      "peak_rss_kib": 8500
+    },
+    {
+      "job": "manydirs-needle-fynd-j1",
+      "repeat": 2,
+      "elapsed_ns": 73316186,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j2",
+      "repeat": 2,
+      "elapsed_ns": 71211634,
+      "peak_rss_kib": 1916
+    },
+    {
+      "job": "wide-all-fynd-j4",
+      "repeat": 2,
+      "elapsed_ns": 56786407,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-all-fynd-j8",
+      "repeat": 2,
+      "elapsed_ns": 57955942,
+      "peak_rss_kib": 13372
+    },
+    {
+      "job": "wide-all-find",
+      "repeat": 2,
+      "elapsed_ns": 72537091,
+      "peak_rss_kib": 32212
+    },
+    {
+      "job": "wide-all-fd-j1",
+      "repeat": 2,
+      "elapsed_ns": 83945089,
+      "peak_rss_kib": 41396
+    },
+    {
+      "job": "wide-all-fd-j4",
+      "repeat": 2,
+      "elapsed_ns": 45026051,
+      "peak_rss_kib": 7732
+    },
+    {
+      "job": "wide-all-fd-default",
+      "repeat": 2,
+      "elapsed_ns": 42339110,
+      "peak_rss_kib": 12084
+    },
+    {
+      "job": "wide-all-fynd-j1",
+      "repeat": 2,
+      "elapsed_ns": 53154080,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-all-fynd-j2",
+      "repeat": 2,
+      "elapsed_ns": 61296926,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-fynd-j4",
+      "repeat": 2,
+      "elapsed_ns": 60461415,
+      "peak_rss_kib": 13496
+    },
+    {
+      "job": "wide-needle-fynd-j8",
+      "repeat": 2,
+      "elapsed_ns": 58988883,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-find",
+      "repeat": 2,
+      "elapsed_ns": 79704104,
+      "peak_rss_kib": 32296
+    },
+    {
+      "job": "wide-needle-fd-j1",
+      "repeat": 2,
+      "elapsed_ns": 78013084,
+      "peak_rss_kib": 41524
+    },
+    {
+      "job": "wide-needle-fd-j4",
+      "repeat": 2,
+      "elapsed_ns": 41820851,
+      "peak_rss_kib": 6324
+    },
+    {
+      "job": "wide-needle-fd-default",
+      "repeat": 2,
+      "elapsed_ns": 43673343,
+      "peak_rss_kib": 7988
+    },
+    {
+      "job": "wide-needle-fynd-j1",
+      "repeat": 2,
+      "elapsed_ns": 56201173,
+      "peak_rss_kib": 13244
+    },
+    {
+      "job": "wide-needle-fynd-j2",
+      "repeat": 2,
+      "elapsed_ns": 54937362,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "deep-needle-fynd-j8",
+      "repeat": 3,
+      "elapsed_ns": 9531131,
+      "peak_rss_kib": 2620
+    },
+    {
+      "job": "deep-needle-find",
+      "repeat": 3,
+      "elapsed_ns": 4903654,
+      "peak_rss_kib": 3276
+    },
+    {
+      "job": "deep-needle-fd-j1",
+      "repeat": 3,
+      "elapsed_ns": 7976556,
+      "peak_rss_kib": 5300
+    },
+    {
+      "job": "deep-needle-fd-j4",
+      "repeat": 3,
+      "elapsed_ns": 7680943,
+      "peak_rss_kib": 5428
+    },
+    {
+      "job": "deep-needle-fd-default",
+      "repeat": 3,
+      "elapsed_ns": 9350593,
+      "peak_rss_kib": 6836
+    },
+    {
+      "job": "deep-needle-fynd-j1",
+      "repeat": 3,
+      "elapsed_ns": 4320885,
+      "peak_rss_kib": 2876
+    },
+    {
+      "job": "deep-needle-fynd-j2",
+      "repeat": 3,
+      "elapsed_ns": 6507351,
+      "peak_rss_kib": 2620
+    },
+    {
+      "job": "deep-needle-fynd-j4",
+      "repeat": 3,
+      "elapsed_ns": 6684321,
+      "peak_rss_kib": 2364
+    },
+    {
+      "job": "mixed-all-fynd-j8",
+      "repeat": 3,
+      "elapsed_ns": 35822983,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "mixed-all-find",
+      "repeat": 3,
+      "elapsed_ns": 36392667,
+      "peak_rss_kib": 2584
+    },
+    {
+      "job": "mixed-all-fd-j1",
+      "repeat": 3,
+      "elapsed_ns": 36368061,
+      "peak_rss_kib": 5684
+    },
+    {
+      "job": "mixed-all-fd-j4",
+      "repeat": 3,
+      "elapsed_ns": 16984018,
+      "peak_rss_kib": 7604
+    },
+    {
+      "job": "mixed-all-fd-default",
+      "repeat": 3,
+      "elapsed_ns": 12150897,
+      "peak_rss_kib": 11828
+    },
+    {
+      "job": "mixed-all-fynd-j1",
+      "repeat": 3,
+      "elapsed_ns": 27598393,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-all-fynd-j2",
+      "repeat": 3,
+      "elapsed_ns": 29559899,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-all-fynd-j4",
+      "repeat": 3,
+      "elapsed_ns": 29251172,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j8",
+      "repeat": 3,
+      "elapsed_ns": 26382551,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-find",
+      "repeat": 3,
+      "elapsed_ns": 32425464,
+      "peak_rss_kib": 2648
+    },
+    {
+      "job": "mixed-needle-fd-j1",
+      "repeat": 3,
+      "elapsed_ns": 32579391,
+      "peak_rss_kib": 4916
+    },
+    {
+      "job": "mixed-needle-fd-j4",
+      "repeat": 3,
+      "elapsed_ns": 14802672,
+      "peak_rss_kib": 5940
+    },
+    {
+      "job": "mixed-needle-fd-default",
+      "repeat": 3,
+      "elapsed_ns": 12057532,
+      "peak_rss_kib": 8372
+    },
+    {
+      "job": "mixed-needle-fynd-j1",
+      "repeat": 3,
+      "elapsed_ns": 23485357,
+      "peak_rss_kib": 1596
+    },
+    {
+      "job": "mixed-needle-fynd-j2",
+      "repeat": 3,
+      "elapsed_ns": 28434726,
+      "peak_rss_kib": 1720
+    },
+    {
+      "job": "mixed-needle-fynd-j4",
+      "repeat": 3,
+      "elapsed_ns": 26279649,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j8",
+      "repeat": 3,
+      "elapsed_ns": 87038930,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "manydirs-all-find",
+      "repeat": 3,
+      "elapsed_ns": 107574917,
+      "peak_rss_kib": 2756
+    },
+    {
+      "job": "manydirs-all-fd-j1",
+      "repeat": 3,
+      "elapsed_ns": 85408534,
+      "peak_rss_kib": 4916
+    },
+    {
+      "job": "manydirs-all-fd-j4",
+      "repeat": 3,
+      "elapsed_ns": 55023283,
+      "peak_rss_kib": 6452
+    },
+    {
+      "job": "manydirs-all-fd-default",
+      "repeat": 3,
+      "elapsed_ns": 21363252,
+      "peak_rss_kib": 10292
+    },
+    {
+      "job": "manydirs-all-fynd-j1",
+      "repeat": 3,
+      "elapsed_ns": 66219114,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j2",
+      "repeat": 3,
+      "elapsed_ns": 68421570,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j4",
+      "repeat": 3,
+      "elapsed_ns": 70348732,
+      "peak_rss_kib": 1788
+    },
+    {
+      "job": "manydirs-needle-fynd-j8",
+      "repeat": 3,
+      "elapsed_ns": 79650754,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-find",
+      "repeat": 3,
+      "elapsed_ns": 103931808,
+      "peak_rss_kib": 2600
+    },
+    {
+      "job": "manydirs-needle-fd-j1",
+      "repeat": 3,
+      "elapsed_ns": 79318724,
+      "peak_rss_kib": 4788
+    },
+    {
+      "job": "manydirs-needle-fd-j4",
+      "repeat": 3,
+      "elapsed_ns": 51404389,
+      "peak_rss_kib": 5680
+    },
+    {
+      "job": "manydirs-needle-fd-default",
+      "repeat": 3,
+      "elapsed_ns": 20774622,
+      "peak_rss_kib": 7348
+    },
+    {
+      "job": "manydirs-needle-fynd-j1",
+      "repeat": 3,
+      "elapsed_ns": 65706967,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j2",
+      "repeat": 3,
+      "elapsed_ns": 68582791,
+      "peak_rss_kib": 1848
+    },
+    {
+      "job": "manydirs-needle-fynd-j4",
+      "repeat": 3,
+      "elapsed_ns": 73296660,
+      "peak_rss_kib": 1788
+    },
+    {
+      "job": "wide-all-fynd-j8",
+      "repeat": 3,
+      "elapsed_ns": 56708743,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-all-find",
+      "repeat": 3,
+      "elapsed_ns": 78900262,
+      "peak_rss_kib": 32216
+    },
+    {
+      "job": "wide-all-fd-j1",
+      "repeat": 3,
+      "elapsed_ns": 90729858,
+      "peak_rss_kib": 41652
+    },
+    {
+      "job": "wide-all-fd-j4",
+      "repeat": 3,
+      "elapsed_ns": 43089752,
+      "peak_rss_kib": 7604
+    },
+    {
+      "job": "wide-all-fd-default",
+      "repeat": 3,
+      "elapsed_ns": 42549152,
+      "peak_rss_kib": 11956
+    },
+    {
+      "job": "wide-all-fynd-j1",
+      "repeat": 3,
+      "elapsed_ns": 54645798,
+      "peak_rss_kib": 13372
+    },
+    {
+      "job": "wide-all-fynd-j2",
+      "repeat": 3,
+      "elapsed_ns": 56764707,
+      "peak_rss_kib": 13368
+    },
+    {
+      "job": "wide-all-fynd-j4",
+      "repeat": 3,
+      "elapsed_ns": 54859076,
+      "peak_rss_kib": 13372
+    },
+    {
+      "job": "wide-needle-fynd-j8",
+      "repeat": 3,
+      "elapsed_ns": 51269067,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-find",
+      "repeat": 3,
+      "elapsed_ns": 74276161,
+      "peak_rss_kib": 32168
+    },
+    {
+      "job": "wide-needle-fd-j1",
+      "repeat": 3,
+      "elapsed_ns": 66759003,
+      "peak_rss_kib": 41524
+    },
+    {
+      "job": "wide-needle-fd-j4",
+      "repeat": 3,
+      "elapsed_ns": 38946730,
+      "peak_rss_kib": 6196
+    },
+    {
+      "job": "wide-needle-fd-default",
+      "repeat": 3,
+      "elapsed_ns": 41640014,
+      "peak_rss_kib": 7860
+    },
+    {
+      "job": "wide-needle-fynd-j1",
+      "repeat": 3,
+      "elapsed_ns": 50156048,
+      "peak_rss_kib": 13240
+    },
+    {
+      "job": "wide-needle-fynd-j2",
+      "repeat": 3,
+      "elapsed_ns": 52108626,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-fynd-j4",
+      "repeat": 3,
+      "elapsed_ns": 51060468,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "deep-all-fynd-j8",
+      "repeat": 3,
+      "elapsed_ns": 6658604,
+      "peak_rss_kib": 2236
+    },
+    {
+      "job": "deep-all-find",
+      "repeat": 3,
+      "elapsed_ns": 5083069,
+      "peak_rss_kib": 3112
+    },
+    {
+      "job": "deep-all-fd-j1",
+      "repeat": 3,
+      "elapsed_ns": 6099438,
+      "peak_rss_kib": 6452
+    },
+    {
+      "job": "deep-all-fd-j4",
+      "repeat": 3,
+      "elapsed_ns": 7144371,
+      "peak_rss_kib": 7604
+    },
+    {
+      "job": "deep-all-fd-default",
+      "repeat": 3,
+      "elapsed_ns": 7441587,
+      "peak_rss_kib": 8628
+    },
+    {
+      "job": "deep-all-fynd-j1",
+      "repeat": 3,
+      "elapsed_ns": 5329920,
+      "peak_rss_kib": 2876
+    },
+    {
+      "job": "deep-all-fynd-j2",
+      "repeat": 3,
+      "elapsed_ns": 6126940,
+      "peak_rss_kib": 2492
+    },
+    {
+      "job": "deep-all-fynd-j4",
+      "repeat": 3,
+      "elapsed_ns": 5719377,
+      "peak_rss_kib": 2468
+    },
+    {
+      "job": "mixed-all-find",
+      "repeat": 4,
+      "elapsed_ns": 36644418,
+      "peak_rss_kib": 2692
+    },
+    {
+      "job": "mixed-all-fd-j1",
+      "repeat": 4,
+      "elapsed_ns": 36536927,
+      "peak_rss_kib": 5556
+    },
+    {
+      "job": "mixed-all-fd-j4",
+      "repeat": 4,
+      "elapsed_ns": 18783832,
+      "peak_rss_kib": 7860
+    },
+    {
+      "job": "mixed-all-fd-default",
+      "repeat": 4,
+      "elapsed_ns": 13156576,
+      "peak_rss_kib": 12852
+    },
+    {
+      "job": "mixed-all-fynd-j1",
+      "repeat": 4,
+      "elapsed_ns": 30764350,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-all-fynd-j2",
+      "repeat": 4,
+      "elapsed_ns": 32913476,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-all-fynd-j4",
+      "repeat": 4,
+      "elapsed_ns": 40087012,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "mixed-all-fynd-j8",
+      "repeat": 4,
+      "elapsed_ns": 39317333,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "mixed-needle-find",
+      "repeat": 4,
+      "elapsed_ns": 38266490,
+      "peak_rss_kib": 2752
+    },
+    {
+      "job": "mixed-needle-fd-j1",
+      "repeat": 4,
+      "elapsed_ns": 39885775,
+      "peak_rss_kib": 5044
+    },
+    {
+      "job": "mixed-needle-fd-j4",
+      "repeat": 4,
+      "elapsed_ns": 19518936,
+      "peak_rss_kib": 5940
+    },
+    {
+      "job": "mixed-needle-fd-default",
+      "repeat": 4,
+      "elapsed_ns": 21686546,
+      "peak_rss_kib": 9268
+    },
+    {
+      "job": "mixed-needle-fynd-j1",
+      "repeat": 4,
+      "elapsed_ns": 30386264,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j2",
+      "repeat": 4,
+      "elapsed_ns": 29121890,
+      "peak_rss_kib": 1788
+    },
+    {
+      "job": "mixed-needle-fynd-j4",
+      "repeat": 4,
+      "elapsed_ns": 36351391,
+      "peak_rss_kib": 1848
+    },
+    {
+      "job": "mixed-needle-fynd-j8",
+      "repeat": 4,
+      "elapsed_ns": 44874938,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-find",
+      "repeat": 4,
+      "elapsed_ns": 130090222,
+      "peak_rss_kib": 2600
+    },
+    {
+      "job": "manydirs-all-fd-j1",
+      "repeat": 4,
+      "elapsed_ns": 105937597,
+      "peak_rss_kib": 5044
+    },
+    {
+      "job": "manydirs-all-fd-j4",
+      "repeat": 4,
+      "elapsed_ns": 61733353,
+      "peak_rss_kib": 7220
+    },
+    {
+      "job": "manydirs-all-fd-default",
+      "repeat": 4,
+      "elapsed_ns": 30007165,
+      "peak_rss_kib": 12468
+    },
+    {
+      "job": "manydirs-all-fynd-j1",
+      "repeat": 4,
+      "elapsed_ns": 70171721,
+      "peak_rss_kib": 1788
+    },
+    {
+      "job": "manydirs-all-fynd-j2",
+      "repeat": 4,
+      "elapsed_ns": 71526763,
+      "peak_rss_kib": 1908
+    },
+    {
+      "job": "manydirs-all-fynd-j4",
+      "repeat": 4,
+      "elapsed_ns": 78938054,
+      "peak_rss_kib": 1904
+    },
+    {
+      "job": "manydirs-all-fynd-j8",
+      "repeat": 4,
+      "elapsed_ns": 87907274,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-find",
+      "repeat": 4,
+      "elapsed_ns": 106152459,
+      "peak_rss_kib": 2640
+    },
+    {
+      "job": "manydirs-needle-fd-j1",
+      "repeat": 4,
+      "elapsed_ns": 87251658,
+      "peak_rss_kib": 4660
+    },
+    {
+      "job": "manydirs-needle-fd-j4",
+      "repeat": 4,
+      "elapsed_ns": 58521690,
+      "peak_rss_kib": 5940
+    },
+    {
+      "job": "manydirs-needle-fd-default",
+      "repeat": 4,
+      "elapsed_ns": 25110314,
+      "peak_rss_kib": 8756
+    },
+    {
+      "job": "manydirs-needle-fynd-j1",
+      "repeat": 4,
+      "elapsed_ns": 71799913,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j2",
+      "repeat": 4,
+      "elapsed_ns": 71106418,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j4",
+      "repeat": 4,
+      "elapsed_ns": 69304170,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j8",
+      "repeat": 4,
+      "elapsed_ns": 81121303,
+      "peak_rss_kib": 1720
+    },
+    {
+      "job": "wide-all-find",
+      "repeat": 4,
+      "elapsed_ns": 78471090,
+      "peak_rss_kib": 31912
+    },
+    {
+      "job": "wide-all-fd-j1",
+      "repeat": 4,
+      "elapsed_ns": 73972945,
+      "peak_rss_kib": 41524
+    },
+    {
+      "job": "wide-all-fd-j4",
+      "repeat": 4,
+      "elapsed_ns": 40008114,
+      "peak_rss_kib": 7732
+    },
+    {
+      "job": "wide-all-fd-default",
+      "repeat": 4,
+      "elapsed_ns": 41971433,
+      "peak_rss_kib": 12212
+    },
+    {
+      "job": "wide-all-fynd-j1",
+      "repeat": 4,
+      "elapsed_ns": 56352727,
+      "peak_rss_kib": 13372
+    },
+    {
+      "job": "wide-all-fynd-j2",
+      "repeat": 4,
+      "elapsed_ns": 55144700,
+      "peak_rss_kib": 13372
+    },
+    {
+      "job": "wide-all-fynd-j4",
+      "repeat": 4,
+      "elapsed_ns": 54921072,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-all-fynd-j8",
+      "repeat": 4,
+      "elapsed_ns": 54222777,
+      "peak_rss_kib": 13372
+    },
+    {
+      "job": "wide-needle-find",
+      "repeat": 4,
+      "elapsed_ns": 71717941,
+      "peak_rss_kib": 32296
+    },
+    {
+      "job": "wide-needle-fd-j1",
+      "repeat": 4,
+      "elapsed_ns": 67672351,
+      "peak_rss_kib": 41268
+    },
+    {
+      "job": "wide-needle-fd-j4",
+      "repeat": 4,
+      "elapsed_ns": 39823128,
+      "peak_rss_kib": 5940
+    },
+    {
+      "job": "wide-needle-fd-default",
+      "repeat": 4,
+      "elapsed_ns": 41880003,
+      "peak_rss_kib": 7732
+    },
+    {
+      "job": "wide-needle-fynd-j1",
+      "repeat": 4,
+      "elapsed_ns": 50505451,
+      "peak_rss_kib": 13368
+    },
+    {
+      "job": "wide-needle-fynd-j2",
+      "repeat": 4,
+      "elapsed_ns": 50737153,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-fynd-j4",
+      "repeat": 4,
+      "elapsed_ns": 52051209,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-fynd-j8",
+      "repeat": 4,
+      "elapsed_ns": 50128577,
+      "peak_rss_kib": 13628
+    },
+    {
+      "job": "deep-all-find",
+      "repeat": 4,
+      "elapsed_ns": 5199185,
+      "peak_rss_kib": 3244
+    },
+    {
+      "job": "deep-all-fd-j1",
+      "repeat": 4,
+      "elapsed_ns": 7880676,
+      "peak_rss_kib": 6964
+    },
+    {
+      "job": "deep-all-fd-j4",
+      "repeat": 4,
+      "elapsed_ns": 7104185,
+      "peak_rss_kib": 7220
+    },
+    {
+      "job": "deep-all-fd-default",
+      "repeat": 4,
+      "elapsed_ns": 7544208,
+      "peak_rss_kib": 8756
+    },
+    {
+      "job": "deep-all-fynd-j1",
+      "repeat": 4,
+      "elapsed_ns": 4878337,
+      "peak_rss_kib": 2876
+    },
+    {
+      "job": "deep-all-fynd-j2",
+      "repeat": 4,
+      "elapsed_ns": 5461656,
+      "peak_rss_kib": 2364
+    },
+    {
+      "job": "deep-all-fynd-j4",
+      "repeat": 4,
+      "elapsed_ns": 5475162,
+      "peak_rss_kib": 2236
+    },
+    {
+      "job": "deep-all-fynd-j8",
+      "repeat": 4,
+      "elapsed_ns": 6155904,
+      "peak_rss_kib": 2236
+    },
+    {
+      "job": "deep-needle-find",
+      "repeat": 4,
+      "elapsed_ns": 4691667,
+      "peak_rss_kib": 3044
+    },
+    {
+      "job": "deep-needle-fd-j1",
+      "repeat": 4,
+      "elapsed_ns": 6510657,
+      "peak_rss_kib": 5300
+    },
+    {
+      "job": "deep-needle-fd-j4",
+      "repeat": 4,
+      "elapsed_ns": 7261810,
+      "peak_rss_kib": 5556
+    },
+    {
+      "job": "deep-needle-fd-default",
+      "repeat": 4,
+      "elapsed_ns": 7469439,
+      "peak_rss_kib": 6580
+    },
+    {
+      "job": "deep-needle-fynd-j1",
+      "repeat": 4,
+      "elapsed_ns": 4542329,
+      "peak_rss_kib": 2876
+    },
+    {
+      "job": "deep-needle-fynd-j2",
+      "repeat": 4,
+      "elapsed_ns": 4860272,
+      "peak_rss_kib": 2364
+    },
+    {
+      "job": "deep-needle-fynd-j4",
+      "repeat": 4,
+      "elapsed_ns": 5273805,
+      "peak_rss_kib": 2492
+    },
+    {
+      "job": "deep-needle-fynd-j8",
+      "repeat": 4,
+      "elapsed_ns": 5672270,
+      "peak_rss_kib": 2364
+    },
+    {
+      "job": "mixed-needle-fd-j1",
+      "repeat": 5,
+      "elapsed_ns": 31560788,
+      "peak_rss_kib": 4660
+    },
+    {
+      "job": "mixed-needle-fd-j4",
+      "repeat": 5,
+      "elapsed_ns": 15006253,
+      "peak_rss_kib": 5556
+    },
+    {
+      "job": "mixed-needle-fd-default",
+      "repeat": 5,
+      "elapsed_ns": 10681511,
+      "peak_rss_kib": 8756
+    },
+    {
+      "job": "mixed-needle-fynd-j1",
+      "repeat": 5,
+      "elapsed_ns": 24003315,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j2",
+      "repeat": 5,
+      "elapsed_ns": 24434962,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j4",
+      "repeat": 5,
+      "elapsed_ns": 27500321,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j8",
+      "repeat": 5,
+      "elapsed_ns": 29071316,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-find",
+      "repeat": 5,
+      "elapsed_ns": 30681415,
+      "peak_rss_kib": 2692
+    },
+    {
+      "job": "manydirs-all-fd-j1",
+      "repeat": 5,
+      "elapsed_ns": 86603378,
+      "peak_rss_kib": 5044
+    },
+    {
+      "job": "manydirs-all-fd-j4",
+      "repeat": 5,
+      "elapsed_ns": 55866940,
+      "peak_rss_kib": 6452
+    },
+    {
+      "job": "manydirs-all-fd-default",
+      "repeat": 5,
+      "elapsed_ns": 23522677,
+      "peak_rss_kib": 11320
+    },
+    {
+      "job": "manydirs-all-fynd-j1",
+      "repeat": 5,
+      "elapsed_ns": 68961340,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j2",
+      "repeat": 5,
+      "elapsed_ns": 67379213,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j4",
+      "repeat": 5,
+      "elapsed_ns": 69006384,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j8",
+      "repeat": 5,
+      "elapsed_ns": 80105125,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-find",
+      "repeat": 5,
+      "elapsed_ns": 108204655,
+      "peak_rss_kib": 2732
+    },
+    {
+      "job": "manydirs-needle-fd-j1",
+      "repeat": 5,
+      "elapsed_ns": 82042975,
+      "peak_rss_kib": 4788
+    },
+    {
+      "job": "manydirs-needle-fd-j4",
+      "repeat": 5,
+      "elapsed_ns": 52288933,
+      "peak_rss_kib": 5808
+    },
+    {
+      "job": "manydirs-needle-fd-default",
+      "repeat": 5,
+      "elapsed_ns": 21985555,
+      "peak_rss_kib": 7348
+    },
+    {
+      "job": "manydirs-needle-fynd-j1",
+      "repeat": 5,
+      "elapsed_ns": 68822671,
+      "peak_rss_kib": 1720
+    },
+    {
+      "job": "manydirs-needle-fynd-j2",
+      "repeat": 5,
+      "elapsed_ns": 68685564,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j4",
+      "repeat": 5,
+      "elapsed_ns": 68435777,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j8",
+      "repeat": 5,
+      "elapsed_ns": 81362544,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-find",
+      "repeat": 5,
+      "elapsed_ns": 105330313,
+      "peak_rss_kib": 2712
+    },
+    {
+      "job": "wide-all-fd-j1",
+      "repeat": 5,
+      "elapsed_ns": 75871393,
+      "peak_rss_kib": 41652
+    },
+    {
+      "job": "wide-all-fd-j4",
+      "repeat": 5,
+      "elapsed_ns": 40854656,
+      "peak_rss_kib": 8116
+    },
+    {
+      "job": "wide-all-fd-default",
+      "repeat": 5,
+      "elapsed_ns": 39435094,
+      "peak_rss_kib": 11700
+    },
+    {
+      "job": "wide-all-fynd-j1",
+      "repeat": 5,
+      "elapsed_ns": 53663142,
+      "peak_rss_kib": 13244
+    },
+    {
+      "job": "wide-all-fynd-j2",
+      "repeat": 5,
+      "elapsed_ns": 54680243,
+      "peak_rss_kib": 13244
+    },
+    {
+      "job": "wide-all-fynd-j4",
+      "repeat": 5,
+      "elapsed_ns": 53384671,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-all-fynd-j8",
+      "repeat": 5,
+      "elapsed_ns": 56579011,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-all-find",
+      "repeat": 5,
+      "elapsed_ns": 72510532,
+      "peak_rss_kib": 32248
+    },
+    {
+      "job": "wide-needle-fd-j1",
+      "repeat": 5,
+      "elapsed_ns": 68115859,
+      "peak_rss_kib": 41524
+    },
+    {
+      "job": "wide-needle-fd-j4",
+      "repeat": 5,
+      "elapsed_ns": 40374770,
+      "peak_rss_kib": 6196
+    },
+    {
+      "job": "wide-needle-fd-default",
+      "repeat": 5,
+      "elapsed_ns": 40884392,
+      "peak_rss_kib": 7732
+    },
+    {
+      "job": "wide-needle-fynd-j1",
+      "repeat": 5,
+      "elapsed_ns": 53887250,
+      "peak_rss_kib": 13372
+    },
+    {
+      "job": "wide-needle-fynd-j2",
+      "repeat": 5,
+      "elapsed_ns": 53318808,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-fynd-j4",
+      "repeat": 5,
+      "elapsed_ns": 55064630,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-fynd-j8",
+      "repeat": 5,
+      "elapsed_ns": 53075273,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-find",
+      "repeat": 5,
+      "elapsed_ns": 75715892,
+      "peak_rss_kib": 32296
+    },
+    {
+      "job": "deep-all-fd-j1",
+      "repeat": 5,
+      "elapsed_ns": 7699008,
+      "peak_rss_kib": 6708
+    },
+    {
+      "job": "deep-all-fd-j4",
+      "repeat": 5,
+      "elapsed_ns": 7212127,
+      "peak_rss_kib": 7732
+    },
+    {
+      "job": "deep-all-fd-default",
+      "repeat": 5,
+      "elapsed_ns": 8499954,
+      "peak_rss_kib": 8756
+    },
+    {
+      "job": "deep-all-fynd-j1",
+      "repeat": 5,
+      "elapsed_ns": 5089130,
+      "peak_rss_kib": 2876
+    },
+    {
+      "job": "deep-all-fynd-j2",
+      "repeat": 5,
+      "elapsed_ns": 5891520,
+      "peak_rss_kib": 2492
+    },
+    {
+      "job": "deep-all-fynd-j4",
+      "repeat": 5,
+      "elapsed_ns": 5779360,
+      "peak_rss_kib": 2236
+    },
+    {
+      "job": "deep-all-fynd-j8",
+      "repeat": 5,
+      "elapsed_ns": 6629909,
+      "peak_rss_kib": 2236
+    },
+    {
+      "job": "deep-all-find",
+      "repeat": 5,
+      "elapsed_ns": 5042433,
+      "peak_rss_kib": 2856
+    },
+    {
+      "job": "deep-needle-fd-j1",
+      "repeat": 5,
+      "elapsed_ns": 6677288,
+      "peak_rss_kib": 5428
+    },
+    {
+      "job": "deep-needle-fd-j4",
+      "repeat": 5,
+      "elapsed_ns": 7248556,
+      "peak_rss_kib": 5940
+    },
+    {
+      "job": "deep-needle-fd-default",
+      "repeat": 5,
+      "elapsed_ns": 7825243,
+      "peak_rss_kib": 6836
+    },
+    {
+      "job": "deep-needle-fynd-j1",
+      "repeat": 5,
+      "elapsed_ns": 4583184,
+      "peak_rss_kib": 2876
+    },
+    {
+      "job": "deep-needle-fynd-j2",
+      "repeat": 5,
+      "elapsed_ns": 5212461,
+      "peak_rss_kib": 2492
+    },
+    {
+      "job": "deep-needle-fynd-j4",
+      "repeat": 5,
+      "elapsed_ns": 6454882,
+      "peak_rss_kib": 2684
+    },
+    {
+      "job": "deep-needle-fynd-j8",
+      "repeat": 5,
+      "elapsed_ns": 7520734,
+      "peak_rss_kib": 2300
+    },
+    {
+      "job": "deep-needle-find",
+      "repeat": 5,
+      "elapsed_ns": 4801302,
+      "peak_rss_kib": 3236
+    },
+    {
+      "job": "mixed-all-fd-j1",
+      "repeat": 5,
+      "elapsed_ns": 38169598,
+      "peak_rss_kib": 5300
+    },
+    {
+      "job": "mixed-all-fd-j4",
+      "repeat": 5,
+      "elapsed_ns": 18039822,
+      "peak_rss_kib": 7348
+    },
+    {
+      "job": "mixed-all-fd-default",
+      "repeat": 5,
+      "elapsed_ns": 12155586,
+      "peak_rss_kib": 13236
+    },
+    {
+      "job": "mixed-all-fynd-j1",
+      "repeat": 5,
+      "elapsed_ns": 29623077,
+      "peak_rss_kib": 1788
+    },
+    {
+      "job": "mixed-all-fynd-j2",
+      "repeat": 5,
+      "elapsed_ns": 28556966,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "mixed-all-fynd-j4",
+      "repeat": 5,
+      "elapsed_ns": 29686696,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-all-fynd-j8",
+      "repeat": 5,
+      "elapsed_ns": 29051419,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-all-find",
+      "repeat": 5,
+      "elapsed_ns": 33588006,
+      "peak_rss_kib": 2780
+    },
+    {
+      "job": "manydirs-all-fd-j4",
+      "repeat": 6,
+      "elapsed_ns": 54943054,
+      "peak_rss_kib": 6324
+    },
+    {
+      "job": "manydirs-all-fd-default",
+      "repeat": 6,
+      "elapsed_ns": 25268910,
+      "peak_rss_kib": 12084
+    },
+    {
+      "job": "manydirs-all-fynd-j1",
+      "repeat": 6,
+      "elapsed_ns": 71299279,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j2",
+      "repeat": 6,
+      "elapsed_ns": 71093815,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j4",
+      "repeat": 6,
+      "elapsed_ns": 74575421,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j8",
+      "repeat": 6,
+      "elapsed_ns": 104647327,
+      "peak_rss_kib": 2032
+    },
+    {
+      "job": "manydirs-all-find",
+      "repeat": 6,
+      "elapsed_ns": 115572353,
+      "peak_rss_kib": 2732
+    },
+    {
+      "job": "manydirs-all-fd-j1",
+      "repeat": 6,
+      "elapsed_ns": 99869159,
+      "peak_rss_kib": 4916
+    },
+    {
+      "job": "manydirs-needle-fd-j4",
+      "repeat": 6,
+      "elapsed_ns": 53463459,
+      "peak_rss_kib": 5812
+    },
+    {
+      "job": "manydirs-needle-fd-default",
+      "repeat": 6,
+      "elapsed_ns": 21264788,
+      "peak_rss_kib": 7988
+    },
+    {
+      "job": "manydirs-needle-fynd-j1",
+      "repeat": 6,
+      "elapsed_ns": 67651653,
+      "peak_rss_kib": 1536
+    },
+    {
+      "job": "manydirs-needle-fynd-j2",
+      "repeat": 6,
+      "elapsed_ns": 69698458,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j4",
+      "repeat": 6,
+      "elapsed_ns": 70707483,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j8",
+      "repeat": 6,
+      "elapsed_ns": 80601512,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-find",
+      "repeat": 6,
+      "elapsed_ns": 105098461,
+      "peak_rss_kib": 2600
+    },
+    {
+      "job": "manydirs-needle-fd-j1",
+      "repeat": 6,
+      "elapsed_ns": 77607458,
+      "peak_rss_kib": 4660
+    },
+    {
+      "job": "wide-all-fd-j4",
+      "repeat": 6,
+      "elapsed_ns": 43727785,
+      "peak_rss_kib": 7476
+    },
+    {
+      "job": "wide-all-fd-default",
+      "repeat": 6,
+      "elapsed_ns": 43010044,
+      "peak_rss_kib": 12468
+    },
+    {
+      "job": "wide-all-fynd-j1",
+      "repeat": 6,
+      "elapsed_ns": 56988186,
+      "peak_rss_kib": 13244
+    },
+    {
+      "job": "wide-all-fynd-j2",
+      "repeat": 6,
+      "elapsed_ns": 56576957,
+      "peak_rss_kib": 13180
+    },
+    {
+      "job": "wide-all-fynd-j4",
+      "repeat": 6,
+      "elapsed_ns": 55706812,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-all-fynd-j8",
+      "repeat": 6,
+      "elapsed_ns": 56099265,
+      "peak_rss_kib": 13476
+    },
+    {
+      "job": "wide-all-find",
+      "repeat": 6,
+      "elapsed_ns": 73534366,
+      "peak_rss_kib": 32232
+    },
+    {
+      "job": "wide-all-fd-j1",
+      "repeat": 6,
+      "elapsed_ns": 74414581,
+      "peak_rss_kib": 41652
+    },
+    {
+      "job": "wide-needle-fd-j4",
+      "repeat": 6,
+      "elapsed_ns": 40088936,
+      "peak_rss_kib": 6196
+    },
+    {
+      "job": "wide-needle-fd-default",
+      "repeat": 6,
+      "elapsed_ns": 40676965,
+      "peak_rss_kib": 7988
+    },
+    {
+      "job": "wide-needle-fynd-j1",
+      "repeat": 6,
+      "elapsed_ns": 52436881,
+      "peak_rss_kib": 13244
+    },
+    {
+      "job": "wide-needle-fynd-j2",
+      "repeat": 6,
+      "elapsed_ns": 50841879,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-fynd-j4",
+      "repeat": 6,
+      "elapsed_ns": 55327722,
+      "peak_rss_kib": 13368
+    },
+    {
+      "job": "wide-needle-fynd-j8",
+      "repeat": 6,
+      "elapsed_ns": 52947595,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-find",
+      "repeat": 6,
+      "elapsed_ns": 76846275,
+      "peak_rss_kib": 32156
+    },
+    {
+      "job": "wide-needle-fd-j1",
+      "repeat": 6,
+      "elapsed_ns": 69202511,
+      "peak_rss_kib": 41524
+    },
+    {
+      "job": "deep-all-fd-j4",
+      "repeat": 6,
+      "elapsed_ns": 8384228,
+      "peak_rss_kib": 7476
+    },
+    {
+      "job": "deep-all-fd-default",
+      "repeat": 6,
+      "elapsed_ns": 8563763,
+      "peak_rss_kib": 9268
+    },
+    {
+      "job": "deep-all-fynd-j1",
+      "repeat": 6,
+      "elapsed_ns": 4570040,
+      "peak_rss_kib": 2876
+    },
+    {
+      "job": "deep-all-fynd-j2",
+      "repeat": 6,
+      "elapsed_ns": 6299672,
+      "peak_rss_kib": 2492
+    },
+    {
+      "job": "deep-all-fynd-j4",
+      "repeat": 6,
+      "elapsed_ns": 5656871,
+      "peak_rss_kib": 2556
+    },
+    {
+      "job": "deep-all-fynd-j8",
+      "repeat": 6,
+      "elapsed_ns": 6593432,
+      "peak_rss_kib": 2364
+    },
+    {
+      "job": "deep-all-find",
+      "repeat": 6,
+      "elapsed_ns": 5023668,
+      "peak_rss_kib": 3048
+    },
+    {
+      "job": "deep-all-fd-j1",
+      "repeat": 6,
+      "elapsed_ns": 6465482,
+      "peak_rss_kib": 6708
+    },
+    {
+      "job": "deep-needle-fd-j4",
+      "repeat": 6,
+      "elapsed_ns": 7535792,
+      "peak_rss_kib": 5684
+    },
+    {
+      "job": "deep-needle-fd-default",
+      "repeat": 6,
+      "elapsed_ns": 7563744,
+      "peak_rss_kib": 6836
+    },
+    {
+      "job": "deep-needle-fynd-j1",
+      "repeat": 6,
+      "elapsed_ns": 5137631,
+      "peak_rss_kib": 2940
+    },
+    {
+      "job": "deep-needle-fynd-j2",
+      "repeat": 6,
+      "elapsed_ns": 6860120,
+      "peak_rss_kib": 2232
+    },
+    {
+      "job": "deep-needle-fynd-j4",
+      "repeat": 6,
+      "elapsed_ns": 5885368,
+      "peak_rss_kib": 2492
+    },
+    {
+      "job": "deep-needle-fynd-j8",
+      "repeat": 6,
+      "elapsed_ns": 7371085,
+      "peak_rss_kib": 2360
+    },
+    {
+      "job": "deep-needle-find",
+      "repeat": 6,
+      "elapsed_ns": 4467929,
+      "peak_rss_kib": 3212
+    },
+    {
+      "job": "deep-needle-fd-j1",
+      "repeat": 6,
+      "elapsed_ns": 6996765,
+      "peak_rss_kib": 5300
+    },
+    {
+      "job": "mixed-all-fd-j4",
+      "repeat": 6,
+      "elapsed_ns": 19959879,
+      "peak_rss_kib": 7476
+    },
+    {
+      "job": "mixed-all-fd-default",
+      "repeat": 6,
+      "elapsed_ns": 13903692,
+      "peak_rss_kib": 13492
+    },
+    {
+      "job": "mixed-all-fynd-j1",
+      "repeat": 6,
+      "elapsed_ns": 29122512,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-all-fynd-j2",
+      "repeat": 6,
+      "elapsed_ns": 29652913,
+      "peak_rss_kib": 1916
+    },
+    {
+      "job": "mixed-all-fynd-j4",
+      "repeat": 6,
+      "elapsed_ns": 32743769,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "mixed-all-fynd-j8",
+      "repeat": 6,
+      "elapsed_ns": 41359710,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-all-find",
+      "repeat": 6,
+      "elapsed_ns": 41644402,
+      "peak_rss_kib": 2728
+    },
+    {
+      "job": "mixed-all-fd-j1",
+      "repeat": 6,
+      "elapsed_ns": 40500445,
+      "peak_rss_kib": 5428
+    },
+    {
+      "job": "mixed-needle-fd-j4",
+      "repeat": 6,
+      "elapsed_ns": 15941310,
+      "peak_rss_kib": 6068
+    },
+    {
+      "job": "mixed-needle-fd-default",
+      "repeat": 6,
+      "elapsed_ns": 12743244,
+      "peak_rss_kib": 9012
+    },
+    {
+      "job": "mixed-needle-fynd-j1",
+      "repeat": 6,
+      "elapsed_ns": 29076757,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j2",
+      "repeat": 6,
+      "elapsed_ns": 25617012,
+      "peak_rss_kib": 1912
+    },
+    {
+      "job": "mixed-needle-fynd-j4",
+      "repeat": 6,
+      "elapsed_ns": 27290198,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j8",
+      "repeat": 6,
+      "elapsed_ns": 32788413,
+      "peak_rss_kib": 1712
+    },
+    {
+      "job": "mixed-needle-find",
+      "repeat": 6,
+      "elapsed_ns": 34346234,
+      "peak_rss_kib": 2648
+    },
+    {
+      "job": "mixed-needle-fd-j1",
+      "repeat": 6,
+      "elapsed_ns": 37519533,
+      "peak_rss_kib": 4788
+    },
+    {
+      "job": "manydirs-needle-fd-default",
+      "repeat": 7,
+      "elapsed_ns": 24733921,
+      "peak_rss_kib": 8628
+    },
+    {
+      "job": "manydirs-needle-fynd-j1",
+      "repeat": 7,
+      "elapsed_ns": 71462966,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j2",
+      "repeat": 7,
+      "elapsed_ns": 69693719,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "manydirs-needle-fynd-j4",
+      "repeat": 7,
+      "elapsed_ns": 72568531,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-fynd-j8",
+      "repeat": 7,
+      "elapsed_ns": 89864533,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-needle-find",
+      "repeat": 7,
+      "elapsed_ns": 104920058,
+      "peak_rss_kib": 2600
+    },
+    {
+      "job": "manydirs-needle-fd-j1",
+      "repeat": 7,
+      "elapsed_ns": 80798251,
+      "peak_rss_kib": 4788
+    },
+    {
+      "job": "manydirs-needle-fd-j4",
+      "repeat": 7,
+      "elapsed_ns": 50987793,
+      "peak_rss_kib": 5556
+    },
+    {
+      "job": "wide-all-fd-default",
+      "repeat": 7,
+      "elapsed_ns": 41480035,
+      "peak_rss_kib": 11700
+    },
+    {
+      "job": "wide-all-fynd-j1",
+      "repeat": 7,
+      "elapsed_ns": 54299401,
+      "peak_rss_kib": 13244
+    },
+    {
+      "job": "wide-all-fynd-j2",
+      "repeat": 7,
+      "elapsed_ns": 55087795,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-all-fynd-j4",
+      "repeat": 7,
+      "elapsed_ns": 97530499,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-all-fynd-j8",
+      "repeat": 7,
+      "elapsed_ns": 54703687,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-all-find",
+      "repeat": 7,
+      "elapsed_ns": 76630111,
+      "peak_rss_kib": 32104
+    },
+    {
+      "job": "wide-all-fd-j1",
+      "repeat": 7,
+      "elapsed_ns": 74308313,
+      "peak_rss_kib": 41524
+    },
+    {
+      "job": "wide-all-fd-j4",
+      "repeat": 7,
+      "elapsed_ns": 42335003,
+      "peak_rss_kib": 7220
+    },
+    {
+      "job": "wide-needle-fd-default",
+      "repeat": 7,
+      "elapsed_ns": 41033170,
+      "peak_rss_kib": 7988
+    },
+    {
+      "job": "wide-needle-fynd-j1",
+      "repeat": 7,
+      "elapsed_ns": 52518143,
+      "peak_rss_kib": 13244
+    },
+    {
+      "job": "wide-needle-fynd-j2",
+      "repeat": 7,
+      "elapsed_ns": 52016656,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-fynd-j4",
+      "repeat": 7,
+      "elapsed_ns": 53126840,
+      "peak_rss_kib": 13500
+    },
+    {
+      "job": "wide-needle-fynd-j8",
+      "repeat": 7,
+      "elapsed_ns": 51590779,
+      "peak_rss_kib": 13628
+    },
+    {
+      "job": "wide-needle-find",
+      "repeat": 7,
+      "elapsed_ns": 70989140,
+      "peak_rss_kib": 32296
+    },
+    {
+      "job": "wide-needle-fd-j1",
+      "repeat": 7,
+      "elapsed_ns": 68262955,
+      "peak_rss_kib": 41524
+    },
+    {
+      "job": "wide-needle-fd-j4",
+      "repeat": 7,
+      "elapsed_ns": 39818841,
+      "peak_rss_kib": 6580
+    },
+    {
+      "job": "deep-all-fd-default",
+      "repeat": 7,
+      "elapsed_ns": 8866429,
+      "peak_rss_kib": 9012
+    },
+    {
+      "job": "deep-all-fynd-j1",
+      "repeat": 7,
+      "elapsed_ns": 4931266,
+      "peak_rss_kib": 2876
+    },
+    {
+      "job": "deep-all-fynd-j2",
+      "repeat": 7,
+      "elapsed_ns": 6206999,
+      "peak_rss_kib": 2364
+    },
+    {
+      "job": "deep-all-fynd-j4",
+      "repeat": 7,
+      "elapsed_ns": 6293551,
+      "peak_rss_kib": 2492
+    },
+    {
+      "job": "deep-all-fynd-j8",
+      "repeat": 7,
+      "elapsed_ns": 7936812,
+      "peak_rss_kib": 2236
+    },
+    {
+      "job": "deep-all-find",
+      "repeat": 7,
+      "elapsed_ns": 5132942,
+      "peak_rss_kib": 3112
+    },
+    {
+      "job": "deep-all-fd-j1",
+      "repeat": 7,
+      "elapsed_ns": 6974353,
+      "peak_rss_kib": 6708
+    },
+    {
+      "job": "deep-all-fd-j4",
+      "repeat": 7,
+      "elapsed_ns": 6926954,
+      "peak_rss_kib": 7348
+    },
+    {
+      "job": "deep-needle-fd-default",
+      "repeat": 7,
+      "elapsed_ns": 7528629,
+      "peak_rss_kib": 6708
+    },
+    {
+      "job": "deep-needle-fynd-j1",
+      "repeat": 7,
+      "elapsed_ns": 4307560,
+      "peak_rss_kib": 2876
+    },
+    {
+      "job": "deep-needle-fynd-j2",
+      "repeat": 7,
+      "elapsed_ns": 5387468,
+      "peak_rss_kib": 2236
+    },
+    {
+      "job": "deep-needle-fynd-j4",
+      "repeat": 7,
+      "elapsed_ns": 5297670,
+      "peak_rss_kib": 2748
+    },
+    {
+      "job": "deep-needle-fynd-j8",
+      "repeat": 7,
+      "elapsed_ns": 7416119,
+      "peak_rss_kib": 2364
+    },
+    {
+      "job": "deep-needle-find",
+      "repeat": 7,
+      "elapsed_ns": 6065554,
+      "peak_rss_kib": 3196
+    },
+    {
+      "job": "deep-needle-fd-j1",
+      "repeat": 7,
+      "elapsed_ns": 7024237,
+      "peak_rss_kib": 5428
+    },
+    {
+      "job": "deep-needle-fd-j4",
+      "repeat": 7,
+      "elapsed_ns": 7235821,
+      "peak_rss_kib": 5684
+    },
+    {
+      "job": "mixed-all-fd-default",
+      "repeat": 7,
+      "elapsed_ns": 13553779,
+      "peak_rss_kib": 12340
+    },
+    {
+      "job": "mixed-all-fynd-j1",
+      "repeat": 7,
+      "elapsed_ns": 28073242,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-all-fynd-j2",
+      "repeat": 7,
+      "elapsed_ns": 30419356,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-all-fynd-j4",
+      "repeat": 7,
+      "elapsed_ns": 30689932,
+      "peak_rss_kib": 1912
+    },
+    {
+      "job": "mixed-all-fynd-j8",
+      "repeat": 7,
+      "elapsed_ns": 31451073,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-all-find",
+      "repeat": 7,
+      "elapsed_ns": 33688615,
+      "peak_rss_kib": 2732
+    },
+    {
+      "job": "mixed-all-fd-j1",
+      "repeat": 7,
+      "elapsed_ns": 38302037,
+      "peak_rss_kib": 5428
+    },
+    {
+      "job": "mixed-all-fd-j4",
+      "repeat": 7,
+      "elapsed_ns": 17301262,
+      "peak_rss_kib": 7220
+    },
+    {
+      "job": "mixed-needle-fd-default",
+      "repeat": 7,
+      "elapsed_ns": 11817523,
+      "peak_rss_kib": 9140
+    },
+    {
+      "job": "mixed-needle-fynd-j1",
+      "repeat": 7,
+      "elapsed_ns": 23919459,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j2",
+      "repeat": 7,
+      "elapsed_ns": 24246811,
+      "peak_rss_kib": 1720
+    },
+    {
+      "job": "mixed-needle-fynd-j4",
+      "repeat": 7,
+      "elapsed_ns": 24582558,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "mixed-needle-fynd-j8",
+      "repeat": 7,
+      "elapsed_ns": 27510460,
+      "peak_rss_kib": 1896
+    },
+    {
+      "job": "mixed-needle-find",
+      "repeat": 7,
+      "elapsed_ns": 31511928,
+      "peak_rss_kib": 2600
+    },
+    {
+      "job": "mixed-needle-fd-j1",
+      "repeat": 7,
+      "elapsed_ns": 32727429,
+      "peak_rss_kib": 4788
+    },
+    {
+      "job": "mixed-needle-fd-j4",
+      "repeat": 7,
+      "elapsed_ns": 15234119,
+      "peak_rss_kib": 5936
+    },
+    {
+      "job": "manydirs-all-fd-default",
+      "repeat": 7,
+      "elapsed_ns": 22353202,
+      "peak_rss_kib": 10804
+    },
+    {
+      "job": "manydirs-all-fynd-j1",
+      "repeat": 7,
+      "elapsed_ns": 69976187,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j2",
+      "repeat": 7,
+      "elapsed_ns": 70114025,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-fynd-j4",
+      "repeat": 7,
+      "elapsed_ns": 71800025,
+      "peak_rss_kib": 1852
+    },
+    {
+      "job": "manydirs-all-fynd-j8",
+      "repeat": 7,
+      "elapsed_ns": 87424033,
+      "peak_rss_kib": 1724
+    },
+    {
+      "job": "manydirs-all-find",
+      "repeat": 7,
+      "elapsed_ns": 104219028,
+      "peak_rss_kib": 2600
+    },
+    {
+      "job": "manydirs-all-fd-j1",
+      "repeat": 7,
+      "elapsed_ns": 87937041,
+      "peak_rss_kib": 5044
+    },
+    {
+      "job": "manydirs-all-fd-j4",
+      "repeat": 7,
+      "elapsed_ns": 56380341,
+      "peak_rss_kib": 6448
+    }
+  ],
+  "raw_artifacts": "build/benchmark-request/run-ba3c5mvg",
+  "driver_source": "#!/usr/bin/env python3\n\"\"\"Reproduce the larger, warm, on-disk thread matrix using the checked benchmark core.\"\"\"\nimport datetime\nimport hashlib\nimport importlib.util\nimport json\nimport os\nfrom pathlib import Path\nimport shutil\nimport subprocess\nimport sys\nimport tempfile\nfrom types import SimpleNamespace\n\nROOT = Path(__file__).resolve().parents[2]\nHERE = Path(__file__).resolve().parent\nos.chdir(ROOT)\nspec = importlib.util.spec_from_file_location('fynd_benchmark_core', ROOT / 'bench/bench.py')\nb = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(b)\n\n\ndef larger_fixture(base, quick):\n    params = {'wide_files': 100000, 'deep_levels': 96, 'deep_files_per_level': 32,\n              'mixed_fanout': 6, 'mixed_populated_levels': 5, 'mixed_files_per_directory': 32,\n              'manydirs_fanout': 6, 'manydirs_populated_levels': 6, 'manydirs_files_per_directory': 4,\n              'name_rule': 'dot prefix every seventh; needle prefix every eleventh; six-digit index'}\n    manifests = {}\n\n    def populate(directory, count, records):\n        for i in range(count):\n            name = ('.' if i % 7 == 0 else '') + ('needle' if i % 11 == 0 else 'file') + '-%06d' % i\n            path = directory / name\n            path.touch()\n            records.append(os.fsencode(str(path.relative_to(base))))\n\n    for shape in ('wide', 'deep', 'mixed', 'manydirs'):\n        root = base / shape\n        root.mkdir()\n        records = []\n        if shape == 'wide':\n            populate(root, params['wide_files'], records)\n        elif shape == 'deep':\n            current = root\n            for level in range(params['deep_levels']):\n                current = current / ('d%02d' % level)\n                current.mkdir()\n                populate(current, params['deep_files_per_level'], records)\n        else:\n            frontier = [root]\n            levels = params[shape + '_populated_levels']\n            for level in range(levels):\n                following = []\n                for directory in frontier:\n                    populate(directory, params[shape + '_files_per_directory'], records)\n                    if level + 1 < levels:\n                        for i in range(params[shape + '_fanout']):\n                            child = directory / (('.hidden' if i == 0 else 'dir') + str(i))\n                            child.mkdir()\n                            following.append(child)\n                frontier = following\n        manifests[shape] = records\n    return params, manifests\n\n\ndef matrix_commands(tools, shape, pattern, threads):\n    jobs = {}\n    for count in (1, 2, 4, 8):\n        jobs['fynd-j%d' % count] = [tools['fynd'], '--no-ignore', '-j%d' % count,\n                                   '-0', '-H', '-t', 'f', pattern, shape]\n    jobs['find'] = [tools['find'], shape, '-type', 'f', '-name', '*' + pattern + '*', '-print0']\n    fd_common = [tools['fd'], '-0', '-H', '-I', '--no-ignore-parent', '--case-sensitive',\n                 '--fixed-strings', '--color', 'never', '-t', 'f']\n    for count in (1, 4):\n        jobs['fd-j%d' % count] = fd_common + ['--threads', str(count), pattern, shape]\n    jobs['fd-default'] = fd_common + [pattern, shape]\n    return jobs\n\n\nif __name__ == '__main__':\n    assert sys.platform == 'linux'\n    assert shutil.which('fd'), 'fd is required for this matrix'\n    receipt = ROOT / 'build/verification/run.2Qgzaa'\n    hashes = json.loads((receipt / 'source-hashes.json').read_text())['fynd']\n    for name in ('src/fynd.c', 'src/ignore.inc', 'src/listing.inc', 'include/fynd.h', 'cmd/main.c', 'bench/bench.py'):\n        assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == hashes[name], name\n    output = Path(tempfile.mkdtemp(prefix='run-', dir=HERE)).resolve()\n    fixture_parent = output / 'fixtures'\n    fixture_parent.mkdir()\n    os.environ['TMPDIR'] = str(fixture_parent)\n    tempfile.tempdir = None\n    b.fixture = larger_fixture\n    b.commands = matrix_commands\n    args = SimpleNamespace(fynd=str(receipt / 'source/fynd/build/native/fynd'), fd='fd',\n                           find='/usr/bin/find', time='/usr/bin/time', repeats=8,\n                           quick=False, timeout=60, fynd_threads=[1, 2, 4, 8])\n    print(output, flush=True)\n    before = os.getloadavg()\n    try:\n        report = b.run(args, output)\n        report['schema'] = 'fynd.large-thread-matrix/1'\n        report['completed_at'] = datetime.datetime.now(datetime.timezone.utc).isoformat()\n        report['filesystem'] = subprocess.check_output(\n            ['findmnt', '-n', '-o', 'SOURCE,FSTYPE', '-T', str(output)], text=True).strip()\n        report['loadavg_before'] = before\n        report['loadavg_after'] = os.getloadavg()\n        report['cpu_affinity'] = sorted(os.sched_getaffinity(0))\n        report['configurations'] = ['fynd-j1', 'fynd-j2', 'fynd-j4', 'fynd-j8',\n                                    'find', 'fd-j1', 'fd-j4', 'fd-default']\n        report['driver_sha256'] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()\n        report['accepted_receipt'] = 'build/verification/run.2Qgzaa'\n        report['cutils_revision'] = (ROOT / 'CUTILS_REVISION').read_text().strip()\n        (output / 'report.json').write_text(json.dumps(report, indent=2) + '\\n')\n        print('PASS larger matrix: %d prechecks, %d measured outputs' %\n              (len(report['validation']), len(report['samples'])), flush=True)\n    except Exception as error:\n        (output / 'failure.json').write_text(json.dumps({'status': 'FAILED', 'error': str(error)}, indent=2) + '\\n')\n        raise\n",
+  "build_optimization": "-O2 -g, non-instrumented accepted native binary",
+  "qualification": "Warm ext4 metadata/page-cache tests with hidden entries included and ignores bypassed. fd-default denotes automatic thread selection only. Not cold-cache or ignore-engine timing."
+}

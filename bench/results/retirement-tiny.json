@@ -1,0 +1,319 @@
+{
+  "adjudication": {
+    "calibration_failures": [
+      {
+        "alias_paired": 0.9621305245290552,
+        "alias_point": 0.8514515985114028,
+        "candidate_paired": 0.967445388336936,
+        "candidate_point": 0.9641691174681231,
+        "case": "empty-all-pipe",
+        "threads": 1,
+        "wave": 0
+      },
+      {
+        "alias_paired": 0.9678946925112786,
+        "alias_point": 0.901844502420349,
+        "candidate_paired": 1.001378353457047,
+        "candidate_point": 0.9680810571443955,
+        "case": "empty-all-pipe",
+        "threads": 32,
+        "wave": 0
+      },
+      {
+        "alias_paired": 1.0682234985471406,
+        "alias_point": 1.0776990351300197,
+        "candidate_paired": 1.0023773529062823,
+        "candidate_point": 1.0599483495300412,
+        "case": "empty-none-file",
+        "threads": 32,
+        "wave": 0
+      },
+      {
+        "alias_paired": 1.0058963307065176,
+        "alias_point": 1.05742588563914,
+        "candidate_paired": 1.0743921933212435,
+        "candidate_point": 1.082121782654677,
+        "case": "empty-none-pipe",
+        "threads": 32,
+        "wave": 0
+      },
+      {
+        "alias_paired": 1.014591095412999,
+        "alias_point": 1.1307909435010102,
+        "candidate_paired": 0.9922032050156084,
+        "candidate_point": 0.9297032976471599,
+        "case": "tiny-all-pipe",
+        "threads": 1,
+        "wave": 0
+      },
+      {
+        "alias_paired": 0.9429065103943829,
+        "alias_point": 0.8891331175359674,
+        "candidate_paired": 1.002719212779544,
+        "candidate_point": 0.9469826302355981,
+        "case": "tiny-none-pipe",
+        "threads": 1,
+        "wave": 0
+      },
+      {
+        "alias_paired": 0.9835947801378304,
+        "alias_point": 0.9424567450649397,
+        "candidate_paired": 0.9650764521547867,
+        "candidate_point": 0.9583168265340053,
+        "case": "tiny-none-pipe",
+        "threads": 8,
+        "wave": 0
+      },
+      {
+        "alias_paired": 1.051285736929612,
+        "alias_point": 1.037491774784786,
+        "candidate_paired": 0.9874090532355404,
+        "candidate_point": 0.9739435811874694,
+        "case": "empty-all-file",
+        "threads": 8,
+        "wave": 1
+      },
+      {
+        "alias_paired": 0.9896425912144373,
+        "alias_point": 0.9476729197893868,
+        "candidate_paired": 1.040109339476961,
+        "candidate_point": 1.0553636553971988,
+        "case": "empty-all-pipe",
+        "threads": 32,
+        "wave": 1
+      },
+      {
+        "alias_paired": 1.0733224437578621,
+        "alias_point": 1.062271185319841,
+        "candidate_paired": 1.0450552106716942,
+        "candidate_point": 1.005749562420504,
+        "case": "empty-none-file",
+        "threads": 1,
+        "wave": 1
+      },
+      {
+        "alias_paired": 1.045968398080158,
+        "alias_point": 1.0594124681047388,
+        "candidate_paired": 1.0311005844075898,
+        "candidate_point": 1.0348670049996704,
+        "case": "empty-none-pipe",
+        "threads": 1,
+        "wave": 1
+      },
+      {
+        "alias_paired": 0.9393897500068731,
+        "alias_point": 0.9402138068551238,
+        "candidate_paired": 0.979987756561729,
+        "candidate_point": 1.000132208585368,
+        "case": "tiny-all-file",
+        "threads": 1,
+        "wave": 1
+      },
+      {
+        "alias_paired": 1.0073976914265477,
+        "alias_point": 0.9461098893416554,
+        "candidate_paired": 0.9622020036891633,
+        "candidate_point": 0.9682121004930161,
+        "case": "tiny-all-pipe",
+        "threads": 8,
+        "wave": 1
+      }
+    ],
+    "decision": "INCONCLUSIVE_CALIBRATION",
+    "one_wave_point_flags": [
+      {
+        "case": "empty-all-file",
+        "original": false,
+        "threads": 32,
+        "waves": [
+          0
+        ]
+      },
+      {
+        "case": "empty-all-pipe",
+        "original": false,
+        "threads": 32,
+        "waves": [
+          1
+        ]
+      },
+      {
+        "case": "empty-none-pipe",
+        "original": false,
+        "threads": 32,
+        "waves": [
+          0
+        ]
+      },
+      {
+        "case": "tiny-none-pipe",
+        "original": false,
+        "threads": 1,
+        "waves": [
+          1
+        ]
+      }
+    ],
+    "original_decision": "NOT_RETAIN",
+    "original_flags": [],
+    "persistent_flags": [
+      {
+        "case": "empty-none-file",
+        "original": false,
+        "threads": 32,
+        "waves": [
+          0,
+          1
+        ]
+      },
+      {
+        "case": "tiny-none-pipe",
+        "original": false,
+        "threads": 32,
+        "waves": [
+          0,
+          1
+        ]
+      }
+    ],
+    "promotion_authorized": false,
+    "qualification_authorized": false,
+    "reason": "alias point or paired median outside [0.95,1.05]",
+    "secondary_flags": [
+      {
+        "alias_paired": 1.0086328049578916,
+        "alias_point": 1.0038242430492241,
+        "candidate_paired": 1.082609162440804,
+        "candidate_point": 1.071801595498862,
+        "case": "empty-all-file",
+        "threads": 32,
+        "wave": 0
+      },
+      {
+        "alias_paired": 1.0682234985471406,
+        "alias_point": 1.0776990351300197,
+        "candidate_paired": 1.0023773529062823,
+        "candidate_point": 1.0599483495300412,
+        "case": "empty-none-file",
+        "threads": 32,
+        "wave": 0
+      },
+      {
+        "alias_paired": 1.0058963307065176,
+        "alias_point": 1.05742588563914,
+        "candidate_paired": 1.0743921933212435,
+        "candidate_point": 1.082121782654677,
+        "case": "empty-none-pipe",
+        "threads": 32,
+        "wave": 0
+      },
+      {
+        "alias_paired": 0.9723276809510193,
+        "alias_point": 1.027404136417982,
+        "candidate_paired": 0.9788409872059002,
+        "candidate_point": 1.05370209852472,
+        "case": "tiny-none-pipe",
+        "threads": 32,
+        "wave": 0
+      },
+      {
+        "alias_paired": 0.9896425912144373,
+        "alias_point": 0.9476729197893868,
+        "candidate_paired": 1.040109339476961,
+        "candidate_point": 1.0553636553971988,
+        "case": "empty-all-pipe",
+        "threads": 32,
+        "wave": 1
+      },
+      {
+        "alias_paired": 1.005929361885441,
+        "alias_point": 1.0407514921138152,
+        "candidate_paired": 1.1032549261025695,
+        "candidate_point": 1.0802485553851366,
+        "case": "empty-none-file",
+        "threads": 32,
+        "wave": 1
+      },
+      {
+        "alias_paired": 1.0099696673535545,
+        "alias_point": 1.0303042492924666,
+        "candidate_paired": 1.1135452015152374,
+        "candidate_point": 1.0490067197417792,
+        "case": "tiny-none-file",
+        "threads": 1,
+        "wave": 1
+      },
+      {
+        "alias_paired": 1.0204631653300322,
+        "alias_point": 1.0163156834160825,
+        "candidate_paired": 1.0626538101135607,
+        "candidate_point": 1.0582544249325059,
+        "case": "tiny-none-pipe",
+        "threads": 1,
+        "wave": 1
+      },
+      {
+        "alias_paired": 1.0434085920425982,
+        "alias_point": 1.0264396598357772,
+        "candidate_paired": 1.0527990822874416,
+        "candidate_point": 1.0822365347817111,
+        "case": "tiny-none-pipe",
+        "threads": 32,
+        "wave": 1
+      }
+    ]
+  },
+  "analysis": "build/retirement-tiny/analysis-uiajc199",
+  "artifacts": {
+    "data": {
+      "path": "bench/results/retirement-tiny-data.json.gz",
+      "sha256": "aa600b5b23e0f86eddb202aa67159e5c9d74c47fa12e5af9841158811ccf2e94",
+      "size": 6282046
+    },
+    "summary": {
+      "path": "bench/results/retirement-tiny-summary.csv",
+      "sha256": "b00d543dc0ed60a0479230e4d53eb364cc2f20d5a73dd3fccf75d484ff3540a6",
+      "size": 23796
+    }
+  },
+  "automatic_followup": false,
+  "clear": false,
+  "counts": {
+    "comparison_cells": 48,
+    "journal_rows": 34848,
+    "native_samples": 15552,
+    "prechecks": 144,
+    "summary_groups": 144,
+    "warmups": 1728
+  },
+  "decision": "INCONCLUSIVE_CALIBRATION",
+  "document_numeric_rows": 20,
+  "files_manifest_sha256": "cf23a16a2b99f3acabf7549a3d3047be63f9e92cb86897d3c741c8d03c7d5714",
+  "limitations": [
+    "Raw stdout SHA/Counter/root-group receipts, not full retrospective raw-output proof; successful scratch was reused.",
+    "Trusted local hash-bound Python helpers required; independent of measured C, not an independent harness reimplementation or standalone binary attestation.",
+    "Source, tool, scope and launch observations are unsigned receipts; no executables are archived.",
+    "All 102 Root inputs were checked live by the analyzer; unrelated qualified bench/results bytes are explicit hash-only omissions here.",
+    "Only five allowlisted environment values are retained. The full-environment SHA is opaque: full-map equality was checked in memory by the hash-bound driver, not reconstructible here.",
+    "Scope-local memory.max/OOM/swap deltas only; no host-noise, causal regression, cold-cache or general performance claim.",
+    "Both waves remain unpooled. Calibration failure has priority over candidate flags, including repeated point flags; no persistent causal decision or clearance follows.",
+    "Original ready-retirement NOT_RETAIN unchanged; retention NOT_RETAINED, qualification NOT_RUN, no promotion, rerun, skew or auto-mode authorization."
+  ],
+  "original_artifacts": {
+    "bench/results/ready-retirement.json": "6c15d2252861537e52d930386cc32c97983d5a1503a7a5c54f949ea4c824def8",
+    "build/ready-retirement/paired-analysis-aa2a9a103f124c1481af62c2205e36f0-ff1tstqv/gate.json": "a45448c9399b3ef8736dc75f730e51ebb18bd0bb43daaf3af1913173a47f94a2"
+  },
+  "original_decision": "NOT_RETAIN",
+  "promotion": false,
+  "promotion_authorized": false,
+  "qualification": "NOT_RUN",
+  "qualification_approved": false,
+  "qualification_authorized": false,
+  "retention": "NOT_RETAINED",
+  "runs": [
+    "build/retirement-tiny/run-60kxsyqt",
+    "build/retirement-tiny/run-gne_s1fh"
+  ],
+  "schema": "fynd.retirement-tiny.export/1",
+  "status": "EVIDENCE_VERIFIED"
+}

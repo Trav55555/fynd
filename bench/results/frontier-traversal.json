@@ -1,0 +1,77 @@
+{
+  "schema": "fynd.frontier.index/1",
+  "decision": "REJECTED_NO_PROMOTION",
+  "data": "frontier-traversal-data.json.gz",
+  "sha256": "df5b2e118ba2e03d33e59472a5da63e768ad395cdecba463b2f8afcd6cf3b5ed",
+  "uncompressed_sha256": "1734e89cec98218b89c6677dd9dc64216c2a7085cc7487fb2698b284c2ab46f7",
+  "csv": "frontier-traversal-summary.csv",
+  "csv_sha256": "a11e8689f40000170cdcbbfd1ad51bb2b758eda590800bdfe4d01ebd593c2c29",
+  "audit": {
+    "run-9urj4u80": {
+      "status": "PASS",
+      "prechecks": 144,
+      "samples": 1296,
+      "warmups": 144,
+      "branch_skew_gain": 0.5135129079718919,
+      "small_regression": 0.4531350207138418,
+      "paired_intervals": {
+        "branch-skew-none-file": {
+          "median": 0.48858773045601983,
+          "low": 0.44657547853322943,
+          "high": 0.5073030831410197
+        },
+        "nested-skew-none-file": {
+          "median": 0.5618246359426976,
+          "low": 0.5485855637868201,
+          "high": 0.6021748210289691
+        },
+        "small-all-file": {
+          "median": 1.4538560761619608,
+          "low": 1.2888822797473711,
+          "high": 1.5220800088026942
+        },
+        "small-none-file": {
+          "median": 1.5305317500173095,
+          "low": 1.4431075884264917,
+          "high": 1.6055085017447381
+        }
+      },
+      "coherent_cpu_forgery": "rejected by independent timer",
+      "max_timer_delta_ms": 20.838
+    },
+    "run-zv4d841a": {
+      "status": "PASS",
+      "prechecks": 144,
+      "samples": 1296,
+      "warmups": 144,
+      "branch_skew_gain": 0.5147368652947556,
+      "small_regression": 0.6236390399401621,
+      "paired_intervals": {
+        "branch-skew-none-file": {
+          "median": 0.48113075990944104,
+          "low": 0.4252207524638148,
+          "high": 0.5225397578308552
+        },
+        "nested-skew-none-file": {
+          "median": 0.5897635758490345,
+          "low": 0.5347220116049349,
+          "high": 0.7788166990064552
+        },
+        "small-all-file": {
+          "median": 1.509842294897723,
+          "low": 1.3039271308403249,
+          "high": 1.8805618675556295
+        },
+        "small-none-file": {
+          "median": 1.6274127289243918,
+          "low": 1.4975375911375455,
+          "high": 1.688898324418375
+        }
+      },
+      "coherent_cpu_forgery": "rejected by independent timer",
+      "max_timer_delta_ms": 20.478
+    }
+  },
+  "production_inputs_matched": 108,
+  "qualification": "Not full qualified: native gate rejected. Full sanitizer/platform/coverage/mutation and tight live-listing-bound evidence not established."
+}

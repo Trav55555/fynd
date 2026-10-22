@@ -1,0 +1,67 @@
+{
+  "schema": "fynd.large-listing.index/1",
+  "decision": "NOT_RETAINED_NATIVE_CONTROL_FLAG",
+  "data": "large-listing-data.json.gz",
+  "sha256": "030baf420c8810fd8ddd4aee000cc4ac588e7821c06236143b7f3269926b530b",
+  "uncompressed_sha256": "92d7c6681f86512a52c3ef68d851259e0c86bc51990dc2af0e5e54cbefbbf4f6",
+  "csv": "large-listing-summary.csv",
+  "csv_sha256": "f3ee1525c8a4f8e9b5c81c3050a0f97589125b1d3f4cb26989f2d4afb82a7d9b",
+  "audit": {
+    "run-kw3lhuve": {
+      "status": "PASS",
+      "prechecks": 189,
+      "samples": 1701,
+      "warmups": 189,
+      "million_rss_reduction": {
+        "1": 0.3850117968458959,
+        "4": 0.3812686196623635,
+        "8": 0.38188244047619047,
+        "16": 0.3805128840436075
+      },
+      "tiny_j8_ratio_of_medians_regression": 0.09097485483454881,
+      "tiny_j8_paired_ratio": {
+        "median": 0.9951456973198045,
+        "low": 0.8798331354719312,
+        "high": 1.1567407067656015
+      },
+      "coherent_cpu_forgery": "rejectedbyindependenttimer"
+    },
+    "run-wz80he0b": {
+      "status": "PASS",
+      "prechecks": 189,
+      "samples": 1701,
+      "warmups": 189,
+      "million_rss_reduction": {
+        "1": 0.3820273631840796,
+        "4": 0.3798983134920635,
+        "8": 0.3805128840436075,
+        "16": 0.37859266600594643
+      },
+      "tiny_j8_ratio_of_medians_regression": 0.14183390402924312,
+      "tiny_j8_paired_ratio": {
+        "median": 1.1353902228977837,
+        "low": 1.0008704052310597,
+        "high": 1.2922721469734038
+      },
+      "coherent_cpu_forgery": "rejectedbyindependenttimer"
+    }
+  },
+  "repeated_breaches": [
+    {
+      "case": "tiny-all-file",
+      "threads": 8,
+      "ratios": [
+        1.0909748548345488,
+        1.1418339040292431
+      ]
+    }
+  ],
+  "production_inputs_matched": 123,
+  "totals": {
+    "prechecks": 414,
+    "native_timings": 3582,
+    "warmups": 423,
+    "diagnostic_outputs": 12
+  },
+  "qualification": "6C508CLI140ignorefastonly; fullqualificationnotrun;no promotion"
+}

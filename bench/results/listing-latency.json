@@ -1,0 +1,283 @@
+{
+  "schema": "fynd.listing-latency.index/1",
+  "decision": "NOT_RETAINED_LATENCY_GATE",
+  "data": "listing-latency-data.json.gz",
+  "sha256": "b8ddc667ef3a7409847cf0e96be8d59c4ed9f39b34305333ead2514bd8ca1987",
+  "uncompressed_sha256": "185e3604ba0e698b807aa65a03b86d6c865de4ea959f1119a1b90fd4d66d7eaa",
+  "csv": "listing-latency-summary.csv",
+  "csv_sha256": "b0897222f6d1f70672a197f80403661c29959993871fa1e62eca67315df15593",
+  "summary_rows": 468,
+  "native_groups": 423,
+  "first_byte_groups": 45,
+  "production_inputs_matched": 133,
+  "qualified_root_inputs_matched": 102,
+  "head": "0c7f8a3a72525d51e04dbb124e6eee4c593cfce3",
+  "dependency_revision": "eafa795805fa997e2db91f9182c4e0f86fa32fb4",
+  "totals": {
+    "prechecks": 423,
+    "native_timings": 3699,
+    "warmups": 441,
+    "first_byte_captures": 351,
+    "diagnostic_outputs": 12
+  },
+  "gate": {
+    "decision": "NOT_RETAINED_LATENCY_GATE",
+    "threshold": 0.15,
+    "latency_gate_pass": false,
+    "gains": [
+      {
+        "case": "flat1m-all-pipe",
+        "measurement": "native",
+        "gains": [
+          -0.018517126316362598,
+          -0.02542228406040925
+        ],
+        "both_waves_pass": false
+      },
+      {
+        "case": "flat1m-all-pipe",
+        "measurement": "first_byte",
+        "gains": [
+          -0.008883285239343675,
+          -0.003177684615132792
+        ],
+        "both_waves_pass": false
+      },
+      {
+        "case": "sharedprefix-all-pipe",
+        "measurement": "native",
+        "gains": [
+          0.055538236647870276,
+          0.040773281100293324
+        ],
+        "both_waves_pass": false
+      },
+      {
+        "case": "sharedprefix-all-pipe",
+        "measurement": "first_byte",
+        "gains": [
+          0.06387613471569764,
+          0.05394859680834496
+        ],
+        "both_waves_pass": false
+      }
+    ],
+    "rule": "Same primary case AND same metric must gain >=15% in BOTH matched waves; no mixing.",
+    "memory_gate_pass": true,
+    "million_rss": [
+      {
+        "case": "flat1m-all-file",
+        "jobs": 1,
+        "candidate_mib": [
+          38.8125,
+          38.75390625
+        ],
+        "regressions": [
+          -0.00010063399416326835,
+          -0.0016101439066116274
+        ]
+      },
+      {
+        "case": "flat1m-all-file",
+        "jobs": 4,
+        "candidate_mib": [
+          39.06640625,
+          38.94140625
+        ],
+        "regressions": [
+          0.0032099508476275407,
+          0.0
+        ]
+      },
+      {
+        "case": "flat1m-all-file",
+        "jobs": 8,
+        "candidate_mib": [
+          39.0625,
+          38.94140625
+        ],
+        "regressions": [
+          -9.999000099991662e-05,
+          0.0
+        ]
+      },
+      {
+        "case": "flat1m-all-file",
+        "jobs": 16,
+        "candidate_mib": [
+          39.06640625,
+          39.19140625
+        ],
+        "regressions": [
+          0.0032099508476275407,
+          0.0031996800319968877
+        ]
+      },
+      {
+        "case": "flat1m-all-pipe",
+        "jobs": 1,
+        "candidate_mib": [
+          38.81640625,
+          38.79296875
+        ],
+        "regressions": [
+          0.0,
+          -0.003611919333801561
+        ]
+      },
+      {
+        "case": "flat1m-all-pipe",
+        "jobs": 4,
+        "candidate_mib": [
+          38.9375,
+          38.94140625
+        ],
+        "regressions": [
+          -0.0032996700329966933,
+          0.0
+        ]
+      },
+      {
+        "case": "flat1m-all-pipe",
+        "jobs": 8,
+        "candidate_mib": [
+          38.94140625,
+          38.94140625
+        ],
+        "regressions": [
+          0.0,
+          -0.0031996800319967766
+        ]
+      },
+      {
+        "case": "flat1m-all-pipe",
+        "jobs": 16,
+        "candidate_mib": [
+          38.94140625,
+          39.06640625
+        ],
+        "regressions": [
+          -0.0031996800319967766,
+          0.0
+        ]
+      },
+      {
+        "case": "flat1m-none-file",
+        "jobs": 1,
+        "candidate_mib": [
+          38.94140625,
+          38.81640625
+        ],
+        "regressions": [
+          0.006461383139828358,
+          0.0
+        ]
+      },
+      {
+        "case": "flat1m-none-file",
+        "jobs": 4,
+        "candidate_mib": [
+          39.06640625,
+          39.1875
+        ],
+        "regressions": [
+          0.0032099508476275407,
+          0.0032000000000000917
+        ]
+      },
+      {
+        "case": "flat1m-none-file",
+        "jobs": 8,
+        "candidate_mib": [
+          39.0625,
+          39.06640625
+        ],
+        "regressions": [
+          0.0031096398836392147,
+          0.0005002000800320427
+        ]
+      },
+      {
+        "case": "flat1m-none-file",
+        "jobs": 16,
+        "candidate_mib": [
+          39.19140625,
+          39.19140625
+        ],
+        "regressions": [
+          0.0031996800319968877,
+          0.0015972846161524945
+        ]
+      }
+    ],
+    "repeated_breaches": [
+      {
+        "case": "flat10k-all-pipe",
+        "jobs": 16,
+        "elapsed_ratios": [
+          1.053003621822049,
+          1.0808380851251345
+        ]
+      },
+      {
+        "case": "threshold1025-all-file",
+        "jobs": 8,
+        "elapsed_ratios": [
+          1.1325797192811533,
+          1.0605469481376373
+        ]
+      },
+      {
+        "case": "threshold1025-all-file",
+        "jobs": 16,
+        "elapsed_ratios": [
+          1.0601462636375796,
+          1.053797103071472
+        ]
+      },
+      {
+        "case": "tiny-none-file",
+        "jobs": 8,
+        "elapsed_ratios": [
+          1.1191704816637542,
+          1.0502448698469173
+        ]
+      }
+    ],
+    "interpretation": "Ratio-of-medians point-statistic gate flags, not intrinsic causal penalties; shared-host/observer noise remains.",
+    "qualification": "Narrow checks only; full qualification and new mutant campaign NOT run; no promotion."
+  },
+  "audit": {
+    "run-nqifo4ea": {
+      "status": "PASS",
+      "prechecks": 198,
+      "native": 1782,
+      "warmups": 198,
+      "first_byte": 162,
+      "groups": 198,
+      "coherent_cpu_forgery": "coherent max-CPU cpu/user/sys/mean_cores doubling rejected by independent GNU timer",
+      "max_timer_delta_ms": 20.419
+    },
+    "run-eck_7202": {
+      "status": "PASS",
+      "prechecks": 198,
+      "native": 1782,
+      "warmups": 198,
+      "first_byte": 162,
+      "groups": 198,
+      "coherent_cpu_forgery": "coherent max-CPU cpu/user/sys/mean_cores doubling rejected by independent GNU timer",
+      "max_timer_delta_ms": 20.522
+    },
+    "profile-srbwa5wz": {
+      "status": "PASS",
+      "prechecks": 27,
+      "native": 135,
+      "warmups": 45,
+      "first_byte": 27,
+      "diagnostic": 12,
+      "coherent_cpu_forgery": "coherent max-CPU cpu/user/sys/mean_cores doubling rejected by independent GNU timer",
+      "warmup_limit": "Profile warmups validated at runtime; only case/repeat receipts retained, no raw output hashes."
+    }
+  },
+  "qualification": "No full qualification/new mutants; no promotion."
+}

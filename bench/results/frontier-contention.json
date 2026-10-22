@@ -1,0 +1,72 @@
+{
+  "schema": "fynd.contention.index/1",
+  "decision": "REJECTED_NO_PROMOTION",
+  "data": "frontier-contention-data.json.gz",
+  "sha256": "3d020ed736b1a40ad210c0af6816587e4a199410030919cc6e7792a6c319e0ea",
+  "uncompressed_sha256": "c1e8d05a9ece06d3df4c56e84774bb24ca531f8ea386dd1345676b2960baaa02",
+  "csv": "frontier-contention-summary.csv",
+  "csv_sha256": "0cd579d37507cf7bc149a8493f918b46e0c4177822313adfa7f8ce9c1cac6ad5",
+  "audit": {
+    "run-4hbubivd": {
+      "status": "PASS",
+      "prechecks": 160,
+      "samples": 1600,
+      "warmups": 160,
+      "small_j8_quiet_regression": 0.0042521520563709725,
+      "small_j16_regressions": {
+        "small-all-file": 0.23987667740641117,
+        "small-none-file": 0.09683503770557156
+      },
+      "paired_intervals": {
+        "small-all-file": {
+          "median": 1.0761402899499632,
+          "low": 0.9995416803741475,
+          "high": 1.1522500062962409
+        },
+        "small-none-file": {
+          "median": 0.9584466782137497,
+          "low": 0.9073001444882538,
+          "high": 1.1489716061415254
+        },
+        "balanced-none-file": {
+          "median": 1.0078296758244887,
+          "low": 0.9491684359892927,
+          "high": 1.1272561557001866
+        }
+      },
+      "coherent_cpu_forgery": "rejectedbyindependenttimer"
+    },
+    "run-5o29fvgu": {
+      "status": "PASS",
+      "prechecks": 160,
+      "samples": 1600,
+      "warmups": 160,
+      "small_j8_quiet_regression": 0.008840139548718096,
+      "small_j16_regressions": {
+        "small-all-file": 0.1538018771421099,
+        "small-none-file": 0.2122420783473995
+      },
+      "paired_intervals": {
+        "small-all-file": {
+          "median": 1.0295226688584203,
+          "low": 0.9721206428473097,
+          "high": 1.0901210429537969
+        },
+        "small-none-file": {
+          "median": 1.0348384554830432,
+          "low": 0.9684961775099086,
+          "high": 1.0735539524353848
+        },
+        "balanced-none-file": {
+          "median": 0.9680536840128305,
+          "low": 0.8498085675922912,
+          "high": 1.0309570755406694
+        }
+      },
+      "coherent_cpu_forgery": "rejectedbyindependenttimer"
+    }
+  },
+  "production_inputs_matched": 120,
+  "red": "compilevalidoldreadsSchedulerMubehavior134;guardedreadsprogressafter",
+  "qualification": "narrow9Ctests508CLI140ignorefastonly; j16smallgatefailed;nopromotion"
+}

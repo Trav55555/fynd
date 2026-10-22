@@ -1,0 +1,77 @@
+{
+  "schema": "fynd.skew.index/1",
+  "decision": "REJECTED_NO_PROMOTION",
+  "data": "skew-traversal-data.json.gz",
+  "sha256": "6937f7a45631133709b3779f227aed8e68d3a7edab96ce185eb0df12e8faa012",
+  "uncompressed_sha256": "749bf7746f0b1fc66338ab0a74b512add73df87738095457a6c95b1c3f7dd823",
+  "csv": "skew-traversal-summary.csv",
+  "csv_sha256": "6656cd498eaded109bc69bc615c0fb931632f350be000d00ae46c5c4666d8eef",
+  "audit": {
+    "run-3s2_y4yy": {
+      "status": "PASS",
+      "prechecks": 144,
+      "samples": 1296,
+      "warmups": 144,
+      "branch_skew_gain": 0.25262228547376875,
+      "small_regression": 0.05537772115599959,
+      "paired_intervals": {
+        "branch-skew-none-file": {
+          "median": 0.7473777145262313,
+          "low": 0.715783137577957,
+          "high": 0.76563558291983
+        },
+        "nested-skew-none-file": {
+          "median": 1.002022185247141,
+          "low": 0.9383828924719659,
+          "high": 1.0233263791803155
+        },
+        "small-all-file": {
+          "median": 1.084561386555492,
+          "low": 1.0464084169758279,
+          "high": 1.0967187724295289
+        },
+        "small-none-file": {
+          "median": 1.0363132067159975,
+          "low": 0.9046841371912614,
+          "high": 1.1067783407138654
+        }
+      },
+      "coherent_cpu_forgery": "rejected by independent timer",
+      "max_timer_delta_ms": 20.753
+    },
+    "run-pn_4i0yt": {
+      "status": "PASS",
+      "prechecks": 144,
+      "samples": 1296,
+      "warmups": 144,
+      "branch_skew_gain": 0.2564523061545463,
+      "small_regression": 0.09234392314261619,
+      "paired_intervals": {
+        "branch-skew-none-file": {
+          "median": 0.7280379692375949,
+          "low": 0.681862135838318,
+          "high": 0.7878034912113253
+        },
+        "nested-skew-none-file": {
+          "median": 0.9854626372162166,
+          "low": 0.9046649293338916,
+          "high": 1.0169161710729828
+        },
+        "small-all-file": {
+          "median": 1.0063436765185938,
+          "low": 0.9956619927582173,
+          "high": 1.1638069956279036
+        },
+        "small-none-file": {
+          "median": 1.0751140187487207,
+          "low": 1.0301576507633834,
+          "high": 1.1872182588889397
+        }
+      },
+      "coherent_cpu_forgery": "rejected by independent timer",
+      "max_timer_delta_ms": 20.499999999999993
+    }
+  },
+  "production_inputs_matched": 105,
+  "qualification": "Not full qualified: native gate rejected. Queued-local-cancel and deeper-relay tests remain gaps. No full sanitizer/platform/coverage/mutation claim."
+}

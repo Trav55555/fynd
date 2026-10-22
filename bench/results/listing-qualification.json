@@ -1,0 +1,66 @@
+{
+  "schema": "fynd.listing-qualification.index/1",
+  "decision": "RETAINED_LOCAL_NO_COMMIT",
+  "qualification": "build/listing-qualification/candidate/build/verification/run.Nano7T",
+  "data": "listing-qualification-data.json.gz",
+  "sha256": "b2640ba96d0c6eeebfdc5737bcfe50e3106b6e6e1c20efd15572a060403da1d6",
+  "uncompressed_sha256": "cd21c2064b72f6ad53460a0d3c5d0e34a2f05def6c672b5f357adae522a73687",
+  "qualified_inputs": 102,
+  "application_inputs_unchanged": 6,
+  "changed": {
+    "src/listing.inc": "de054b0ce610179914fd8eb2d0720181d02df217efe3a74ec91bf989801934be",
+    "tests/test_listing.c": "29525fd82c04e6114038be852f6b442529402de8918fd40b7b4c913c883fa13a",
+    "tests/test_listing_worker.c": "307c0a741000447db56924b77768b6e14b97bd10b82a79c72de00ba441784690",
+    "tests/sensitivity.py": "89b76a820a80ec25404e8b7856e9630dd2d5fc86abe3fd64556437ce7237476f"
+  },
+  "module_coverage": {
+    "status": "pass",
+    "minimum": 90,
+    "modules": {
+      "src/coarse.inc": {
+        "lines": 428,
+        "covered": 406,
+        "percent": 94.85981308411215
+      },
+      "src/fynd.c": {
+        "lines": 534,
+        "covered": 523,
+        "percent": 97.94007490636704
+      },
+      "src/ignore.inc": {
+        "lines": 477,
+        "covered": 462,
+        "percent": 96.85534591194968
+      },
+      "src/listing.inc": {
+        "lines": 153,
+        "covered": 146,
+        "percent": 95.42483660130719
+      }
+    },
+    "total": {
+      "lines": 1592,
+      "covered": 1537,
+      "percent": 96.54522613065326
+    }
+  },
+  "evidence": {
+    "cli_comparisons": 6656,
+    "c_tests": 7,
+    "benchmark_tests": 34,
+    "compiled_behavioral_controls": 28,
+    "working_exact_smokes": 70,
+    "tiny_followup_prechecks": 84,
+    "tiny_followup_timings": 4704,
+    "tiny_followup_warmups": 672
+  },
+  "original_evidence_hashes": {
+    "large-listing.json": "800fd657f66fd3a3c2c47349035315ca7094c71d75d52b7dd29388aa50f15217",
+    "large-listing-data.json.gz": "030baf420c8810fd8ddd4aee000cc4ac588e7821c06236143b7f3269926b530b",
+    "large-listing-summary.csv": "f3ee1525c8a4f8e9b5c81c3050a0f97589125b1d3f4cb26989f2d4afb82a7d9b",
+    "listing-tiny.json": "9c3196bb19e806841b78931c5be2ac56fad9b3554c5914115b567bcd3965f8a5",
+    "listing-tiny-data.json.gz": "9cdb7de9f950afe9c7268433062c499e14199ed21abfdd58c507ead36ef671c5",
+    "listing-tiny-summary.csv": "2b2c11215438d1e0fa7ab21426721cad164736017ba57491237428f28eca4e39"
+  },
+  "head": "0c7f8a3a72525d51e04dbb124e6eee4c593cfce3"
+}

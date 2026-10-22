@@ -1,0 +1,65 @@
+{
+  "schema": "fynd.reclaim.index/1",
+  "decision": "REJECTED_NO_PROMOTION",
+  "data": "frontier-reclaim-data.json.gz",
+  "sha256": "bee5dedcde8e7ab5545b6e024d94eb7d678954f5a295798168d88cf2c37e99be",
+  "uncompressed_sha256": "935b5ada8b9b0e4362f71af0823864b422baa6d77870ea6c66ee1048d4a3ccb5",
+  "csv": "frontier-reclaim-summary.csv",
+  "csv_sha256": "45f09736f26ffdcc6adb89846c91b0cd5edb2a39787233601a19699d7b2401dc",
+  "audit": {
+    "run-7oqxqlyg": {
+      "status": "PASS",
+      "prechecks": 160,
+      "samples": 1600,
+      "warmups": 160,
+      "small_quiet_regression": 0.07120084441028762,
+      "paired_intervals": {
+        "small-all-file": {
+          "median": 1.0391161625205507,
+          "low": 1.0270759903001074,
+          "high": 1.0633348873210902
+        },
+        "small-none-file": {
+          "median": 1.0648897248729654,
+          "low": 1.0167730257196452,
+          "high": 1.1044813824256912
+        },
+        "balanced-none-file": {
+          "median": 1.0240090833227102,
+          "low": 0.9633256630480782,
+          "high": 1.086503166287795
+        }
+      },
+      "coherent_cpu_forgery": "rejectedbyindependenttimer"
+    },
+    "run-ao12bt8m": {
+      "status": "PASS",
+      "prechecks": 160,
+      "samples": 1600,
+      "warmups": 160,
+      "small_quiet_regression": 0.059180854169023966,
+      "paired_intervals": {
+        "small-all-file": {
+          "median": 1.0176897168471888,
+          "low": 0.9777522877570577,
+          "high": 1.0401544303578125
+        },
+        "small-none-file": {
+          "median": 1.0577124314043256,
+          "low": 1.0012296918293295,
+          "high": 1.1613792241558145
+        },
+        "balanced-none-file": {
+          "median": 0.9855808321213181,
+          "low": 0.9280693652359246,
+          "high": 1.074927318949363
+        }
+      },
+      "coherent_cpu_forgery": "rejectedbyindependenttimer"
+    }
+  },
+  "production_inputs_matched": 114,
+  "red": "oldbehavior134",
+  "sensitivity": "compilevalidlocked-disposalcontrol134",
+  "qualification": "narrow8Ctests508CLI140ignorefastonly; quietsmallgatefailed;nopromotion"
+}

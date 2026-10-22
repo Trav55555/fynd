@@ -1,0 +1,70 @@
+{
+  "files": {
+    "include/cu.h": {
+      "sha256": "7d86e831817fcad5c365dc2dba7c87c4cbd5e635f0dd7883a61aa4bee7cec001",
+      "size": 45591
+    },
+    "src/cu_append.c": {
+      "sha256": "ddad4a4d65b2684bf155474410108699b5790c7e9ff85671edf0fa073bcec75e",
+      "size": 6117
+    },
+    "src/cu_arena.c": {
+      "sha256": "90aa4b804e6e38900b1ddec1a858c82909f41936560a623e2f24d6365297c8d7",
+      "size": 12263
+    },
+    "src/cu_bytes.c": {
+      "sha256": "57e0faf943e2f618cbbcc0b73dec4fc1346486ae71aeb9e3d39b19ae5afb53d8",
+      "size": 4919
+    },
+    "src/cu_dir.c": {
+      "sha256": "254f8afb5581ecae461a5145ce20a397ce0ead3dfacd68e70e1a4a5461921317",
+      "size": 3659
+    },
+    "src/cu_file.c": {
+      "sha256": "902f53ebac1e2e9e6da78afa0d26668ed440310c7f841061c21f9cf14c1360ff",
+      "size": 3014
+    },
+    "src/cu_fmt.c": {
+      "sha256": "a61c5c3ea72f0bbc2ca7dd165ae5ec51293458f5eabcc5531959417a7eae7828",
+      "size": 8023
+    },
+    "src/cu_input.c": {
+      "sha256": "9b5503af37a45c721a6837d79207da5df04a6eabc17211ed7823cdbe579698aa",
+      "size": 2296
+    },
+    "src/cu_map.c": {
+      "sha256": "55297d4a73aeb3a73f19d9b2b753d3aa3950d7b4cb97d44f84d3fd75ddb92b07",
+      "size": 5071
+    },
+    "src/cu_plex.c": {
+      "sha256": "d74b8927bc441a3cec8e4060a0c4c8cf6f945bab6cf32e89fbc697453b14fa04",
+      "size": 2611
+    },
+    "src/cu_pool.c": {
+      "sha256": "d495eb65feb6e6ee15f8bbad0b9b38b155ca0ca792d9ba7643f1160020eb0ce0",
+      "size": 5306
+    },
+    "src/cu_sha256.c": {
+      "sha256": "80a1723a30bd2cc4cd38a88a03d05f84da8acc66e61948875cf349b6137a1fb9",
+      "size": 5195
+    },
+    "src/cu_str.c": {
+      "sha256": "bf95df848f00588b4782f00db92fae3c358a64bbe2abbcd682f6e54d53ae0111",
+      "size": 7712
+    },
+    "src/cu_thread.c": {
+      "sha256": "f4f81136fa973785a21a3e741998ef5e14de9aa2b289794c08c72481b7e5a483",
+      "size": 5481
+    },
+    "src/cu_u64.c": {
+      "sha256": "ea990339276957591d2c04823c4350c489159500ec4a0d8abadffbb10cab3878",
+      "size": 2493
+    },
+    "src/cu_vec.c": {
+      "sha256": "86b7b1201e74f035959b4984b7fa44ca1bc0b67a289cbec8c3cd1920163bcd91",
+      "size": 5428
+    }
+  },
+  "revision": "eafa795805fa997e2db91f9182c4e0f86fa32fb4",
+  "schema": "fynd.cutils-pin/1"
+}
