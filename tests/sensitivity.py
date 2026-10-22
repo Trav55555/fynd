@@ -27,7 +27,7 @@ FILES = tuple(sorted(set(MUTATION_FILES + ('include/fynd.h', 'cmd/main.c') + C_T
                                         'include/**/*.h', 'tests/**/*.py',
                                         'tests/**/*.h', 'fuzz/**/*.h')
                         for path in SOURCE.glob(pattern)}))
-EXPECTED_MUTATIONS = 26  # 19 retained + 6 scheduler controls replacing 7 coarse/thread ones + frame elision.
+EXPECTED_MUTATIONS = 27  # 19 retained + 6 scheduler controls replacing 7 coarse/thread ones + frame elision + hold release.
 STRICT = ['-std=c89', '-pedantic-errors', '-Wall', '-Wextra', '-Werror',
           '-Wconversion', '-Wshadow', '-Wstrict-prototypes', '-Wmissing-prototypes']
 MUTATIONS = (
@@ -98,6 +98,10 @@ MUTATIONS = (
      '    if (k == IGNORE_CLASSES && !f->repository &&',
      '    if (k == IGNORE_CLASSES && !f->repository && 0 &&',
      'test_ignore elision: ruleless, non-repository directories reuse the parent frame'),
+    ('retain-visit-hold', 'src/fynd.c',
+     '    if (own != NULL)\n        sched_drop(r->sched, own);',
+     '    if (own != NULL && 0)\n        sched_drop(r->sched, own);',
+     'test_sched hold release: a finished directory must drop its frame hold'),
     ('lose-settle-failure', 'src/sched.inc',
      '    report = s->settle_failed && !s->output_reported;',
      '    report = 0;',
@@ -151,9 +155,9 @@ MUTATIONS = (
      'test_fynd/test_stream late EIO and test_sched worker late EIO '
      'require failure status and escaped diagnostics, not successful EOF'),
     ('skip-current-policy-before-enumeration', 'src/fynd.c',
-     '        if (!ignore_stream_enter(r->arena, rules, path, &rules, &error)) {',
-     '        if (depth < 0 &&\n'
-     '            !ignore_stream_enter(r->arena, rules, path, &rules, &error)) {',
+     '        } else if (!ignore_stream_enter(r->arena, rules, path, &rules, &error)) {',
+     '        } else if (depth < 0 &&\n'
+     '                   !ignore_stream_enter(r->arena, rules, path, &rules, &error)) {',
      'test_stream policy_before_any_next, late_ignore_policy and dangling_repository_marker '
      'require current-directory rules before the first child; ancestor seeding remains live'),
 )

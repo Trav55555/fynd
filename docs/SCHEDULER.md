@@ -37,11 +37,17 @@ Against fd's automatic threading, `-j8` stayed 2-5x slower on large trees.
   coordinator moves to the next root. Root groups therefore stay in argument
   order, and no arena that a queued task borrows from is released early.
 - **Ignore frames.** A directory without rule files or a `.git` marker no
-  longer gets a frame: `ignore_stream_enter` returns the parent. In a
-  scheduled walk, a directory keeps its temporary scope open only when it
-  created a frame that queued children borrow; everything else is released as
-  in the serial walker. This elision is exact: an empty, non-repository frame
-  cannot decide or scope any verdict.
+  longer gets a frame: `ignore_stream_enter` returns the parent. This elision
+  is exact: an empty, non-repository frame cannot decide or scope any verdict.
+  In a scheduled walk, a frame that is kept lives in a *hold*: a small arena
+  counted by the visit that made it, by every queued or running task that
+  borrows it, and by each child hold whose frame chains to it. When the count
+  reaches zero the hold is freed and its parent's count drops, so a frame
+  lives only as long as work in its subtree. Holds are collected under the
+  scheduler mutex and freed after it is released. Directories that load no
+  rules roll back a temporary scope in a per-worker spare hold and allocate
+  nothing. The root's seed frames live in worker 0's arena until the barrier,
+  which also checks that no hold is still live.
 - **Failures.** Allocation, thread-start and output failures are terminal:
   they set a shared stop flag, queued tasks are dropped unrun, running visits
   poll the flag as the serial walker does, and every thread is joined before
@@ -54,13 +60,14 @@ Against fd's automatic threading, `-j8` stayed 2-5x slower on large trees.
 - The default changed from serial to the online CPU count. `-j N` counts
   all threads; previously it counted workers plus a coordinator.
 - The fixed N MiB payload-credit bound is gone. Memory is now one 64 KiB record
-  buffer per thread, one task per directory found but not yet listed, and
-  ignore frames for directories with rules, held until their root finishes.
-  An independent review measured about 500 bytes per rule-bearing directory:
-  10,000 directories with a 20-rule `.gitignore` each peaked at 6.7 MB with
-  `-j8`, against 1.7 MB serial. A root with a million such directories would
-  hold about 0.5 GB until it finishes. Reference-counting frames per task would
-  remove this; it is not done.
+  buffer per thread, one task per directory found but not yet listed, and the
+  ignore frames that live work still borrows: those of directories being
+  listed, their ancestors with rules, and the parents of queued directories.
+  The first qualified version held every rule-bearing frame until its root
+  finished; on 10,000 directories with a 20-rule `.gitignore` each it peaked at
+  22 MB at the default thread count. Reference-counted holds bring that to
+  3.7 MB, the same as serial, and the walk got slightly faster (30-31 ms
+  against 33-34 ms).
 - A threaded walk holds one listing handle per thread, instead of up to 128
   per worker.
 - Unchanged: root group order, whole records, unordered output within a root,
@@ -69,7 +76,13 @@ Against fd's automatic threading, `-j8` stayed 2-5x slower on large trees.
 
 ## Verification
 
-Qualified by `build/verification/run.XyeMPG`, exit 0:
+Reference-counted holds are qualified by `build/verification/run.bhkWaq`, exit 0:
+all 27 named controls reject, including `retain-visit-hold`; coverage main
+94.19%, ignore 95.96%, listing 91.95%, scheduler 96.92%; combined 95.39%.
+`tests/test_sched.c` also checks that at most one hold per running visit plus
+the root's own is ever live (5 at `-j4`) on 200 rule-bearing siblings.
+
+The scheduler itself was first qualified by `build/verification/run.XyeMPG`, exit 0:
 
 - Build guards; five C suites; three 500-case CLI seeds (6,324 checks) and 332
   ignore CLI checks; required deep checks (sanitizers, MSan, TSan, Valgrind,
