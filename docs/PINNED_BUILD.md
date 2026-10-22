@@ -111,3 +111,24 @@ was qualified by `build/verification/run.eRMq0D`, exit 0, on c-utils
 separate git directories, and all 33 named controls, including the new
 `ignore-gitfile` and `ignore-commondir`. Coverage: main 94.43%, ignore
 97.35%, listing 91.95%, scheduler 96.92%.
+
+## Ignore sources from the listing
+
+Learning `.git`, `.ignore` and `.gitignore` from a listing that ends within
+64 names, instead of probing every directory, was qualified by
+`build/verification/run.HhIL98`, exit 0, on c-utils `7750e1c`: five C suites,
+three 500-case CLI seeds, the Git differential, required deep checks, and all
+35 named controls, including the new `probe-complete-listing` and
+`unlisted-ignore-name`. Coverage: main 93.31%, ignore 97.41%, listing 91.95%,
+scheduler 96.92%.
+
+Warm medians of 15 runs on one 12-CPU host, same output:
+
+| Tree | Threads | Before ms | After ms |
+| --- | ---: | ---: | ---: |
+| 9,331 directories, 37k files | 1 | 83.2 | 56.3 |
+| 9,331 directories, 37k files | 12 | 14.7 | 11.8 |
+| Home projects | 1 | 1,120 | 913 |
+| Home projects | 12 | 206 | 179 |
+| `/usr` | 1 | 350 | 292 |
+| `/usr` | 12 | 60.3 | 55.5 |
