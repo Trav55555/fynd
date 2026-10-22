@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="884" height="386" viewBox="0 0 884 386" role="img" aria-labelledby="title desc">
 <title id="title">fynd vs fd benchmark</title>
-<desc id="desc">Median wall time of 21 warm runs, process startup included. fynd at a516b5d; fdfind 9.0.0; find (GNU findutils) 4.9.0. One thread: fynd -j1, fd --threads 1. Default threads: no thread option, so fynd uses the online CPU count and fd its own automatic count. GitHub-hosted ubuntu-24.04 runner, 4 CPUs, AMD EPYC 9V74 80-Core Processor. Shared CI runners are noisy: compare ratios, not absolute times.</desc>
+<desc id="desc">Median wall time of 21 warm runs, process startup included. fynd at ba0c38c; fdfind 9.0.0; find (GNU findutils) 4.9.0. One thread: fynd -j1, fd --threads 1. Default threads: no thread option, so fynd uses the online CPU count and fd its own automatic count. GitHub-hosted ubuntu-24.04 runner, 4 CPUs, AMD EPYC 7763 64-Core Processor. Shared CI runners are noisy: compare ratios, not absolute times.</desc>
 <style>
 .bg{fill:#fcfcfb}.rule{stroke:#e1e0d9}.ring{fill:none;stroke:rgba(11,11,11,0.10)}
 .t1{fill:#0b0b0b}.t2{fill:#52514e}.t3{fill:#898781}.good{fill:#006300}.muted{fill:#52514e}
@@ -16,7 +16,7 @@ font-variant-numeric:tabular-nums}
 <rect class="bg" width="884" height="386" rx="8"/>
 <rect class="ring" x="0.5" y="0.5" width="883" height="385" rx="8"/>
 <text class="t1 title" x="24" y="36">fynd vs fd, warm median wall time in ms</text>
-<text class="t2 sub" x="24" y="58">Lower is better. Commit a516b5d; fdfind 9.0.0.</text>
+<text class="t2 sub" x="24" y="58">Lower is better. Commit ba0c38c; fdfind 9.0.0.</text>
 <text class="t3 head" x="24" y="104">Tree and query</text>
 <text class="t2 group" x="420" y="84">One thread</text>
 <line class="rule" x1="420" x2="630" y1="90" y2="90"/>
@@ -30,53 +30,53 @@ font-variant-numeric:tabular-nums}
 <text class="t3 head" x="860" y="104" text-anchor="end">fynd vs fd</text>
 <line class="rule" x1="24" x2="860" y1="118" y2="118"/>
 <text class="cell" x="24" y="140"><tspan class="t1">wide: 20,000 files, 1 dir</tspan><tspan class="t2"> · all files</tspan></text>
-<text class="t1 cell strong" x="465" y="140" text-anchor="end">11.47</text>
-<text class="t1 cell" x="525" y="140" text-anchor="end">27.18</text>
-<text class="good cell strong" x="630" y="140" text-anchor="end">2.37× faster</text>
-<text class="t1 cell strong" x="695" y="140" text-anchor="end">11.20</text>
-<text class="t1 cell" x="755" y="140" text-anchor="end">17.44</text>
-<text class="good cell strong" x="860" y="140" text-anchor="end">1.56× faster</text>
+<text class="t1 cell strong" x="465" y="140" text-anchor="end">11.64</text>
+<text class="t1 cell" x="525" y="140" text-anchor="end">25.01</text>
+<text class="good cell strong" x="630" y="140" text-anchor="end">2.15× faster</text>
+<text class="t1 cell strong" x="695" y="140" text-anchor="end">11.54</text>
+<text class="t1 cell" x="755" y="140" text-anchor="end">16.94</text>
+<text class="good cell strong" x="860" y="140" text-anchor="end">1.47× faster</text>
 <line class="rule" x1="24" x2="860" y1="152" y2="152"/>
 <text class="cell" x="24" y="174"><tspan class="t1">wide: 20,000 files, 1 dir</tspan><tspan class="t2"> · name has 'needle' (1,819)</tspan></text>
-<text class="t1 cell strong" x="465" y="174" text-anchor="end">11.03</text>
-<text class="t1 cell" x="525" y="174" text-anchor="end">21.73</text>
-<text class="good cell strong" x="630" y="174" text-anchor="end">1.97× faster</text>
-<text class="t1 cell strong" x="695" y="174" text-anchor="end">11.14</text>
-<text class="t1 cell" x="755" y="174" text-anchor="end">16.18</text>
-<text class="good cell strong" x="860" y="174" text-anchor="end">1.45× faster</text>
+<text class="t1 cell strong" x="465" y="174" text-anchor="end">11.21</text>
+<text class="t1 cell" x="525" y="174" text-anchor="end">21.02</text>
+<text class="good cell strong" x="630" y="174" text-anchor="end">1.87× faster</text>
+<text class="t1 cell strong" x="695" y="174" text-anchor="end">11.43</text>
+<text class="t1 cell" x="755" y="174" text-anchor="end">16.04</text>
+<text class="good cell strong" x="860" y="174" text-anchor="end">1.40× faster</text>
 <line class="rule" x1="24" x2="860" y1="186" y2="186"/>
 <text class="cell" x="24" y="208"><tspan class="t1">deep: 768 files, 97 dirs</tspan><tspan class="t2"> · all files</tspan></text>
-<text class="t1 cell strong" x="465" y="208" text-anchor="end">4.38</text>
-<text class="t1 cell" x="525" y="208" text-anchor="end">6.68</text>
-<text class="good cell strong" x="630" y="208" text-anchor="end">1.53× faster</text>
-<text class="t1 cell strong" x="695" y="208" text-anchor="end">5.11</text>
-<text class="t1 cell" x="755" y="208" text-anchor="end">7.67</text>
-<text class="good cell strong" x="860" y="208" text-anchor="end">1.50× faster</text>
+<text class="t1 cell strong" x="465" y="208" text-anchor="end">4.19</text>
+<text class="t1 cell" x="525" y="208" text-anchor="end">6.50</text>
+<text class="good cell strong" x="630" y="208" text-anchor="end">1.55× faster</text>
+<text class="t1 cell strong" x="695" y="208" text-anchor="end">5.37</text>
+<text class="t1 cell" x="755" y="208" text-anchor="end">7.60</text>
+<text class="good cell strong" x="860" y="208" text-anchor="end">1.41× faster</text>
 <line class="rule" x1="24" x2="860" y1="220" y2="220"/>
 <text class="cell" x="24" y="242"><tspan class="t1">deep: 768 files, 97 dirs</tspan><tspan class="t2"> · name has 'needle' (96)</tspan></text>
-<text class="t1 cell strong" x="465" y="242" text-anchor="end">4.16</text>
-<text class="t1 cell" x="525" y="242" text-anchor="end">4.92</text>
-<text class="good cell strong" x="630" y="242" text-anchor="end">1.18× faster</text>
-<text class="t1 cell strong" x="695" y="242" text-anchor="end">4.88</text>
-<text class="t1 cell" x="755" y="242" text-anchor="end">6.13</text>
-<text class="good cell strong" x="860" y="242" text-anchor="end">1.25× faster</text>
+<text class="t1 cell strong" x="465" y="242" text-anchor="end">3.92</text>
+<text class="t1 cell" x="525" y="242" text-anchor="end">4.66</text>
+<text class="good cell strong" x="630" y="242" text-anchor="end">1.19× faster</text>
+<text class="t1 cell strong" x="695" y="242" text-anchor="end">5.12</text>
+<text class="t1 cell" x="755" y="242" text-anchor="end">6.08</text>
+<text class="good cell strong" x="860" y="242" text-anchor="end">1.19× faster</text>
 <line class="rule" x1="24" x2="860" y1="254" y2="254"/>
 <text class="cell" x="24" y="276"><tspan class="t1">mixed: 1,452 files, 364 dirs</tspan><tspan class="t2"> · all files</tspan></text>
-<text class="t1 cell strong" x="465" y="276" text-anchor="end">5.68</text>
-<text class="t1 cell" x="525" y="276" text-anchor="end">7.38</text>
-<text class="good cell strong" x="630" y="276" text-anchor="end">1.30× faster</text>
-<text class="t1 cell strong" x="695" y="276" text-anchor="end">3.52</text>
-<text class="t1 cell" x="755" y="276" text-anchor="end">5.74</text>
-<text class="good cell strong" x="860" y="276" text-anchor="end">1.63× faster</text>
+<text class="t1 cell strong" x="465" y="276" text-anchor="end">5.32</text>
+<text class="t1 cell" x="525" y="276" text-anchor="end">7.04</text>
+<text class="good cell strong" x="630" y="276" text-anchor="end">1.32× faster</text>
+<text class="t1 cell strong" x="695" y="276" text-anchor="end">3.45</text>
+<text class="t1 cell" x="755" y="276" text-anchor="end">6.40</text>
+<text class="good cell strong" x="860" y="276" text-anchor="end">1.85× faster</text>
 <line class="rule" x1="24" x2="860" y1="288" y2="288"/>
 <text class="cell" x="24" y="310"><tspan class="t1">mixed: 1,452 files, 364 dirs</tspan><tspan class="t2"> · name has 'needle' (242)</tspan></text>
-<text class="t1 cell strong" x="465" y="310" text-anchor="end">5.51</text>
-<text class="t1 cell" x="525" y="310" text-anchor="end">7.14</text>
-<text class="good cell strong" x="630" y="310" text-anchor="end">1.30× faster</text>
-<text class="t1 cell strong" x="695" y="310" text-anchor="end">3.42</text>
-<text class="t1 cell" x="755" y="310" text-anchor="end">6.43</text>
-<text class="good cell strong" x="860" y="310" text-anchor="end">1.88× faster</text>
+<text class="t1 cell strong" x="465" y="310" text-anchor="end">5.16</text>
+<text class="t1 cell" x="525" y="310" text-anchor="end">6.67</text>
+<text class="good cell strong" x="630" y="310" text-anchor="end">1.29× faster</text>
+<text class="t1 cell strong" x="695" y="310" text-anchor="end">3.36</text>
+<text class="t1 cell" x="755" y="310" text-anchor="end">6.25</text>
+<text class="good cell strong" x="860" y="310" text-anchor="end">1.86× faster</text>
 <line class="rule" x1="24" x2="860" y1="322" y2="322"/>
 <text class="t3 note" x="24" y="346">21 warm runs per cell, process startup included. One thread: fynd -j1, fd --threads 1. Default: no thread option for either tool.</text>
-<text class="t3 note" x="24" y="363">GitHub-hosted ubuntu-24.04 runner, 4 CPUs, AMD EPYC 9V74 80-Core Processor. Shared runners are noisy: compare ratios.</text>
+<text class="t3 note" x="24" y="363">GitHub-hosted ubuntu-24.04 runner, 4 CPUs, AMD EPYC 7763 64-Core Processor. Shared runners are noisy: compare ratios.</text>
 </svg>
