@@ -125,8 +125,11 @@ after the first names are listed, not before the first read.
 Explicit roots bypass ignore and hidden exclusion for themselves. Proper
 ancestor rules and root-directory rules still govern their children. A pruned
 directory is never entered, so a later child negation cannot rescue its contents.
-Hidden visibility remains independent: negation does not expose dot-prefixed
-children without `-H`. Selection and hidden filters never conceal rule-file or
+Without `-H`, a dot-prefixed child is pruned unless the verdict that decides it
+is a negation; a hidden directory so re-included is entered, and its own hidden
+children need their own negation. Hidden names are therefore kept through the
+listing window and reach the verdict; only `--no-ignore` drops them on reading.
+Selection and hidden filters never conceal rule-file or
 repository-marker metadata needed to decide other entries.
 
 `--no-ignore` bypasses all ignore discovery, source reads, and matching. It does

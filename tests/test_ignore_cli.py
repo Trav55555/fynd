@@ -160,10 +160,17 @@ def precedence(s):
                 'repo/nested/keep.dat', 'repo/nested/local.dat', 'repo/ok'], ('repo',))
     finally:
         s.env['XDG_CONFIG_HOME'] = xdg
-    s.put('repo/.ignore', b'!blocked\nkeep.dat\n!.secret\n')
-    s.put('repo/.secret')
-    s.check('hidden independent of negation', ['repo/blocked', 'repo/nested/keep.dat',
-             'repo/nested/local.dat', 'repo/ok'], ('repo',))
+    s.put('repo/.ignore', b'!blocked\nkeep.dat\n!.secret\n!.conf/\n')
+    for p in ('.secret', '.other', '.conf/inner', '.conf/.deeper'):
+        s.put('repo/' + p)
+    s.check('negation re-includes hidden', ['repo/.conf/inner', 'repo/.secret',
+             'repo/blocked', 'repo/nested/keep.dat', 'repo/nested/local.dat', 'repo/ok'],
+            ('repo',))
+    unhidden = sorted(os.path.relpath(os.path.join(d, f), s.root)
+                      for d, _, files in os.walk(os.path.join(s.root, 'repo')) for f in files
+                      if not any(c.startswith('.') for c in
+                                 os.path.relpath(os.path.join(d, f), s.root).split('/')))
+    s.check('--no-ignore re-includes no hidden name', unhidden, ('repo',), ('--no-ignore',))
 
 
 def external(s, cases, seed):
