@@ -222,7 +222,7 @@ static int walk_stopped(Run *r)
 static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int depth,
                   const IgnoreFrame *parent);
 
-/* Hidden children need -H, whatever any ignore rule says. */
+/* Hidden children need -H, or an ignore rule that re-includes them. */
 static int skips_hidden(const Run *r, CuStr name)
 {
     return !r->query->hidden && name.ptr[0] == '.';
@@ -236,7 +236,9 @@ static void visit_child(Run *r, const char *path, int depth, const IgnoreFrame *
     IgnoreError error;
     char *joined;
     int verdict;
-    if (skips_hidden(r, name))
+    int hidden;
+    hidden = skips_hidden(r, name);
+    if (hidden && r->query->no_ignore)
         return;
     child = cu_temp_begin(r->arena);
     joined = join_path(r->arena, path, name);
@@ -246,7 +248,7 @@ static void visit_child(Run *r, const char *path, int depth, const IgnoreFrame *
     else if (!r->query->no_ignore &&
              !ignore_verdict(r->arena, rules, joined, kind == CU_DIR_DIR, &verdict, &error))
         ignore_failure(r, &error);
-    else if (verdict != 1) {
+    else if (verdict != 1 && (!hidden || verdict == -1)) {
         /* Cutoff and safety-limit directories are visited in place. */
         if (r->sched != NULL && kind == CU_DIR_DIR &&
             depth + 1 != r->query->depth && depth + 1 < 128)
@@ -291,7 +293,7 @@ static void listing_failure(Run *r, const ListingJob *job, const char *path)
 
 /* Read up to limit names of job into entries, in the caller's directory
  * scope, noting in *listed the ignore sources among them. Hidden names that
- * cannot be selected are not kept. Returns the last listing_next result, 1
+ * no rule can re-include are not kept. Returns the last listing_next result, 1
  * when the limit or a stop comes first, or -2 after reporting an allocation
  * failure. */
 static int read_ahead(Run *r, ListingJob *job, const char *path, size_t limit,
@@ -310,7 +312,7 @@ static int read_ahead(Run *r, ListingJob *job, const char *path, size_t limit,
         if (next != 1)
             return next;
         *listed |= ignore_listed_name(entry.name);
-        if (skips_hidden(r, entry.name))
+        if (r->query->no_ignore && skips_hidden(r, entry.name))
             continue;
         copy = cu_str_cstr_copy(r->arena, entry.name);
         if (copy == NULL) {

@@ -3,8 +3,12 @@
 Each case builds a random tree in a fresh repository with random .gitignore
 rules (root and nested) and info/exclude, then compares the regular files
 fynd selects with `git ls-files --others --exclude-standard`, serially and
-with the default thread count. Hidden names are outside this comparison
-(fynd needs -H for them; Git has no such rule). Global Git configuration is
+with the default thread count. Git has no hidden rule, so a path with a
+dot-prefixed component is expected only when `git check-ignore -v` shows a
+`!` rule deciding each such component, as fynd lists hidden names without -H
+only when re-included. Git never lists its own .git, which fynd (like fd,
+ripgrep and cgrep) descends when a rule such as `!.*` re-includes it, so
+paths under .git are left out. Global Git configuration is
 isolated so only repository rules apply. The repository is a plain one, a
 linked worktree, or a .git file naming a separate git directory (as
 submodules have); a .git file's target may be absolute or relative, and
@@ -21,9 +25,10 @@ import sys
 import tempfile
 
 NAMES = ['a', 'b', 'ab', 'ba', 'foo', 'a.c', 'b.c', 'x y', '#a', '!a', 'a ', 'a\\',
-         '[a]', 'a*', 'zzz']
+         '[a]', 'a*', 'zzz', '.a', '.ab', '.foo']
 COMPS = ['a', 'b', 'ab', '*', '**', '**', '?', '[ab]', '[!a]', 'a*', '*b', '*.c',
-         'foo', 'zzz', '\\#a', '\\!a', 'x y', 'a\\ ', 'a\\\\', '\\[a]', '[a-b]', 'a?', '\\a']
+         'foo', 'zzz', '\\#a', '\\!a', 'x y', 'a\\ ', 'a\\\\', '\\[a]', '[a-b]', 'a?', '\\a',
+         '.a', '.*', '.foo']
 ENV = dict(os.environ, HOME='/nonexistent', XDG_CONFIG_HOME='/nonexistent',
            GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL='/dev/null', LC_ALL='C')
 
@@ -59,7 +64,8 @@ def rules_file(rng, path, count):
 def selected(fynd, root, jobs):
     argv = [fynd, '-0', '-t', 'f'] + jobs + ['', '.']
     out = subprocess.run(argv, cwd=root, env=ENV, capture_output=True)
-    paths = {p[2:] for p in out.stdout.decode('utf-8', 'surrogateescape').split('\0') if p}
+    paths = {p[2:] for p in out.stdout.decode('utf-8', 'surrogateescape').split('\0')
+             if p and p != './.git' and not p.startswith('./.git/')}
     return out.returncode, out.stderr, paths
 
 
@@ -93,6 +99,26 @@ def repository(rng, base):
     return root, common
 
 
+def visible(root, paths):
+    """Paths whose every dot-prefixed component Git decides with a `!` rule."""
+    prefixes = set()
+    for p in paths:
+        parts = p.split('/')
+        prefixes.update('/'.join(parts[:i + 1]) for i, c in enumerate(parts) if c.startswith('.'))
+    if not prefixes:
+        return set(paths)
+    out = subprocess.run(['git', 'check-ignore', '--no-index', '-v', '-n', '-z', '--stdin'],
+                         cwd=root, env=ENV, capture_output=True,
+                         input='\0'.join(sorted(prefixes)).encode('utf-8', 'surrogateescape'))
+    if out.returncode not in (0, 1) or out.stderr:
+        raise RuntimeError(out.stderr)
+    fields = out.stdout.decode('utf-8', 'surrogateescape').split('\0')
+    included = {fields[i + 3] for i in range(0, len(fields) - 1, 4) if fields[i + 2].startswith('!')}
+    return {p for p in paths
+            if all('/'.join(p.split('/')[:i + 1]) in included
+                   for i, c in enumerate(p.split('/')) if c.startswith('.'))}
+
+
 def case(fynd, seed, scratch):
     rng = random.Random(seed)
     base = tempfile.mkdtemp(dir=scratch)
@@ -106,8 +132,7 @@ def case(fynd, seed, scratch):
         if rng.random() < 0.3:
             rules_file(rng, os.path.join(common, 'info', 'exclude'), rng.randint(1, 2))
         listed = git('ls-files', '-z', '--others', '--exclude-standard', cwd=root)
-        want = {p for p in listed.split('\0')
-                if p and not any(c.startswith('.') for c in p.split('/'))}
+        want = visible(root, [p for p in listed.split('\0') if p])
         for jobs in (['-j1'], [], ['--sort']):
             rc, err, got = selected(fynd, root, jobs)
             if rc != 0 or err or got != want:

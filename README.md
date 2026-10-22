@@ -162,7 +162,10 @@ On POSIX, SIGPIPE may terminate the CLI instead of status 1.
   In a linked worktree or submodule, where `.git` is a file, `info/exclude` is
   read from the Git directory it names, as Git does.
   Explicit roots bypass rules for themselves; children still obey them.
-  Hidden children require `-H` even when a rule explicitly unignores them.
+  A hidden child is listed without `-H` only when the rule that decides it is
+  a `!` negation, such as `!.gitkeep` or `!.github/`, as in fd and ripgrep.
+  This includes `.git` itself under a rule like `!.*`. With `--no-ignore`, no
+  hidden child is listed without `-H`.
   A directory's current `.ignore` and repository `.gitignore` policy is loaded
   before any of its children is selected, even if those names appear late in
   the listing. A listing that ends within its first 64 names shows which of

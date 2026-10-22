@@ -27,9 +27,9 @@ FILES = tuple(sorted(set(MUTATION_FILES + ('include/fynd.h', 'cmd/main.c') + C_T
                                         'include/**/*.h', 'tests/**/*.py',
                                         'tests/**/*.h', 'fuzz/**/*.h')
                         for path in SOURCE.glob(pattern)}))
-EXPECTED_MUTATIONS = 35  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
+EXPECTED_MUTATIONS = 37  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
                          # + two dir-relative probe controls + two .git file controls
-                         # + two listing-presence controls.
+                         # + two listing-presence controls + two hidden re-inclusion controls.
 STRICT = ['-std=c89', '-pedantic-errors', '-Wall', '-Wextra', '-Werror',
           '-Wconversion', '-Wshadow', '-Wstrict-prototypes', '-Wmissing-prototypes']
 MUTATIONS = (
@@ -73,8 +73,8 @@ MUTATIONS = (
      'q->no_ignore = 1;',
      'default ignore discovery and precedence checks'),
     ('bypass-ignore-pruning', 'src/fynd.c',
-     'else if (verdict != 1)',
-     'else if (verdict != 2)',
+     'else if (verdict != 1 && (!hidden',
+     'else if (verdict != 2 && (!hidden',
      'ignored directory pruning and ignored file exclusion checks'),
     ('suppress-thread-start', 'src/fynd.c',
      'if (!r.stop && threads > 1)',
@@ -194,6 +194,14 @@ MUTATIONS = (
      '    if (name.len == 7 && memcmp(name.ptr, ".ignore", 7) == 0) return 1U << IGNORE_PLAIN;',
      '    if (name.len == 7 && memcmp(name.ptr, ".ignore", 7) == 0) return 0;',
      'test_stream policy_from_listing and late_ignore_policy require a listed .ignore to be read'),
+    ('hidden-ignores-negation', 'src/fynd.c',
+     '    else if (verdict != 1 && (!hidden || verdict == -1)) {',
+     '    else if (verdict != 1 && !hidden) {',
+     'ignore CLI negation re-includes hidden: a negated hidden name must be listed without -H'),
+    ('drop-hidden-before-verdict', 'src/fynd.c',
+     '        if (r->query->no_ignore && skips_hidden(r, entry.name))',
+     '        if (skips_hidden(r, entry.name))',
+     'ignore CLI negation re-includes hidden: names read ahead of policy must reach the verdict'),
 )
 
 
