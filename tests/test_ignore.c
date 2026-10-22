@@ -83,6 +83,12 @@ static int literal_verdict(const IgnoreRule *r, const char *p, size_t n, int dir
     return 0;
 }
 
+/* Mirror ignore_parse: hand-built rules must honor the slash-anchoring invariant. */
+static int parser_anchored(const char *glob, int anchored)
+{
+    return anchored || strchr(glob, '/') != NULL;
+}
+
 static void filter_cases(void)
 {
     static const struct {
@@ -94,9 +100,9 @@ static void filter_cases(void)
         {"a", "b/a", 0, 1, 0, 0}, {"a", "b/a", 0, 1, 1, 1},
         {"", "", 1, 0, 0, 1}, {"", "a/", 0, 0, 0, 1},
         {"", "a/", 1, 0, 0, 0}, {"a", "", 0, 0, 0, 0},
-        {"/", "/", 1, 0, 0, 1}, {"/", "a//", 0, 0, 0, 1},
+        {"/", "/", 1, 0, 0, 1}, {"/", "a//", 1, 0, 0, 0},
         {"\\/x", "\\/x", 1, 0, 0, 1}, {"\\/x", "/x", 1, 0, 0, 0},
-        {"\\/x", "a/\\/x", 0, 0, 0, 1},
+        {"\\/x", "a/\\/x", 1, 0, 0, 0},
         {"\\/", "\\/", 1, 0, 0, 1}, {"\\", "a/\\", 0, 0, 0, 1},
         {"\\*", "a/*", 0, 0, 0, 1}, {"\\?", "?", 1, 0, 0, 1},
         {"\\[", "a/[", 0, 0, 0, 1}, {"\\\\*", "a/\\x", 0, 0, 0, 1},
@@ -132,6 +138,7 @@ static void filter_cases(void)
     for (i = 0; i < sizeof finite / sizeof finite[0]; ++i) {
         rules[0].glob = finite[i].g; rules[0].len = strlen(finite[i].g);
         rules[0].anchored = finite[i].anchored;
+        assert(rules[0].anchored == parser_anchored(finite[i].g, finite[i].anchored));
         rules[0].dir_only = finite[i].dir_only;
         for (flags = 0; flags < 2; ++flags) {
             rules[0].negate = flags;
@@ -147,17 +154,18 @@ static void filter_cases(void)
                 p[k] = (char)bytes[value % sizeof bytes]; value /= sizeof bytes;
             }
             for (flags = 0; flags < 8; ++flags) {
-                rules[0].anchored = flags & 1;
                 rules[0].negate = flags & 2;
                 rules[0].dir_only = flags & 4;
                 for (dir = 0; dir < 2; ++dir) {
                     for (i = 0; i < sizeof literals / sizeof literals[0]; ++i) {
                         rules[0].glob = literals[i]; rules[0].len = strlen(literals[i]);
+                        rules[0].anchored = parser_anchored(literals[i], flags & 1);
                         expected = literal_verdict(&rules[0], p, n, dir);
                         verdict_case(&f, p, n, dir, expected);
                     }
                     for (j = 0; j < sizeof globs / sizeof globs[0]; ++j) {
                         rules[0].glob = globs[j]; rules[0].len = strlen(globs[j]);
+                        rules[0].anchored = parser_anchored(globs[j], flags & 1);
                         w.left = 1000000UL; w.failed = 0;
                         expected = unfiltered_verdict(&f, p, n, dir, &w);
                         assert(!w.failed);
@@ -215,18 +223,20 @@ static void filter_work_cases(void)
     size_t i;
     unsigned long bound;
     f.rules = rules; f.count = sizeof rules / sizeof rules[0];
-    for (i = 0; i < sizeof p; ++i) p[i] = i % 2 == 0 ? 'a' : '/';
+    /* 128 "a/" components, then a 128-byte final component. */
+    for (i = 0; i < sizeof p; ++i)
+        p[i] = i < sizeof p / 2 && i % 2 != 0 ? '/' : 'a';
     for (i = 0; i < f.count; ++i) {
         rules[i].glob = "z*"; rules[i].len = 2; rules[i].anchored = 0;
         rules[i].negate = (int)(i % 2); rules[i].dir_only = 0;
     }
-    /* Cheap-operation sensor: no glob/component/suffix retry per impossible
-     * rule, and at most ONE charged path scan, not one per rule. */
-    bound = (unsigned long)(sizeof p + f.count);
+    /* Cheap-operation sensor: no glob/component retry per impossible rule,
+     * and ONE charged final-component scan, not one per rule or full path. */
+    bound = (unsigned long)(sizeof p / 2 + f.count);
     w.left = 1000UL; w.failed = 0;
     assert(ignore_file_verdict(&f, p, sizeof p, 0, &w) == 0 && !w.failed);
-    assert(1000UL - w.left <= bound && 1000UL - w.left >= sizeof p);
-    w.left = (unsigned long)sizeof p; w.failed = 0;
+    assert(1000UL - w.left <= bound && 1000UL - w.left >= sizeof p / 2);
+    w.left = (unsigned long)(sizeof p / 2); w.failed = 0;
     assert(ignore_file_verdict(&f, p, sizeof p, 0, &w) == 0 && w.failed);
     for (i = 0; i < f.count; ++i) rules[i].anchored = 1;
     w.left = 1000UL; w.failed = 0;
@@ -234,11 +244,11 @@ static void filter_work_cases(void)
     assert(1000UL - w.left <= (unsigned long)f.count);
     w.left = 0; w.failed = 0;
     assert(ignore_file_verdict(&f, p, sizeof p, 0, &w) == 0 && w.failed);
-    /* Neither unknown starts nor ineligible directory rules build the set. */
+    /* An unknown start costs one rule, one final-component byte and the glob;
+     * an ineligible directory rule never scans the final component. */
     f.count = 1; rules[0].anchored = 0; rules[0].glob = "*"; rules[0].len = 1;
     w.left = 8; w.failed = 0;
-    assert(ignore_file_verdict(&f, "a", 1, 0, &w) == 1 && !w.failed);
-    assert(8UL - w.left <= 7UL);
+    assert(ignore_file_verdict(&f, "a", 1, 0, &w) == 1 && !w.failed && w.left == 0);
     rules[0].glob = "z"; rules[0].dir_only = 1;
     w.left = 1; w.failed = 0;
     assert(ignore_file_verdict(&f, p, sizeof p, 0, &w) == 0 && !w.failed && w.left == 0);

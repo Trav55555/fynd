@@ -13,6 +13,8 @@
 #define IGNORE_SOURCE_LIMIT 16777216UL
 #endif
 
+/* Invariant (ignore_parse): a glob containing '/' is always anchored, so an
+ * unanchored glob is one component and can match only the final component. */
 typedef struct IgnoreRule {
     const char *glob;
     size_t len;
@@ -143,15 +145,25 @@ static int ignore_file_verdict(const IgnoreFile *f, const char *rel,
                                size_t len, int is_dir, IgnoreWork *w)
 {
     const IgnoreRule *r;
-    size_t i, at, slot;
-    unsigned char starts[32];
-    unsigned char first, c;
-    int matched, have_starts;
-    have_starts = 0;
+    const char *base;
+    size_t i, base_len;
+    unsigned char first;
+    int matched;
+    if (f->count == 0) return 0;
+    /* Unanchored rules see only the final component; find it once, lazily. */
+    base = NULL; base_len = 0;
     for (i = f->count; i != 0;) {
         if (!ignore_tick(w)) return 0;
         r = &f->rules[--i];
         if (r->dir_only && !is_dir) continue;
+        if (!r->anchored && base == NULL) {
+            base = rel + len;
+            while (base != rel && base[-1] != '/') {
+                if (!ignore_tick(w)) return 0;
+                --base;
+            }
+            base_len = len - (size_t)(base - rel);
+        }
         /* Only a necessary literal byte: metacharacters (even malformed
          * classes) and empty spans must use the unchanged matcher. The glob
          * splits on '/' BEFORE unescaping, so "\\/" starts with literal '\\'. */
@@ -162,29 +174,14 @@ static int ignore_file_verdict(const IgnoreFile *f, const char *rel,
                 first = (unsigned char)r->glob[1];
             if (r->anchored) {
                 if (len == 0 || first != (unsigned char)rel[0]) continue;
-            } else {
-                if (!have_starts) {
-                    for (slot = 0; slot < sizeof starts; ++slot)
-                        starts[slot] = 0;
-                    for (at = 0; at < len; ++at) {
-                        if (!ignore_tick(w)) return 0;
-                        if (at == 0 || rel[at - 1] == '/') {
-                            c = (unsigned char)rel[at];
-                            starts[(c / 8U) & 31U] |= (unsigned char)(1U << (c % 8U));
-                        }
-                    }
-                    have_starts = 1;
-                }
-                if ((starts[(first / 8U) & 31U] & (1U << (first % 8U))) == 0)
-                    continue;
+            } else if (base_len == 0 || first != (unsigned char)base[0]) {
+                continue;
             }
         }
-        matched = ignore_glob(r->glob, r->len, rel, len, 1, w);
-        for (at = 0; !matched && !r->anchored && at < len && !w->failed; ++at) {
-            if (!ignore_tick(w)) return 0;
-            if (rel[at] == '/') matched = ignore_glob(r->glob, r->len,
-                rel + at + 1, len - at - 1, 1, w);
-        }
+        if (r->anchored)
+            matched = ignore_glob(r->glob, r->len, rel, len, 1, w);
+        else
+            matched = ignore_glob(r->glob, r->len, base, base_len, 1, w);
         if (w->failed) return 0;
         if (matched) return r->negate ? -1 : 1;
     }
@@ -605,7 +602,10 @@ static int ignore_verdict(CuArena *a, const IgnoreFrame *frame,
         if (f->repository) { repo = f; break; }
     for (k = 0; k < IGNORE_CLASSES; ++k) values[k] = 0;
     for (f = frame; f != NULL; f = f->parent) {
-        rel = ignore_relative(mapped, f->directory);
+        /* Most frames load no rules; empty files never decide or charge work. */
+        rel = f->files[IGNORE_PLAIN].count == 0 && f->files[IGNORE_GIT].count == 0 &&
+              f->files[IGNORE_EXCLUDE].count == 0 ? NULL :
+              ignore_relative(mapped, f->directory);
         if (rel != NULL) {
             for (k = 0; k < IGNORE_CLASSES; ++k) {
                 if (values[k] == 0 && (k == IGNORE_PLAIN || repo != NULL))

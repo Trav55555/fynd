@@ -8,7 +8,21 @@ The subsequent [full streaming benchmark](STREAMING_FULL_BENCHMARK.md) validates
 Its source identities still match the selected qualification below. Benchmark
 artifact audits and CPU-forgery controls are separate from release qualification.
 
-## Current unordered-streaming acceptance
+## Current source: final-component ignore matching
+
+Receipt: `build/verification/run.YOdmVS`, exit 0. It qualifies the
+[final-component ignore matcher](IGNORE_MATCHER.md), the current working source.
+Build guards, six C suites, 6,324 CLI checks across seeds 1, 7 and 42, 332 ignore
+CLI checks, 8 validated benchmark-harness outputs and required deep checks pass.
+Authority, regions and CBMC remain optional skips. All 26 named behavioral controls
+reject, including the new `skip-frames-without-plain-rules`. Coverage: coarse
+94.86%, main 96.90%, ignore 95.89%, listing 91.95%; combined 95.74%.
+
+Only `src/ignore.inc`, its C and fuzz tests, and `tests/sensitivity.py` differ
+from the streaming acceptance below. The active `build/fynd` is still the
+streaming-selected executable.
+
+## Prior unordered-streaming acceptance
 
 Selected receipt:
 `build/streaming/qualification/build/verification/run.vbgYhn`, exit 0.

@@ -26,7 +26,7 @@ FILES = tuple(sorted(set(MUTATION_FILES + ('include/fynd.h', 'cmd/main.c') + C_T
                                         'include/**/*.h', 'tests/**/*.py',
                                         'tests/**/*.h', 'fuzz/**/*.h')
                         for path in SOURCE.glob(pattern)}))
-EXPECTED_MUTATIONS = 25  # 28 original - 9 explicitly retired contracts + 6 cursor controls.
+EXPECTED_MUTATIONS = 26  # 28 original - 9 retired contracts + 6 cursor + 1 frame-skip control.
 STRICT = ['-std=c89', '-pedantic-errors', '-Wall', '-Wextra', '-Werror',
           '-Wconversion', '-Wshadow', '-Wstrict-prototypes', '-Wmissing-prototypes']
 MUTATIONS = (
@@ -113,9 +113,14 @@ MUTATIONS = (
      "        if (r->len != 0 && 0 && r->glob[0] != '*' &&",
      'charged-work sensor rejects repeated glob/suffix scans for impossible rules'),
     ('invert-necessary-start-filter', 'src/ignore.inc',
-     '                if ((starts[(first / 8U) & 31U] & (1U << (first % 8U))) == 0)',
-     '                if ((starts[(first / 8U) & 31U] & (1U << (first % 8U))) != 0)',
+     '            } else if (base_len == 0 || first != (unsigned char)base[0]) {',
+     '            } else if (base_len == 0 || first == (unsigned char)base[0]) {',
      'literal/escape/high-byte/last-match oracle rejects false-negative rejection'),
+    ('skip-frames-without-plain-rules', 'src/ignore.inc',
+     '        rel = f->files[IGNORE_PLAIN].count == 0 && f->files[IGNORE_GIT].count == 0 &&\n'
+     '              f->files[IGNORE_EXCLUDE].count == 0 ? NULL :',
+     '        rel = f->files[IGNORE_PLAIN].count == 0 ? NULL :',
+     'ignore CLI oracle rejects dropping frames that hold only Git-class rules'),
     ('suppress-name-enomem-normalization', 'src/listing.inc',
      '    next = cu_dir_next(&job->dir, entry);\n'
      '    if (cu_arena_failed(&job->arena))',

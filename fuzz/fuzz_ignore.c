@@ -91,6 +91,8 @@ int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size)
     /* Raw nonterminated spans exercise slash-before-escape boundaries,
      * malformed classes, high bytes and NUL bytes without parser normalization. */
     r.glob = (const char *)data + 1; r.len = gn;
+    /* Mirror ignore_parse: a glob containing '/' is anchored. */
+    r.anchored = (data[0] & 1) || memchr(r.glob, '/', gn) != NULL;
     differential_file(&f, (const char *)data + gn + 1, pn, data[0] & 8);
     cu_arena_init(&a);
     if (ignore_parse(&a, cu_str_n((const char *)data, size), &f, &number)) {

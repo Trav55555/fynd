@@ -1,5 +1,11 @@
 # Retained streaming decision checkpoint
 
+> **Update:** the [final-component ignore matcher](IGNORE_MATCHER.md) changed
+> `src/ignore.inc` and its tests after this checkpoint. Current source is
+> qualified by `build/verification/run.YOdmVS`. The source-hash statements below
+> describe `run.z7sAXq`, so the review-checkpoint check now fails with
+> `source hashes differ`. The active `build/fynd` described below is unchanged.
+
 Keep the qualified unordered-streaming implementation selected by `run.vbgYhn`.
 The completed-task retirement candidate remains rejected. Later measurements did
 not clear it, identify the earlier startup delay's cause, or justify a code fix.

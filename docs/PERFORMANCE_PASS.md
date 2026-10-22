@@ -106,6 +106,10 @@ Ancestor listings, paths, ignore data, batch metadata, allocator slack, and thre
 stacks remain additional. See [the memory contract](IGNORE_THREADS.md#jobs-output-and-memory).
 No total-process RSS bound is claimed.
 
+[Final-component ignore matching](IGNORE_MATCHER.md) has since replaced the
+unanchored component-start set described next. Rejection is unchanged in
+principle: unanchored rules compare only the final component's first byte.
+
 `src/ignore.inc` rejects only impossible first-literal-byte matches. Anchored
 rules compare the first byte directly. Unanchored rules lazily scan component
 starts into a charged 32-byte local set, once per file verdict. Initial `*`, `?`,

@@ -1,5 +1,10 @@
 # Review the retained streaming implementation
 
+> **Superseded source:** `src/ignore.inc`, its tests and `tests/sensitivity.py`
+> changed for [final-component ignore matching](IGNORE_MATCHER.md), qualified by
+> `build/verification/run.YOdmVS`. The checkpoint command below still verifies
+> the `run.z7sAXq` snapshot, so it now fails with `source hashes differ`.
+
 Review the current source qualified by `run.z7sAXq`, not the private retirement
 candidate. The active executable remains the selected `run.vbgYhn` binary.
 The [decision checkpoint](DECISION_CHECKPOINT.md) consolidates the selection,
