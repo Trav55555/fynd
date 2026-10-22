@@ -248,7 +248,7 @@ static int ignore_parse(CuArena *a, CuStr text, IgnoreFile *out, int *number)
 
 enum { IGNORE_PLAIN, IGNORE_GIT, IGNORE_EXCLUDE, IGNORE_CLASSES };
 #define IGNORE_REPOSITORY_BIT (1U << IGNORE_CLASSES)
-static const char *const ignore_names[] = { ".ignore", ".gitignore", ".git/info/exclude" };
+static const char *const ignore_names[] = { ".ignore", ".gitignore" };
 typedef struct IgnoreFrame IgnoreFrame;
 struct IgnoreFrame {
     const IgnoreFrame *parent;
@@ -321,37 +321,39 @@ static char *ignore_absolute(CuArena *a, const char *path, IgnoreError *error)
     return result;
 }
 
+/* Marker probes are nonfollowing; policy sources still follow symlinks,
+ * including the existing missing-target behavior. */
+static int ignore_follow(const char *path, struct stat *st)
+{
+    if (IGNORE_STAT(path, st) != 0) return -1;
+    if (S_ISLNK(st->st_mode) && stat(path, st) != 0) return -1;
+    return 0;
+}
+
 /* Follow source symlinks only to regular files. O_NONBLOCK plus fstat also
- * protects the stat/open replacement window from FIFO blocking. */
-static int ignore_read(CuArena *a, const char *path, IgnoreFile *out,
-                       IgnoreError *error)
+ * protects the stat/open replacement window from FIFO blocking. A missing
+ * source yields *out with a NULL ptr. */
+static int ignore_slurp(CuArena *a, const char *path, CuStr *out,
+                        IgnoreError *error)
 {
     struct stat st;
     FILE *stream;
-    int fd, saved, number;
+    int fd, saved;
     CuBuilder b;
     CuStr text;
     char bytes[1024];
     size_t n, total;
-    IgnoreFile f;
-    f.rules = NULL; f.count = 0;
-    if (IGNORE_STAT(path, &st) != 0) {
+    out->ptr = NULL; out->len = 0;
+    if (ignore_follow(path, &st) != 0) {
         saved = errno;
-        if (saved == ENOENT || saved == ENOTDIR) { *out = f; return 1; }
-        return ignore_error(error, saved, path);
-    }
-    /* Marker probes are nonfollowing; policy sources still follow symlinks
-     * to regular files, including the existing missing-target behavior. */
-    if (S_ISLNK(st.st_mode) && stat(path, &st) != 0) {
-        saved = errno;
-        if (saved == ENOENT || saved == ENOTDIR) { *out = f; return 1; }
+        if (saved == ENOENT || saved == ENOTDIR) return 1;
         return ignore_error(error, saved, path);
     }
     if (!S_ISREG(st.st_mode)) return ignore_error(error, EINVAL, path);
     fd = open(path, O_RDONLY | O_NONBLOCK);
     if (fd < 0) {
         saved = errno;
-        if (saved == ENOENT || saved == ENOTDIR) { *out = f; return 1; }
+        if (saved == ENOENT || saved == ENOTDIR) return 1;
         return ignore_error(error, saved, path);
     }
     if (fstat(fd, &st) != 0) {
@@ -380,8 +382,70 @@ static int ignore_read(CuArena *a, const char *path, IgnoreFile *out,
     (void)fclose(stream);
     if (saved != 0) return ignore_error(error, saved, path);
     if (!cu_sb_finish(&b, &text)) return ignore_error(error, ENOMEM, path);
-    if (!ignore_parse(a, text, &f, &number)) return ignore_error(error, number, path);
+    *out = text;
+    return 1;
+}
+
+static int ignore_read(CuArena *a, const char *path, IgnoreFile *out,
+                       IgnoreError *error)
+{
+    CuStr text;
+    IgnoreFile f;
+    int number;
+    f.rules = NULL; f.count = 0;
+    if (!ignore_slurp(a, path, &text, error)) return 0;
+    if (text.ptr != NULL && !ignore_parse(a, text, &f, &number))
+        return ignore_error(error, number, path);
     *out = f;
+    return 1;
+}
+
+/* Git's reading of a .git file or commondir: trailing line ends go, and a
+ * relative path is taken from base. */
+static char *ignore_git_path(CuArena *a, const char *base, CuStr text)
+{
+    while (text.len != 0 && (text.ptr[text.len - 1] == '\n' || text.ptr[text.len - 1] == '\r'))
+        --text.len;
+    if (text.len != 0 && text.ptr[0] == '/') return ignore_copy(a, text.ptr, text.len);
+    return join_path(a, base, text);
+}
+
+/* Where Git reads info/exclude for the repository marked in directory. The
+ * git directory is .git itself or, for a .git file (linked worktrees,
+ * submodules), its "gitdir: " target; a commondir file there names the
+ * directory linked worktrees share. *out is NULL when there is none. */
+static int ignore_exclude_path(CuArena *a, const char *directory, char **out,
+                               IgnoreError *error)
+{
+    struct stat st;
+    char *git, *path;
+    CuStr text;
+    int saved;
+    *out = NULL;
+    git = join_path(a, directory, cu_str_cstr(".git"));
+    if (git == NULL) return ignore_error(error, ENOMEM, directory);
+    if (ignore_follow(git, &st) != 0) {
+        saved = errno;
+        if (saved == ENOENT || saved == ENOTDIR) return 1;
+        return ignore_error(error, saved, git);
+    }
+    if (S_ISREG(st.st_mode)) {
+        if (!ignore_slurp(a, git, &text, error)) return 0;
+        if (text.ptr == NULL || text.len < 8 || memcmp(text.ptr, "gitdir: ", 8) != 0) return 1;
+        text.ptr += 8; text.len -= 8;
+        path = git;
+        git = ignore_git_path(a, directory, text);
+        if (git == NULL) return ignore_error(error, ENOMEM, path);
+    } else if (!S_ISDIR(st.st_mode)) return 1;
+    path = join_path(a, git, cu_str_cstr("commondir"));
+    if (path == NULL) return ignore_error(error, ENOMEM, git);
+    if (!ignore_slurp(a, path, &text, error)) return 0;
+    if (text.ptr != NULL) {
+        git = ignore_git_path(a, git, text);
+        if (git == NULL) return ignore_error(error, ENOMEM, path);
+    }
+    *out = join_path(a, git, cu_str_cstr("info/exclude"));
+    if (*out == NULL) return ignore_error(error, ENOMEM, git);
     return 1;
 }
 
@@ -412,11 +476,16 @@ static int ignore_frame(CuArena *a, const IgnoreFrame *parent,
     for (k = 0; k < IGNORE_CLASSES; ++k) {
         f->files[k].rules = NULL; f->files[k].count = 0;
         if (k != IGNORE_PLAIN && !has_repository) continue;
-        if (k == IGNORE_EXCLUDE ? f->repository : (listed & (1U << k)) != 0) {
+        if (k == IGNORE_EXCLUDE) {
+            if (!f->repository) continue;
+            if (!ignore_exclude_path(a, directory, &path, error)) return 0;
+            if (path == NULL) continue;
+        } else {
+            if ((listed & (1U << k)) == 0) continue;
             path = join_path(a, directory, cu_str_cstr(ignore_names[k]));
             if (path == NULL) return ignore_error(error, ENOMEM, directory);
-            if (!ignore_read(a, path, &f->files[k], error)) return 0;
         }
+        if (!ignore_read(a, path, &f->files[k], error)) return 0;
     }
     *out = f;
     return 1;

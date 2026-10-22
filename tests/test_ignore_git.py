@@ -1,11 +1,14 @@
 """Randomized ignore differential: fynd's file selection against Git itself.
 
 Each case builds a random tree in a fresh repository with random .gitignore
-rules (root and nested) and .git/info/exclude, then compares the regular files
+rules (root and nested) and info/exclude, then compares the regular files
 fynd selects with `git ls-files --others --exclude-standard`, serially and
 with the default thread count. Hidden names are outside this comparison
 (fynd needs -H for them; Git has no such rule). Global Git configuration is
-isolated so only repository rules apply.
+isolated so only repository rules apply. The repository is a plain one, a
+linked worktree, or a .git file naming a separate git directory (as
+submodules have); a .git file's target may be absolute or relative, and
+info/exclude lives in the directory Git reads it from.
 
 usage: test_ignore_git.py FYND [--cases N] [--seed S]
 """
@@ -60,21 +63,50 @@ def selected(fynd, root, jobs):
     return out.returncode, out.stderr, paths
 
 
+def git(*argv, cwd=None):
+    return subprocess.run(['git'] + list(argv), cwd=cwd, env=ENV, capture_output=True,
+                          check=True).stdout.decode('utf-8', 'surrogateescape')
+
+
+def repository(rng, base):
+    """Makes base/work a repository root; returns it and Git's common directory."""
+    root = os.path.join(base, 'work')
+    shape = rng.choice(['plain', 'plain', 'linked', 'separate'])
+    if shape == 'plain':
+        git('init', '-q', root)
+    elif shape == 'linked':
+        main = os.path.join(base, 'main')
+        git('init', '-q', main)
+        git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-q', '--allow-empty',
+            '-m', 'i', cwd=main)
+        git('worktree', 'add', '-q', '--detach', root, cwd=main)
+    else:
+        git('init', '-q', '--separate-git-dir', os.path.join(base, 'sep'), root)
+    marker = os.path.join(root, '.git')
+    if shape != 'plain' and rng.random() < 0.5:
+        with open(marker) as f:
+            target = f.read().strip()[len('gitdir: '):]
+        with open(marker, 'w') as f:
+            f.write('gitdir: ' + os.path.relpath(target, root) + '\n')
+    common = os.path.join(root, git('rev-parse', '--git-common-dir', cwd=root).strip())
+    os.makedirs(os.path.join(common, 'info'), exist_ok=True)
+    return root, common
+
+
 def case(fynd, seed, scratch):
     rng = random.Random(seed)
-    root = tempfile.mkdtemp(dir=scratch)
+    base = tempfile.mkdtemp(dir=scratch)
     try:
-        subprocess.run(['git', 'init', '-q', root], check=True, env=ENV)
+        root, common = repository(rng, base)
         tree(rng, root, 0)
         rules_file(rng, os.path.join(root, '.gitignore'), rng.randint(1, 5))
         dirs = [d for d, _, _ in os.walk(root) if '.git' not in d.split(os.sep) and d != root]
         if dirs and rng.random() < 0.4:
             rules_file(rng, os.path.join(rng.choice(dirs), '.gitignore'), rng.randint(1, 3))
         if rng.random() < 0.3:
-            rules_file(rng, os.path.join(root, '.git', 'info', 'exclude'), rng.randint(1, 2))
-        git = subprocess.run(['git', 'ls-files', '-z', '--others', '--exclude-standard'],
-                             cwd=root, env=ENV, capture_output=True, check=True).stdout
-        want = {p for p in git.decode('utf-8', 'surrogateescape').split('\0')
+            rules_file(rng, os.path.join(common, 'info', 'exclude'), rng.randint(1, 2))
+        listed = git('ls-files', '-z', '--others', '--exclude-standard', cwd=root)
+        want = {p for p in listed.split('\0')
                 if p and not any(c.startswith('.') for c in p.split('/'))}
         for jobs in (['-j1'], [], ['--sort']):
             rc, err, got = selected(fynd, root, jobs)
@@ -83,7 +115,7 @@ def case(fynd, seed, scratch):
                             only_fynd=sorted(got - want), only_git=sorted(want - got))
         return None
     finally:
-        shutil.rmtree(root)
+        shutil.rmtree(base)
 
 
 def main(argv=None):
@@ -92,8 +124,7 @@ def main(argv=None):
     parser.add_argument('--cases', type=int, default=300)
     parser.add_argument('--seed', type=int, default=0)
     args = parser.parse_args(argv)
-    git = shutil.which('git')
-    if git is None:
+    if shutil.which('git') is None:
         print('SKIP Git absent: randomized Git ignore differential not run')
         return 0
     fynd = os.path.abspath(args.fynd)

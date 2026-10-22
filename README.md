@@ -157,8 +157,10 @@ On POSIX, SIGPIPE may terminate the CLI instead of status 1.
   `-0`; bytes from different result records never interleave, even across worker
   batches. Use `-0` for arbitrary filenames. Newline output can be ambiguous
   and can contain terminal control bytes.
-- Ignore precedence is `.ignore`, repository `.gitignore`, `.git/info/exclude`,
+- Ignore precedence is `.ignore`, repository `.gitignore`, `info/exclude`,
   then the conventional global Git ignore file. Proper ancestors are included.
+  In a linked worktree or submodule, where `.git` is a file, `info/exclude` is
+  read from the Git directory it names, as Git does.
   Explicit roots bypass rules for themselves; children still obey them.
   Hidden children require `-H` even when a rule explicitly unignores them.
   After opening a directory, fixed-name probes load its current `.ignore` and

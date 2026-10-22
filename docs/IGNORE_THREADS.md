@@ -99,7 +99,11 @@ High to low precedence is:
 
 1. `.ignore`, at any directory including proper ancestors.
 2. `.gitignore`, within the nearest detected repository.
-3. That repository's `.git/info/exclude`.
+3. That repository's `info/exclude`, in its Git common directory: `.git`
+   itself, or for a `.git` file (linked worktrees, submodules) the directory
+   its `gitdir:` line names, or that directory's `commondir` when present.
+   A relative path in either is taken from the file's own directory, and a
+   `.git` file without a `gitdir:` line supplies no exclude source.
 4. `$XDG_CONFIG_HOME/git/ignore` for nonempty XDG_CONFIG_HOME, otherwise
    `$HOME/.config/git/ignore` for nonempty HOME.
 

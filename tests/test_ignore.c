@@ -480,7 +480,7 @@ static void filesystem_cases(void)
     p = join_path(&a, sub, cu_str_cstr("nested")); assert(p != NULL);
     assert(ignore_enter(&a, root, p, 1, &child, &e));
     p = join_path(&a, p, cu_str_cstr(".git")); assert(p != NULL);
-    put_source(p, "gitdir: deliberately not resolved\n", 33);
+    put_source(p, "gitdir: missing\n", 16);
     p = join_path(&a, sub, cu_str_cstr("nested")); assert(p != NULL);
     assert(ignore_enter(&a, root, p, 1U | IGNORE_REPOSITORY_BIT, &nested, &e));
     p = join_path(&a, p, cu_str_cstr("git")); assert(p != NULL);
@@ -490,6 +490,65 @@ static void filesystem_cases(void)
     assert(ignore_verdict(&a, nested, p, 0, &v, &e) && v == -1);
     p = join_path(&a, sub, cu_str_cstr("nested/rank")); assert(p != NULL);
     assert(ignore_verdict(&a, nested, p, 0, &v, &e) && v == 1);
+    /* A .git file names the git directory (relative to its own directory);
+     * a commondir there names the one linked worktrees share. Git reads
+     * info/exclude from the shared one, else from the git directory. */
+    {
+        const char *crlf = "gitdir: ../../common/worktrees/wt\r\n", *bad = "gitdir:x\n";
+        char *dir, *gitdir, *shared, *own, *marker;
+        dir = join_path(&a, sub, cu_str_cstr("nested")); assert(dir != NULL);
+        marker = join_path(&a, dir, cu_str_cstr(".git")); assert(marker != NULL);
+        shared = join_path(&a, dir, cu_str_cstr("shared")); assert(shared != NULL);
+        own = join_path(&a, dir, cu_str_cstr("own")); assert(own != NULL);
+        p = join_path(&a, base, cu_str_cstr("common")); assert(p != NULL);
+        assert(mkdir(p, 0700) == 0);
+        p = join_path(&a, p, cu_str_cstr("info")); assert(p != NULL);
+        assert(mkdir(p, 0700) == 0);
+        p = join_path(&a, p, cu_str_cstr("exclude")); assert(p != NULL);
+        put_source(p, "shared\n", 7);
+        p = join_path(&a, base, cu_str_cstr("common/worktrees")); assert(p != NULL);
+        assert(mkdir(p, 0700) == 0);
+        gitdir = join_path(&a, p, cu_str_cstr("wt")); assert(gitdir != NULL);
+        assert(mkdir(gitdir, 0700) == 0);
+        p = join_path(&a, gitdir, cu_str_cstr("commondir")); assert(p != NULL);
+        put_source(p, "../..\n", 6);
+        put_source(marker, crlf, strlen(crlf));
+        assert(ignore_enter(&a, root, dir, IGNORE_REPOSITORY_BIT, &nested, &e));
+        assert(ignore_verdict(&a, nested, shared, 0, &v, &e) && v == 1);
+        assert(ignore_verdict(&a, nested, own, 0, &v, &e) && v == 0);
+        /* Without commondir, as for a submodule, the git directory's own. */
+        assert(unlink(p) == 0);
+        p = join_path(&a, gitdir, cu_str_cstr("info")); assert(p != NULL);
+        assert(mkdir(p, 0700) == 0);
+        p = join_path(&a, p, cu_str_cstr("exclude")); assert(p != NULL);
+        put_source(p, "own\n", 4);
+        {
+            FILE *g;
+            g = fopen(marker, "wb"); assert(g != NULL);
+            assert(fprintf(g, "gitdir: %s\n", gitdir) > 0);
+            assert(fclose(g) == 0);
+        }
+        assert(ignore_enter(&a, root, dir, IGNORE_REPOSITORY_BIT, &nested, &e));
+        assert(ignore_verdict(&a, nested, own, 0, &v, &e) && v == 1);
+        assert(ignore_verdict(&a, nested, shared, 0, &v, &e) && v == 0);
+        /* Not a gitdir line: no exclude source. */
+        put_source(marker, bad, strlen(bad));
+        assert(ignore_enter(&a, root, dir, IGNORE_REPOSITORY_BIT, &nested, &e));
+        assert(ignore_verdict(&a, nested, own, 0, &v, &e) && v == 0);
+        /* An unreadable commondir is an error at its path. */
+        p = join_path(&a, gitdir, cu_str_cstr("commondir")); assert(p != NULL);
+        assert(mkdir(p, 0700) == 0);
+        put_source(marker, crlf, strlen(crlf) - 2);
+        sentinel = root;
+        assert(!ignore_enter(&a, root, dir, IGNORE_REPOSITORY_BIT, &sentinel, &e));
+        assert(e.number == EINVAL && sentinel == root && strlen(e.path) > 13);
+        assert(strcmp(e.path + strlen(e.path) - 13, "/wt/commondir") == 0);
+        assert(rmdir(p) == 0);
+        test_probe_errno = EIO;
+        assert(!ignore_exclude_path(&a, dir, &p, &e) && e.number == EIO);
+        assert(strcmp(e.path, marker) == 0);
+        test_probe_errno = 0;
+    }
     cu_temp_end(t);
     test_ignore_budget = 0; v = 42;
     p = join_path(&a, sub, cu_str_cstr("rank")); assert(p != NULL);
