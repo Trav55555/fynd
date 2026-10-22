@@ -200,8 +200,8 @@ static int sched_stopped(Sched *);
 static int sched_push(Run *, const char *, int, const IgnoreFrame *);
 static int sched_record(SchedWorker *, const char *, int);
 static void sched_output_failure(Run *);
-static int sched_enter(Run *, const IgnoreFrame *, const char *, const IgnoreFrame **,
-                       SchedHold **);
+static int sched_enter(Run *, const IgnoreFrame *, const CuDir *, const char *,
+                       const IgnoreFrame **, SchedHold **);
 static void sched_drop(Sched *, SchedHold *);
 
 static void ignore_failure(Run *r, const IgnoreError *error)
@@ -282,11 +282,11 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
         /* Scheduled frames live in reference-counted holds, freed when the
          * last task borrowing them finishes; serial frames use this scope. */
         if (r->sched != NULL) {
-            if (!sched_enter(r, rules, path, &rules, &own))
+            if (!sched_enter(r, rules, &job.dir, path, &rules, &own))
                 goto done;
             if (own != NULL)
                 r->hold = own;
-        } else if (!ignore_stream_enter(r->arena, rules, path, &rules, &error)) {
+        } else if (!ignore_stream_enter(r->arena, rules, &job.dir, path, &rules, &error)) {
             ignore_failure(r, &error);
             goto done;
         }

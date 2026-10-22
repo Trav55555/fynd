@@ -27,7 +27,7 @@ FILES = tuple(sorted(set(MUTATION_FILES + ('include/fynd.h', 'cmd/main.c') + C_T
                                         'include/**/*.h', 'tests/**/*.py',
                                         'tests/**/*.h', 'fuzz/**/*.h')
                         for path in SOURCE.glob(pattern)}))
-EXPECTED_MUTATIONS = 27  # 19 retained + 6 scheduler controls replacing 7 coarse/thread ones + frame elision + hold release.
+EXPECTED_MUTATIONS = 29  # 19 retained + 6 scheduler controls replacing 7 coarse/thread ones + frame elision + hold release + two dir-relative probe controls.
 STRICT = ['-std=c89', '-pedantic-errors', '-Wall', '-Wextra', '-Werror',
           '-Wconversion', '-Wshadow', '-Wstrict-prototypes', '-Wmissing-prototypes']
 MUTATIONS = (
@@ -98,6 +98,14 @@ MUTATIONS = (
      '    if (k == IGNORE_CLASSES && !f->repository &&',
      '    if (k == IGNORE_CLASSES && !f->repository && 0 &&',
      'test_ignore elision: ruleless, non-repository directories reuse the parent frame'),
+    ('skip-gitignore-probe', 'src/ignore.inc',
+     '        if (k == IGNORE_GIT && !repository) continue;',
+     '        if (k == IGNORE_GIT) continue;',
+     'ignore CLI and Git differential require .gitignore below a repository root'),
+    ('ignore-probe-absence', 'src/ignore.inc',
+     '    case CU_INFO_MISSING: *present = 0; return 1;',
+     '    case CU_INFO_MISSING: *present = 1; return 1;',
+     'test_ignore elision: a directory without sources must reuse the parent frame'),
     ('retain-visit-hold', 'src/fynd.c',
      '    if (own != NULL)\n        sched_drop(r->sched, own);',
      '    if (own != NULL && 0)\n        sched_drop(r->sched, own);',
@@ -155,9 +163,9 @@ MUTATIONS = (
      'test_fynd/test_stream late EIO and test_sched worker late EIO '
      'require failure status and escaped diagnostics, not successful EOF'),
     ('skip-current-policy-before-enumeration', 'src/fynd.c',
-     '        } else if (!ignore_stream_enter(r->arena, rules, path, &rules, &error)) {',
+     '        } else if (!ignore_stream_enter(r->arena, rules, &job.dir, path, &rules, &error)) {',
      '        } else if (depth < 0 &&\n'
-     '                   !ignore_stream_enter(r->arena, rules, path, &rules, &error)) {',
+     '                   !ignore_stream_enter(r->arena, rules, &job.dir, path, &rules, &error)) {',
      'test_stream policy_before_any_next, late_ignore_policy and dangling_repository_marker '
      'require current-directory rules before the first child; ancestor seeding remains live'),
 )
@@ -254,7 +262,7 @@ def main():
         parser.error('missing required active C fixtures')
     if (len(MUTATIONS) != EXPECTED_MUTATIONS or
             len({mutation[0] for mutation in MUTATIONS}) != EXPECTED_MUTATIONS):
-        parser.error('control inventory must contain exactly 25 unique active mutations')
+        parser.error('control inventory must contain exactly %d unique active mutations' % EXPECTED_MUTATIONS)
     cutils = args.cutils.resolve()
     if not (cutils / 'include/cu.h').is_file() or not list((cutils / 'src').glob('*.c')):
         parser.error('--cutils must contain include/cu.h and src/*.c')
