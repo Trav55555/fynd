@@ -143,3 +143,27 @@ named controls, including the new `hidden-ignores-negation` and
 `drop-hidden-before-verdict`. Coverage: main 93.16%, ignore 97.41%, listing
 91.95%, scheduler 96.92%. On the home projects tree, output now equals fd
 10.3.0's (408,325 paths; 50 more than before), at unchanged speed.
+
+## Threaded --sort
+
+Running `--sort` on the thread scheduler, writing in walk order, was qualified
+by `build/verification/run.l97tFG`, exit 0, on c-utils `7750e1c`: five C
+suites (the scheduler suite now compares threaded `--sort` with `--sort -j1`
+byte for byte on stdout and stderr), three 500-case CLI seeds, the Git
+differential, required deep checks including fuzzing, ThreadSanitizer and
+MemorySanitizer, and all 39 named controls, including the new
+`unordered-sorted-records` and `child-output-after-parent`. Coverage: main
+94.27%, ignore 97.41%, listing 91.95%, scheduler 96.65%.
+
+Medians of nine runs on one 12-CPU host under outside load (load average
+about 12), same output; "before" is the serial `--sort` of the previous
+binary:
+
+| Tree | Before ms | After ms | Unsorted ms |
+| --- | ---: | ---: | ---: |
+| 9,331 directories, 37k files | 79.3 | 46.5 | 22.6 |
+| Home projects | 1,242 | 437 | 260 |
+| `/usr` | 396 | 157 | 96 |
+
+Peak RSS rises from 2.6 MB to 12.2 MB on the home tree and from 2.7 MB to
+11.4 MB on `/usr`, for results held up to 1,024 directories ahead.
