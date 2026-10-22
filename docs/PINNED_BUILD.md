@@ -86,11 +86,12 @@ manifest moved to schema 2: those files stay pinned and inventory-checked, and
 `sources` names the 16 that are compiled, now including `src/cu_metadata.c`.
 `include/cu.h` and `src/cu_append.c` also changed between the two revisions.
 
-Qualified by `build/verification/run.Pq7IjI`, exit 0: build guards (17 tests,
-including rejection of an unpinned, dropped or unsorted `sources` entry), five C
-suites, three 500-case CLI seeds, required deep checks, and all 29 named
-controls, including `skip-gitignore-probe` and `ignore-probe-absence`. Coverage:
-main 94.19%, ignore 96.27%, listing 91.95%, scheduler 96.92%.
+Qualified by `build/verification/run.z8rL06`, exit 0, on the tree merged with
+#5: build guards (17 tests, including rejection of an unpinned, dropped or
+unsorted `sources` entry), five C suites, three 500-case CLI seeds, the Git
+differential, required deep checks, and all 31 named controls, including
+`skip-gitignore-probe` and `ignore-probe-absence`. Coverage: main 94.43%,
+ignore 96.30%, listing 91.95%, scheduler 96.66%.
 
 Warm medians of 15 interleaved runs on one 12-CPU host, same output (329,177
 records on the home projects tree):
