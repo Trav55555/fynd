@@ -175,8 +175,9 @@ On POSIX, SIGPIPE may terminate the CLI instead of status 1.
   writing them under a shared output lock. Discovered directories wait on a
   shared task stack until a thread takes them; the stack holds one path per
   pending directory, so it grows with directories found but not yet listed.
-  Ignore rules loaded for a directory stay in memory until its root finishes;
-  directories without rule files or a `.git` marker load nothing. This is not a
+  Ignore rules loaded for a directory stay in memory while any listed or queued
+  directory below it still needs them; directories without rule files or a
+  `.git` marker load nothing. This is not a
   total RSS cap.
 - Serial traversal can retain up to 128 directory handles; a threaded walk holds
   one listing handle per thread, plus temporary ignore/policy handles.

@@ -21,6 +21,7 @@ typedef struct Query {
 
 typedef struct Sched Sched;
 typedef struct SchedWorker SchedWorker;
+typedef struct SchedHold SchedHold;
 enum { EMIT_OUT = 0, EMIT_ERR = 1 };
 
 typedef struct Run {
@@ -32,6 +33,7 @@ typedef struct Run {
     int stop;
     Sched *sched; /* non-NULL while a -j N walk is active */
     SchedWorker *worker; /* this thread's worker, with sched */
+    SchedHold *hold; /* owner of the frame children borrow, or NULL */
 } Run;
 
 static void sched_lock_out(Run *, int);
@@ -198,6 +200,9 @@ static int sched_stopped(Sched *);
 static int sched_push(Run *, const char *, int, const IgnoreFrame *);
 static int sched_record(SchedWorker *, const char *, int);
 static void sched_output_failure(Run *);
+static int sched_enter(Run *, const IgnoreFrame *, const char *, const IgnoreFrame **,
+                       SchedHold **);
+static void sched_drop(Sched *, SchedHold *);
 
 static void ignore_failure(Run *r, const IgnoreError *error)
 {
@@ -222,10 +227,13 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
     const IgnoreFrame *rules;
     IgnoreError error;
     CuDirEntry entry;
+    SchedHold *inherited;
+    SchedHold *own;
     unsigned tick;
     int next;
     int verdict;
     int ok;
+    int seeded;
     char *joined;
     if (kind == CU_DIR_DIR && walk_stopped(r))
         return;
@@ -251,6 +259,9 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
     }
     directory = cu_temp_begin(r->arena);
     rules = parent;
+    inherited = r->hold;
+    own = NULL;
+    seeded = 0;
     listing_init(&job, path);
     /* Open failures keep precedence over policy failures. No entry is read
      * until all current-directory policy has been acquired. */
@@ -261,11 +272,21 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
         goto done;
     }
     if (!r->query->no_ignore) {
-        if (parent == NULL && !ignore_seed(r->arena, path, &rules, &error)) {
-            ignore_failure(r, &error);
-            goto done;
+        if (parent == NULL) {
+            if (!ignore_seed(r->arena, path, &rules, &error)) {
+                ignore_failure(r, &error);
+                goto done;
+            }
+            seeded = 1;
         }
-        if (!ignore_stream_enter(r->arena, rules, path, &rules, &error)) {
+        /* Scheduled frames live in reference-counted holds, freed when the
+         * last task borrowing them finishes; serial frames use this scope. */
+        if (r->sched != NULL) {
+            if (!sched_enter(r, rules, path, &rules, &own))
+                goto done;
+            if (own != NULL)
+                r->hold = own;
+        } else if (!ignore_stream_enter(r->arena, rules, path, &rules, &error)) {
             ignore_failure(r, &error);
             goto done;
         }
@@ -306,8 +327,11 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
     }
 done:
     listing_release(&job);
-    /* Queued children may borrow a new frame until the root barrier. */
-    if (r->sched == NULL || rules == parent)
+    if (own != NULL)
+        sched_drop(r->sched, own);
+    r->hold = inherited;
+    /* A scheduled root's seed frames stay until the root barrier. */
+    if (r->sched == NULL || !seeded)
         cu_temp_end(directory);
 }
 
@@ -477,6 +501,7 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
     r.stop = 0;
     r.sched = NULL;
     r.worker = NULL;
+    r.hold = NULL;
     sched_live = 0;
     if (argc == 2 && (strcmp(argv[1], "-h") == 0 ||
         strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "--version") == 0)) {

@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 static void *sched_test_alloc(size_t size);
+static size_t holds_peak; /* written under the scheduler's Mu */
+#define FYND_HOLDS_LIVE(count) (holds_peak = (count) > holds_peak ? (count) : holds_peak)
 static int sched_dir_open(CuDir *dir, CuArena *arena, const char *path);
 static int sched_dir_next(CuDir *dir, CuDirEntry *entry);
 static void sched_dir_close(CuDir *dir);
@@ -319,6 +321,19 @@ static void build_fixture(const char *root)
     }
     assert(snprintf(path, sizeof path, "%s/empty", root) > 0);
     make_dir(path);
+    /* 200 sibling directories that each load rules, under a rule root. */
+    assert(snprintf(path, sizeof path, "%s/holds", root) > 0);
+    make_dir(path);
+    assert(snprintf(path, sizeof path, "%s/holds/.ignore", root) > 0);
+    make_file(path, "x\n");
+    for (i = 0; i < 200; ++i) {
+        assert(snprintf(path, sizeof path, "%s/holds/h%03d", root, i) > 0);
+        make_dir(path);
+        assert(snprintf(path, sizeof path, "%s/holds/h%03d/.ignore", root, i) > 0);
+        make_file(path, "y\n");
+        assert(snprintf(path, sizeof path, "%s/holds/h%03d/f", root, i) > 0);
+        make_file(path, "");
+    }
     assert(snprintf(path, sizeof path, "%s/chain", root) > 0);
     make_dir(path);
     for (i = 0; i < 130; ++i) {
@@ -451,6 +466,26 @@ static void late_launch(const char *root)
     assert(threaded.out_len == serial.out_len &&
            memcmp(threaded.out, serial.out, strlen(file) + strlen(empty) + 2) == 0);
     same_multiset(threaded.out, threaded.out_len, serial.out, serial.out_len, '\n');
+    release(&serial);
+    release(&threaded);
+}
+
+/* A finished subtree frees its frames before the root ends: with 4 threads
+ * at most one hold per running visit plus the root's own is ever live. */
+static void hold_release(const char *root)
+{
+    char tree[512];
+    char *argv[5];
+    Result serial, threaded;
+    assert(snprintf(tree, sizeof tree, "%s/holds", root) > 0);
+    argv[0] = "fynd"; argv[1] = "-j1"; argv[2] = ""; argv[3] = tree; argv[4] = NULL;
+    serial = call(argv);
+    argv[1] = "-j4";
+    holds_peak = 0;
+    threaded = call(argv);
+    assert(threaded.status == 0 && serial.status == 0 && threaded.err_len == 0);
+    same_multiset(threaded.out, threaded.out_len, serial.out, serial.out_len, '\n');
+    assert(holds_peak >= 2 && holds_peak <= 5);
     release(&serial);
     release(&threaded);
 }
@@ -640,6 +675,7 @@ int main(void)
     equivalence(root);
     root_groups(root);
     late_launch(root);
+    hold_release(root);
     depth_limits(root);
     output_failures(root);
     resource_failures(root);
