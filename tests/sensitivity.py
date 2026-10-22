@@ -27,8 +27,9 @@ FILES = tuple(sorted(set(MUTATION_FILES + ('include/fynd.h', 'cmd/main.c') + C_T
                                         'include/**/*.h', 'tests/**/*.py',
                                         'tests/**/*.h', 'fuzz/**/*.h')
                         for path in SOURCE.glob(pattern)}))
-EXPECTED_MUTATIONS = 33  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
-                         # + two dir-relative probe controls + two .git file controls.
+EXPECTED_MUTATIONS = 35  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
+                         # + two dir-relative probe controls + two .git file controls
+                         # + two listing-presence controls.
 STRICT = ['-std=c89', '-pedantic-errors', '-Wall', '-Wextra', '-Werror',
           '-Wconversion', '-Wshadow', '-Wstrict-prototypes', '-Wmissing-prototypes']
 MUTATIONS = (
@@ -128,8 +129,8 @@ MUTATIONS = (
      "        if (r->len != 0 && 0 && r->glob[0] != '*' &&",
      'charged-work sensor rejects repeated glob/suffix scans for impossible rules'),
     ('skip-sort', 'src/fynd.c',
-     '    qsort(CU_VEC_DATA(&entries, SortedEntry), cu_vec_len(&entries), sizeof(SortedEntry),',
-     '    if (0) qsort(CU_VEC_DATA(&entries, SortedEntry), cu_vec_len(&entries), sizeof(SortedEntry),',
+     '        qsort(CU_VEC_DATA(&ahead, SortedEntry), cu_vec_len(&ahead), sizeof(SortedEntry),',
+     '        if (0) qsort(CU_VEC_DATA(&ahead, SortedEntry), cu_vec_len(&ahead), sizeof(SortedEntry),',
      'test_cli --sort output must equal the oracle\'s exact byte-sorted preorder'),
     ('expand-repeated-doublestar', 'src/ignore.inc',
      "            while (gl >= 5 && g[3] == '*' && g[4] == '*' && (gl == 5 || g[5] == '/')) {",
@@ -180,11 +181,19 @@ MUTATIONS = (
      'test_fynd/test_stream late EIO and test_sched worker late EIO '
      'require failure status and escaped diagnostics, not successful EOF'),
     ('skip-current-policy-before-enumeration', 'src/fynd.c',
-     '        } else if (!ignore_stream_enter(r->arena, rules, &job.dir, path, &rules, &error)) {',
+     '        } else if (!ignore_stream_enter(r->arena, rules, dir, path, listed, &rules, &error)) {',
      '        } else if (depth < 0 &&\n'
-     '                   !ignore_stream_enter(r->arena, rules, &job.dir, path, &rules, &error)) {',
-     'test_stream policy_before_any_next, late_ignore_policy and dangling_repository_marker '
+     '                   !ignore_stream_enter(r->arena, rules, dir, path, listed, &rules, &error)) {',
+     'test_stream policy_from_listing, late_ignore_policy and dangling_repository_marker '
      'require current-directory rules before the first child; ancestor seeding remains live'),
+    ('probe-complete-listing', 'src/fynd.c',
+     '        if (next != 0)\n            listed = IGNORE_UNLISTED;',
+     '        if (next != 2)\n            listed = IGNORE_UNLISTED;',
+     'test_stream policy_from_listing requires no probe when the listing ended within the window'),
+    ('unlisted-ignore-name', 'src/ignore.inc',
+     '    if (name.len == 7 && memcmp(name.ptr, ".ignore", 7) == 0) return 1U << IGNORE_PLAIN;',
+     '    if (name.len == 7 && memcmp(name.ptr, ".ignore", 7) == 0) return 0;',
+     'test_stream policy_from_listing and late_ignore_policy require a listed .ignore to be read'),
 )
 
 

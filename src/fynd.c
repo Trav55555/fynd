@@ -202,7 +202,7 @@ static int sched_push(Run *, const char *, int, const IgnoreFrame *);
 static int sched_record(SchedWorker *, const char *, int);
 static void sched_output_failure(Run *);
 static int sched_enter(Run *, const IgnoreFrame *, const CuDir *, const char *,
-                       const IgnoreFrame **, SchedHold **);
+                       unsigned, const IgnoreFrame **, SchedHold **);
 static void sched_drop(Sched *, SchedHold *);
 
 static void ignore_failure(Run *r, const IgnoreError *error)
@@ -277,56 +277,55 @@ static int sorted_compare(const void *a, const void *b)
     return x->name.len < y->name.len ? -1 : x->name.len > y->name.len;
 }
 
-/* --sort: read the whole directory, then visit children in byte order. The
- * entries live in the caller's directory scope; the cursor closes first. */
-static void visit_sorted(Run *r, ListingJob *job, const char *path, int depth,
-                         const IgnoreFrame *rules)
+#ifndef FYND_LISTING_AHEAD
+/* Names read before a directory's policy is entered. A listing that ends
+ * within them shows which ignore sources it holds, so none is probed. */
+#define FYND_LISTING_AHEAD 64
+#endif
+
+static void listing_failure(Run *r, const ListingJob *job, const char *path)
 {
-    CuVec entries;
+    failure(r, job->error == ENOMEM ? "allocation failure" : "cannot list directory",
+            path, listing_resource(job->error));
+}
+
+/* Read up to limit names of job into entries, in the caller's directory
+ * scope, noting in *listed the ignore sources among them. Hidden names that
+ * cannot be selected are not kept. Returns the last listing_next result, 1
+ * when the limit or a stop comes first, or -2 after reporting an allocation
+ * failure. */
+static int read_ahead(Run *r, ListingJob *job, const char *path, size_t limit,
+                      CuVec *entries, unsigned *listed)
+{
     CuDirEntry entry;
     SortedEntry item;
-    const SortedEntry *at;
     const char *copy;
-    unsigned tick;
-    size_t i;
+    size_t n;
     int next;
-    CU_VEC_INIT(&entries, r->arena, SortedEntry);
-    tick = 0;
-    while (!r->stop) {
-        if (tick == 0 && walk_stopped(r))
-            break;
+    *listed = 0;
+    for (n = 0; n < limit; ++n) {
+        if (n % 64U == 0 && walk_stopped(r))
+            return 1;
         next = listing_next(job, &entry);
-        if (next != 1) {
-            if (next < 0)
-                failure(r, job->error == ENOMEM ? "allocation failure" :
-                        "cannot list directory", path, listing_resource(job->error));
-            break;
-        }
-        tick = (tick + 1U) % 64U;
+        if (next != 1)
+            return next;
+        *listed |= ignore_listed_name(entry.name);
         if (skips_hidden(r, entry.name))
             continue;
         copy = cu_str_cstr_copy(r->arena, entry.name);
         if (copy == NULL) {
             failure(r, "allocation failure", path, 1);
-            break;
+            return -2;
         }
         item.name = cu_str_n(copy, entry.name.len);
         item.kind = entry.kind;
-        CU_VEC_PUSH(&entries, &item);
-        if (cu_vec_failed(&entries)) {
+        CU_VEC_PUSH(entries, &item);
+        if (cu_vec_failed(entries)) {
             failure(r, "allocation failure", path, 1);
-            break;
+            return -2;
         }
     }
-    listing_release(job);
-    if (r->stop || cu_vec_len(&entries) == 0)
-        return;
-    qsort(CU_VEC_DATA(&entries, SortedEntry), cu_vec_len(&entries), sizeof(SortedEntry),
-          sorted_compare);
-    for (i = 0; i < cu_vec_len(&entries) && !walk_stopped(r); ++i) {
-        at = CU_VEC_AT(&entries, SortedEntry, i);
-        visit_child(r, path, depth, rules, at->name, at->kind);
-    }
+    return 1;
 }
 
 static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int depth,
@@ -337,9 +336,14 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
     const IgnoreFrame *rules;
     IgnoreError error;
     CuDirEntry entry;
+    CuVec ahead;
+    const SortedEntry *at;
+    const CuDir *dir;
     SchedHold *inherited;
     SchedHold *own;
     unsigned tick;
+    unsigned listed;
+    size_t i;
     int next;
     int ok;
     int seeded;
@@ -371,14 +375,21 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
     own = NULL;
     seeded = 0;
     listing_init(&job, path);
-    /* Open failures keep precedence over policy failures. No entry is read
-     * until all current-directory policy has been acquired. */
+    /* Open failures keep precedence over policy failures, and policy
+     * failures over listing failures. No child is selected until all
+     * current-directory policy has been acquired. */
     if (!listing_open(&job)) {
         failure(r, job.error == ENOMEM ? "allocation failure" :
                 (job.operation == 1 ? "cannot open directory" : "cannot list directory"),
                 path, listing_resource(job.error));
         goto done;
     }
+    /* --sort reads the whole directory before visiting it. */
+    CU_VEC_INIT(&ahead, r->arena, SortedEntry);
+    next = read_ahead(r, &job, path, r->query->sort ? (size_t)-1 :
+                      r->query->no_ignore ? 0 : FYND_LISTING_AHEAD, &ahead, &listed);
+    if (next == -2 || walk_stopped(r))
+        goto done;
     if (!r->query->no_ignore) {
         if (parent == NULL) {
             if (!ignore_seed(r->arena, path, &rules, &error)) {
@@ -387,37 +398,53 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
             }
             seeded = 1;
         }
+        /* An unfinished listing is probed: through the cursor while it is
+         * open, by path after a listing failure has closed it. */
+        if (next != 0)
+            listed = IGNORE_UNLISTED;
+        dir = next == 1 ? &job.dir : NULL;
         /* Scheduled frames live in reference-counted holds, freed when the
          * last task borrowing them finishes; serial frames use this scope. */
         if (r->sched != NULL) {
-            if (!sched_enter(r, rules, &job.dir, path, &rules, &own))
+            if (!sched_enter(r, rules, dir, path, listed, &rules, &own))
                 goto done;
             if (own != NULL)
                 r->hold = own;
-        } else if (!ignore_stream_enter(r->arena, rules, &job.dir, path, &rules, &error)) {
+        } else if (!ignore_stream_enter(r->arena, rules, dir, path, listed, &rules, &error)) {
             ignore_failure(r, &error);
             goto done;
         }
     }
     if (r->query->sort) {
-        visit_sorted(r, &job, path, depth, rules);
-        goto done;
+        /* The cursor closes before any child is visited. */
+        listing_release(&job);
+        if (next < 0)
+            listing_failure(r, &job, path);
+        if (r->stop)
+            goto done;
+        qsort(CU_VEC_DATA(&ahead, SortedEntry), cu_vec_len(&ahead), sizeof(SortedEntry),
+              sorted_compare);
     }
     tick = 0;
-    while (!r->stop) {
+    for (i = 0; i < cu_vec_len(&ahead) && !r->stop; ++i) {
+        if (tick == 0 && walk_stopped(r))
+            goto done;
+        tick = (tick + 1U) % 64U;
+        at = CU_VEC_AT(&ahead, SortedEntry, i);
+        visit_child(r, path, depth, rules, at->name, at->kind);
+    }
+    while (next == 1 && !r->stop) {
         if (tick == 0 && walk_stopped(r))
             break;
         next = listing_next(&job, &entry);
-        if (next != 1) {
-            if (next < 0)
-                failure(r, job.error == ENOMEM ? "allocation failure" :
-                        "cannot list directory", path, listing_resource(job.error));
+        if (next != 1)
             break;
-        }
         tick = (tick + 1U) % 64U;
         visit_child(r, path, depth, rules, entry.name, entry.kind);
         /* Only now may next invalidate entry.name. */
     }
+    if (next < 0 && !r->query->sort && !r->stop)
+        listing_failure(r, &job, path);
 done:
     listing_release(&job);
     if (own != NULL)

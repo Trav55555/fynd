@@ -153,7 +153,7 @@ static void sched_drop(Sched *s, SchedHold *h)
  * after reporting a failure. With new rules, *own is a counted hold that the
  * caller must drop; otherwise *out is parent and the spare is rolled back. */
 static int sched_enter(Run *r, const IgnoreFrame *parent, const CuDir *dir, const char *path,
-                       const IgnoreFrame **out, SchedHold **own)
+                       unsigned listed, const IgnoreFrame **out, SchedHold **own)
 {
     Sched *s;
     SchedHold *h;
@@ -174,7 +174,7 @@ static int sched_enter(Run *r, const IgnoreFrame *parent, const CuDir *dir, cons
         r->worker->spare = h;
     }
     scope = cu_temp_begin(&h->arena);
-    if (!ignore_stream_enter(&h->arena, parent, dir, path, out, &error)) {
+    if (!ignore_stream_enter(&h->arena, parent, dir, path, listed, out, &error)) {
         ignore_failure(r, &error); /* error.path may point into this scope */
         cu_temp_end(scope);
         return 0;

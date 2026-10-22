@@ -111,8 +111,16 @@ Within each source class, the deepest matching file wins, then its last matching
 line. Git sources require a repository marker and stop at the nearest nested
 repository. `.ignore` remains active across repository boundaries. Global rules
 use repository-relative paths, not the command's root spelling. A `.git` marker
-file establishes a boundary, but its contents/worktree gitdir are not resolved.
-Git configuration, including core.excludesFile, is not parsed.
+of any kind establishes a boundary; a `.git` file is read only to find
+`info/exclude`. Git configuration, including core.excludesFile, is not parsed.
+
+A directory's sources are found before any of its children is selected. Up to
+64 names are read first (every name under `--sort`); a listing that ends
+within them shows which of `.git`, `.ignore` and `.gitignore` are present, so
+nothing is probed. A longer listing is probed through its open cursor, and one
+cut short by a listing failure is probed by path, so the children read before
+the failure are still selected under current policy. Policy is therefore read
+after the first names are listed, not before the first read.
 
 Explicit roots bypass ignore and hidden exclusion for themselves. Proper
 ancestor rules and root-directory rules still govern their children. A pruned
