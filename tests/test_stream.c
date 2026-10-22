@@ -13,6 +13,9 @@ static void stream_dir_close(CuDir *dir);
 #define cu_dir_close stream_dir_close
 /* Rename the included prototype too when a checker also links fynd.c. */
 #define fynd_main stream_test_fynd_main
+/* Its hooks are process-global and not thread-safe. The default
+ * thread count is pinned to one; tests/test_sched.c covers threaded walks. */
+#define FYND_ONLINE_CPUS() 1L
 #include "../src/fynd.c"
 #undef fynd_main
 #undef cu_dir_open

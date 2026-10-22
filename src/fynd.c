@@ -4,6 +4,7 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 typedef struct Query {
     CuStr pattern;
@@ -18,8 +19,8 @@ typedef struct Query {
     int threads;
 } Query;
 
-typedef struct Pool Pool;
-typedef struct Task Task;
+typedef struct Sched Sched;
+typedef struct SchedWorker SchedWorker;
 enum { EMIT_OUT = 0, EMIT_ERR = 1 };
 
 typedef struct Run {
@@ -29,27 +30,22 @@ typedef struct Run {
     FILE *err;
     int status;
     int stop;
-    Pool *pool;
-    Task *task;
+    Sched *sched; /* non-NULL while a -j N walk is active */
+    SchedWorker *worker; /* this thread's worker, with sched */
 } Run;
 
-static int task_write(Task *, int, const char *, size_t, int);
-static int task_stopped(Task *);
+static void sched_lock_out(Run *, int);
 
 static int emit(Run *r, int channel, const char *bytes, size_t len, int flush)
 {
     FILE *stream;
     int ok;
-    if (r->task != NULL)
-        ok = task_write(r->task, channel, bytes, len, flush);
-    else {
-        stream = channel == EMIT_OUT ? r->out : r->err;
-        ok = len == 0 || fwrite(bytes, 1, len, stream) == len;
-        if (flush && fflush(stream) == EOF)
-            ok = 0;
-        if (ferror(stream))
-            ok = 0;
-    }
+    stream = channel == EMIT_OUT ? r->out : r->err;
+    ok = len == 0 || fwrite(bytes, 1, len, stream) == len;
+    if (flush && fflush(stream) == EOF)
+        ok = 0;
+    if (ferror(stream))
+        ok = 0;
     if (!ok) {
         r->status = 1;
         r->stop = 1;
@@ -63,6 +59,8 @@ static int diagnostic(Run *r, const char *message, const char *path)
     const unsigned char *p;
     char escaped[4];
     int ok;
+    /* Workers write each diagnostic whole. */
+    sched_lock_out(r, 1);
     ok = emit(r, EMIT_ERR, "fynd: ", 6, 0) &&
          emit(r, EMIT_ERR, message, strlen(message), 0);
     if (path != NULL) {
@@ -88,6 +86,7 @@ static int diagnostic(Run *r, const char *message, const char *path)
     }
     if (!emit(r, EMIT_ERR, "\n", 1, 1))
         ok = 0;
+    sched_lock_out(r, 0);
     return ok;
 }
 
@@ -194,7 +193,11 @@ static char *join_path(CuArena *a, const char *parent, CuStr name)
 
 #include "listing.inc"
 #include "ignore.inc"
-#include "coarse.inc"
+
+static int sched_stopped(Sched *);
+static int sched_push(Run *, const char *, int, const IgnoreFrame *);
+static int sched_record(SchedWorker *, const char *, int);
+static void sched_output_failure(Run *);
 
 static void ignore_failure(Run *r, const IgnoreError *error)
 {
@@ -202,89 +205,51 @@ static void ignore_failure(Run *r, const IgnoreError *error)
             "cannot load ignore rules", error->path, listing_resource(error->number));
 }
 
-/* Poll only on directory entry and every 64 loop entries, not per leaf/output.
- * Publication itself also observes cancellation before it parks a producer. */
+/* Poll only on directory entry and every 64 loop entries, not per leaf/output. */
 static int walk_stopped(Run *r)
 {
-    if (!r->stop && r->task != NULL && task_stopped(r->task))
+    if (!r->stop && r->sched != NULL && sched_stopped(r->sched))
         r->stop = 1;
     return r->stop;
 }
-
-/* Retry the SAME borrowed entry until its seed is copied. Capacity returns
- * only after a whole FIFO head has been delivered, never midway through it. */
-static int walk_offer(Run *r, const char *path, const CuDirEntry *entry,
-                      int child_depth, const IgnoreFrame *parent)
-{
-    int offered;
-    while (!r->stop) {
-        offered = pool_offer(r->pool, path, entry, child_depth, parent);
-        if (offered > 0)
-            return 1;
-        if (offered < 0) {
-            failure(r, "allocation failure", path, 1);
-            return 0;
-        }
-        pool_drain(r->pool, r);
-    }
-    return 0;
-}
-
-#ifndef FYND_WINDOW_READY
-#define FYND_WINDOW_READY(run) ((void)0)
-#endif
 
 static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int depth,
                   const IgnoreFrame *parent)
 {
     CuTemp directory;
     CuTemp child;
-    CuArena defer_arena;
     ListingJob job;
     const IgnoreFrame *rules;
     IgnoreError error;
     CuDirEntry entry;
-    CuDirEntry deferred;
     unsigned tick;
     int next;
-    int descending;
-    int have_deferred;
-    int window;
-    int window_ready;
     int verdict;
     int ok;
-    char delimiter;
     char *joined;
-    const char *saved;
     if (kind == CU_DIR_DIR && walk_stopped(r))
-        goto unused;
+        return;
     if (selected(r->query, name, kind)) {
-        if (r->task == NULL) {
-            /* Preserve the coordinator/serial selected-path stdio fast path. */
+        if (r->worker != NULL)
+            ok = sched_record(r->worker, path, r->query->delimiter);
+        else
             ok = fputs(path, r->out) >= 0 &&
                  fputc(r->query->delimiter, r->out) != EOF && !ferror(r->out);
-        } else {
-            delimiter = (char)r->query->delimiter;
-            ok = emit(r, EMIT_OUT, path, strlen(path), 0) &&
-                 emit(r, EMIT_OUT, &delimiter, 1, 0);
-        }
         if (!ok) {
-            failure(r, "output failure", NULL, 1);
-            goto unused;
+            if (r->sched != NULL)
+                sched_output_failure(r);
+            else
+                failure(r, "output failure", NULL, 1);
+            return;
         }
     }
     if (kind != CU_DIR_DIR || depth == r->query->depth)
-        goto unused;
+        return;
     if (depth == 128) {
         failure(r, "recursion safety limit", path, 0);
-        goto unused;
+        return;
     }
     directory = cu_temp_begin(r->arena);
-    cu_arena_init(&defer_arena);
-    deferred.name = cu_str_n("", 0);
-    deferred.kind = CU_DIR_DIR;
-    have_deferred = 0;
-    window = 0;
     rules = parent;
     listing_init(&job, path);
     /* Open failures keep precedence over policy failures. No entry is read
@@ -319,7 +284,6 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
         tick = (tick + 1U) % 64U;
         if (!r->query->hidden && entry.name.ptr[0] == '.')
             continue;
-        window_ready = 0;
         child = cu_temp_begin(r->arena);
         joined = join_path(r->arena, path, entry.name);
         verdict = 0;
@@ -330,96 +294,24 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
                                  &verdict, &error))
             ignore_failure(r, &error);
         else if (verdict != 1) {
-            descending = entry.kind == CU_DIR_DIR &&
-                         depth + 1 != r->query->depth && depth + 1 < 128;
-            if (r->pool == NULL || !descending)
+            /* Cutoff and safety-limit directories are visited in place. */
+            if (r->sched != NULL && entry.kind == CU_DIR_DIR &&
+                depth + 1 != r->query->depth && depth + 1 < 128)
+                (void)sched_push(r, joined, depth + 1, rules);
+            else
                 visit(r, joined, entry.name, entry.kind, depth + 1, rules);
-            else if (window)
-                (void)walk_offer(r, path, &entry, depth + 1, rules);
-            else if (!have_deferred) {
-                saved = cu_str_cstr_copy(&defer_arena, entry.name);
-                if (saved == NULL)
-                    failure(r, "allocation failure", path, 1);
-                else {
-                    deferred.name = cu_str_n(saved, entry.name.len);
-                    deferred.kind = entry.kind;
-                    have_deferred = 1;
-                }
-            } else {
-                /* Only this coordinator frame owns a window. Workers have
-                 * pool==NULL; cutoff/safety-limit directories never defer. */
-                window = 1;
-                if (walk_offer(r, path, &deferred, depth + 1, rules)) {
-                    have_deferred = 0;
-                    cu_arena_release(&defer_arena);
-                    if (walk_offer(r, path, &entry, depth + 1, rules))
-                        window_ready = 1;
-                }
-            }
         }
-        if (r->stop && r->pool != NULL)
-            pool_abort(r->pool);
         cu_temp_end(child);
-        if (window_ready)
-            FYND_WINDOW_READY(r); /* No Pool or proof mutex held. */
         /* Only now may next invalidate entry.name. */
     }
 done:
-    if (r->stop && r->pool != NULL)
-        pool_abort(r->pool);
     listing_release(&job);
-    /* Ordinary read errors retain emitted output and drain every borrowing
-     * task. Terminal failures join before any rule/path scope is unwound. */
-    if (window) {
-        while (!r->stop && r->pool->pending != 0)
-            pool_drain(r->pool, r);
-    } else if (!r->stop && have_deferred) {
-        /* A sole child keeps dispatch authority, without an open parent FD.
-         * Its owned name and this frame's rules remain live during recursion. */
-        child = cu_temp_begin(r->arena);
-        joined = join_path(r->arena, path, deferred.name);
-        if (joined == NULL)
-            failure(r, "allocation failure", path, 1);
-        else
-            visit(r, joined, deferred.name, deferred.kind, depth + 1, rules);
-        if (r->stop && r->pool != NULL)
-            pool_abort(r->pool);
-        cu_temp_end(child);
-    }
-    if (r->stop && r->pool != NULL)
-        pool_abort(r->pool);
-    cu_arena_release(&defer_arena);
-    cu_temp_end(directory);
-    return;
-unused:
-    if (r->stop && r->pool != NULL)
-        pool_abort(r->pool);
+    /* Queued children may borrow a new frame until the root barrier. */
+    if (r->sched == NULL || rules == parent)
+        cu_temp_end(directory);
 }
 
-#ifndef FYND_WALK_BEGIN
-#define FYND_WALK_BEGIN(run) ((void)0)
-#endif
-
-static void subtree_work(Pool *pool, Task *task, int *status, int *terminal)
-{
-    CuArena arena;
-    Run r;
-    cu_arena_init(&arena);
-    r.arena = &arena;
-    r.query = pool->query;
-    r.out = NULL;
-    r.err = NULL;
-    r.status = 0;
-    r.stop = 0;
-    r.pool = NULL;
-    r.task = task;
-    FYND_WALK_BEGIN(&r);
-    visit(&r, task->path, basename_view(task->path), CU_DIR_DIR, task->depth,
-          task->parent);
-    *status = r.status;
-    *terminal = r.stop;
-    cu_arena_release(&arena);
-}
+#include "sched.inc"
 
 static int parse_depth(const char *s, int *out)
 {
@@ -465,7 +357,7 @@ static int parse(Query *q, CuArena *arena, int argc, char **argv)
     q->hidden = 0;
     q->delimiter = '\n';
     q->depth = -1;
-    q->threads = 1;
+    q->threads = 0; /* automatic */
     q->no_ignore = 0;
     i = 1;
     while (i < argc) {
@@ -541,12 +433,33 @@ static int parse(Query *q, CuArena *arena, int argc, char **argv)
     return cu_vec_failed(&q->roots) ? 1 : 0;
 }
 
+/* WASI's thread backend reports ENOSYS: automatic means one thread there,
+ * while an explicit -j N above 1 still fails without serial fallback. */
+#ifndef FYND_ONLINE_CPUS
+#if defined(_SC_NPROCESSORS_ONLN) && !defined(__wasi__)
+#define FYND_ONLINE_CPUS() sysconf(_SC_NPROCESSORS_ONLN)
+#else
+#define FYND_ONLINE_CPUS() 1L
+#endif
+#endif
+
+/* Default -j: online CPUs, clamped to 1 through 32. */
+static int default_threads(void)
+{
+    long online;
+    online = FYND_ONLINE_CPUS();
+    if (online < 1)
+        return 1;
+    return online > 32 ? 32 : (int)online;
+}
+
 static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
 {
     Query q;
     Run r;
-    Pool pool;
-    int pool_live;
+    Sched sched;
+    int sched_live;
+    int threads;
     CuTemp root_scope;
     const CuStr *root;
     char *path;
@@ -562,9 +475,9 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
     r.err = err;
     r.status = 0;
     r.stop = 0;
-    r.pool = NULL;
-    r.task = NULL;
-    pool_live = 0;
+    r.sched = NULL;
+    r.worker = NULL;
+    sched_live = 0;
     if (argc == 2 && (strcmp(argv[1], "-h") == 0 ||
         strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "--version") == 0)) {
         if (ferror(out)) {
@@ -582,7 +495,7 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
                 "  -0, --print0        NUL-delimited paths\n"
                 "  --max-depth N       selection depth 0 through 128\n"
                 "  --no-ignore         bypass ignore rules\n"
-                "  -j N, --threads N   subtree workers 1 through 32 (default 1)\n"
+                "  -j N, --threads N   threads 1 through 32 (default: CPUs)\n"
                 "  -h, --help          show help alone\n"
                 "  --version           show version alone\n", out);
         if (parsed < 0 || ferror(out))
@@ -597,12 +510,13 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
             /* Validate first: a pre-existing output error does not make usage valid. */
             if (ferror(out))
                 failure(&r, "output failure", NULL, 1);
-            if (!r.stop && q.threads > 1) {
-                pool_live = 1;
-                if (!pool_start(&pool, q.threads, &q))
+            threads = q.threads != 0 ? q.threads : default_threads();
+            if (!r.stop && threads > 1) {
+                sched_live = 1;
+                if (!sched_start(&sched, threads, &q, out, err))
                     failure(&r, "cannot start listing workers", NULL, 1);
                 else
-                    r.pool = &pool;
+                    r.sched = &sched;
             }
             for (i = 0; i < q.roots.len && !r.stop; ++i) {
                 root = CU_VEC_AT(&q.roots, CuStr, i);
@@ -625,17 +539,18 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
                         else if (S_ISDIR(st.st_mode)) kind = CU_DIR_DIR;
                         else if (S_ISLNK(st.st_mode)) kind = CU_DIR_LINK;
                         else kind = CU_DIR_OTHER;
-                        visit(&r, path, basename_view(path), kind, 0, NULL);
+                        if (r.sched != NULL && kind == CU_DIR_DIR)
+                            sched_root(r.sched, &r, path);
+                        else
+                            visit(&r, path, basename_view(path), kind, 0, NULL);
                     }
                 }
-                if (r.stop && r.pool != NULL)
-                    pool_abort(r.pool);
                 cu_temp_end(root_scope);
             }
         }
     }
-    if (pool_live)
-        pool_finish(&pool);
+    if (sched_live)
+        sched_finish(&sched);
     if (fflush(out) == EOF || (r.status != 2 && ferror(out)))
         failure(&r, "output flush failure", NULL, 1);
     return r.status;

@@ -28,7 +28,7 @@ static void check_parser(int argc, char **argv)
     int d;
     ne = 0; nr = 0; kinds = 0;
     fold = 0; hidden = 0; delimiter = '\n'; depth = -1;
-    no_ignore = 0; threads = 1;
+    no_ignore = 0; threads = 0; /* automatic */
     pattern = "";
     valid = 1;
     i = 1;

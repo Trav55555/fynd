@@ -24,15 +24,11 @@ It changes no application code or qualification requirement.
   production `lstat` handling of a dangling `.git` marker.
 - Cursor names use a 4 KiB block, a one-byte anchor and per-entry rewind, with
   memory independent of directory width. There is no sort vector, `--sort`
-  flag or legacy walker. Entry views expire at next/release; deferred paths own
-  copies. Parent policy/path lifetimes extend through pending-task draining.
-- Existing FIFO whole-task transport can still head-block. Unordered output
-  does **not** promise completion order, arrival order or arbitrary-ready drain.
-- Workers can retain 128 directory FDs each, plus coordinator and temporary
-  policy FDs. FD-limit failures and unwinding are tested; limits were not raised.
-- The unchanged payload budget is N MiB: 4N credits, 256 KiB default chunks,
-  and at most N pending tasks, including DONE-but-unread tasks. Cursor, policy,
-  thread and other storage are outside that payload count, not a total-RSS cap.
+  flag or legacy walker. Entry views expire at next/release; queued paths own
+  copies.
+- Threaded transport is now the [shared-stack scheduler](SCHEDULER.md). The FIFO
+  whole-task transport, its N MiB payload credits and its 128-handle-per-worker
+  bound described in this report's measurements were retired with it.
 
 ## Native evidence
 
