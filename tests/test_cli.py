@@ -320,7 +320,8 @@ def generated(s, cases, seed):
                 s.records('random threaded seed=%d case=%d' % (seed, case),
                           [jobs] + args + [pattern] + roots, expected, groups=groups)
             # --sort promises the oracle's exact byte-sorted preorder.
-            for sort in ([b'--sort'], [b'--sort', b'-j1']):
+            for sort in ([b'--sort'], [b'--sort', b'-j1'], [b'--sort', b'-j2'],
+                         [b'-j8', b'--sort']):
                 s.check('random sorted seed=%d case=%d' % (seed, case),
                         sort + args + [pattern] + roots,
                         b''.join(path + b'\0' for path in expected))
@@ -347,8 +348,10 @@ def thread_matrix(s):
                           expected, groups=groups)
     for value in (b'', b'0', b'33', b'-1', b'+2', b'2x', b'99999999999999999999'):
         s.check('invalid jobs', [b'--threads', value], status=2, diagnostic=True)
-    for args in ([b'--sort', b'-j2'], [b'-j8', b'--sort'], [b'--sort', b'--threads', b'4']):
-        s.check('sort with threads', args + [b''], status=2, diagnostic=True)
+    for roots in ([b'wide'], [b'wide', b'r', b'wide']):
+        exact = b''.join(path + b'\0' for root in roots for path in oracle([root]))
+        for args in ([b'--sort', b'-j2'], [b'-j8', b'--sort'], [b'--sort', b'--threads', b'4']):
+            s.check('sort with threads', args + [b'-0', b''] + roots, exact)
     for args in ([b'-j'], [b'--threads'], [b'--threads=2'], [b'-j2', b'--help']):
         s.check('invalid jobs syntax', args, status=2, diagnostic=True)
 

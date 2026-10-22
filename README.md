@@ -113,7 +113,7 @@ operand. Use `--` for a pattern beginning with `-`.
 | `-0`, `--print0` | End each path with NUL instead of newline. |
 | `--max-depth N` | Select through depth 0 to 128. Roots have depth 0. |
 | `--no-ignore` | Bypass all ignore sources without enabling hidden traversal. |
-| `--sort` | Print in byte-sorted depth-first order. Runs serially; combining it with `-j N` above 1 is invalid. |
+| `--sort` | Print in byte-sorted depth-first order. Uses the same threads as an unsorted walk; output and diagnostics equal `--sort -j1` byte for byte. |
 | `-j N`, `-jN`, `--threads N` | Use 1 through 32 threads in total. The default is the online CPU count, clamped to 1 through 32; `-j1` is serial. |
 | `-h`, `--help` | Show help as a standalone invocation. |
 | `--version` | Show the version as a standalone invocation. |
@@ -148,6 +148,8 @@ On POSIX, SIGPIPE may terminate the CLI instead of status 1.
   `--sort` is given. Duplicate and overlapping roots retain multiplicity.
   `--sort` reads each directory whole, so its memory grows with the widest
   directory; it compares names byte by byte, with a shorter prefix first.
+  With threads, it also holds the results of up to 1,024 directories that
+  helper threads finished ahead of the writer.
 - Each root itself can match, including explicit files, hidden roots, broken
   symlinks, and FIFO entries. Explicit hidden roots do not enable hidden children.
 - Static symlinks are listed but never deliberately descended. Trailing root

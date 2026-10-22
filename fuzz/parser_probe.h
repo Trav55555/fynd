@@ -82,8 +82,6 @@ static void check_parser(int argc, char **argv)
             if (!valid) break;
         }
     }
-    /* Sorted output is serial: an explicit -j N above 1 conflicts. */
-    if (valid && sort && threads > 1) valid = 0;
     if (valid) {
         if (i < argc) pattern = argv[i++];
         if (i == argc) roots[nr++] = ".";

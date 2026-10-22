@@ -27,9 +27,10 @@ FILES = tuple(sorted(set(MUTATION_FILES + ('include/fynd.h', 'cmd/main.c') + C_T
                                         'include/**/*.h', 'tests/**/*.py',
                                         'tests/**/*.h', 'fuzz/**/*.h')
                         for path in SOURCE.glob(pattern)}))
-EXPECTED_MUTATIONS = 37  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
+EXPECTED_MUTATIONS = 39  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
                          # + two dir-relative probe controls + two .git file controls
-                         # + two listing-presence controls + two hidden re-inclusion controls.
+                         # + two listing-presence controls + two hidden re-inclusion controls
+                         # + two ordered-writer controls.
 STRICT = ['-std=c89', '-pedantic-errors', '-Wall', '-Wextra', '-Werror',
           '-Wconversion', '-Wshadow', '-Wstrict-prototypes', '-Wmissing-prototypes']
 MUTATIONS = (
@@ -117,8 +118,8 @@ MUTATIONS = (
      '    if (text.ptr != NULL && 0) {\n        git = ignore_git_path(a, git, text);',
      'test_ignore requires commondir for linked worktrees'),
     ('retain-visit-hold', 'src/fynd.c',
-     '    if (own != NULL)\n        sched_drop(r->sched, own);',
-     '    if (own != NULL && 0)\n        sched_drop(r->sched, own);',
+     '    if (own != NULL && !sched_keep(r, own))\n        sched_drop(r->sched, own);',
+     '    if (own != NULL && !sched_keep(r, own) && 0)\n        sched_drop(r->sched, own);',
      'test_sched hold release: a finished directory must drop its frame hold'),
     ('lose-settle-failure', 'src/sched.inc',
      '    report = s->settle_failed && !s->output_reported;',
@@ -198,6 +199,14 @@ MUTATIONS = (
      '    else if (verdict != 1 && (!hidden || verdict == -1)) {',
      '    else if (verdict != 1 && !hidden) {',
      'ignore CLI negation re-includes hidden: a negated hidden name must be listed without -H'),
+    ('unordered-sorted-records', 'src/fynd.c',
+     '        if (r->task != NULL)\n            ok = sched_defer_record(r, path);',
+     '        if (r->task != NULL && 0)\n            ok = sched_defer_record(r, path);',
+     'test_sched ordered_equivalence and test_cli sort with threads require serial bytes'),
+    ('child-output-after-parent', 'src/sched.inc',
+     '        if (!sched_write(r, t, &at, e->at))',
+     '        if (!sched_write(r, t, &at, at))',
+     'test_sched ordered_equivalence requires each child directory where the serial walk writes it'),
     ('drop-hidden-before-verdict', 'src/fynd.c',
      '        if (r->query->no_ignore && skips_hidden(r, entry.name))',
      '        if (skips_hidden(r, entry.name))',
