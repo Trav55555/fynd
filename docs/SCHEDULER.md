@@ -55,6 +55,37 @@ Against fd's automatic threading, `-j8` stayed 2-5x slower on large trees.
   thread start returns 1 without a silent serial fallback. On WASI, whose
   c-utils thread backend reports ENOSYS, the automatic default is one thread.
 
+## Ordered walks (`--sort`)
+
+`--sort` uses the same scheduler and the same thread count; it no longer
+forces `-j1`, and `--sort -j N` is valid. The walk stays exactly the serial
+`--sort` walk on both streams:
+
+- **Deferred results.** A task still does one directory's whole serial work:
+  list it, sort it, enter its ignore policy and decide each child. It does
+  not write. Its records go into its own result, with an event where each
+  descending child's output belongs and where each failure occurred.
+- **One writer.** The coordinator drains results depth first: a task's bytes
+  up to an event, then that child's output, or that failure reported as the
+  serial walk would. A failure takes effect only when the writer reaches it,
+  so helpers never stop the walk early, and a terminal failure ends output
+  exactly where the serial walk would.
+- **Walk order.** Children are queued when their parent finishes, on a heap
+  ordered by depth-first walk position. Helpers take the first; the writer
+  takes and runs a task it needs that no helper has started.
+- **Lookahead.** Helpers run at most 1,024 tasks the writer has not reached
+  (`SCHED_AHEAD`). The limit bounds memory; at 256, parents that finish late
+  left their subtrees to the writer and halved the speed-up.
+- **Frames.** A task keeps the hold its children borrow until it has queued
+  them, so a frame never dies between a parent's visit and its children's.
+
+`tests/test_sched.c` compares threaded `--sort` with `--sort -j1` byte for
+byte, stdout and stderr, across six flag sets, four thread counts and the
+default, repeated roots, a late EIO, the depth safety limit and borrowed
+rule frames, with a two-task lookahead so the writer often runs tasks itself.
+Output failure must match exactly, and allocation and thread-start failures
+must leave stdout an exact prefix of the full walk.
+
 ## Contract changes
 
 - The default changed from serial to the online CPU count. `-j N` counts

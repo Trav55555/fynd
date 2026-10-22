@@ -23,6 +23,7 @@ typedef struct Query {
 typedef struct Sched Sched;
 typedef struct SchedWorker SchedWorker;
 typedef struct SchedHold SchedHold;
+typedef struct SchedTask SchedTask;
 enum { EMIT_OUT = 0, EMIT_ERR = 1 };
 
 typedef struct Run {
@@ -35,9 +36,11 @@ typedef struct Run {
     Sched *sched; /* non-NULL while a -j N walk is active */
     SchedWorker *worker; /* this thread's worker, with sched */
     SchedHold *hold; /* owner of the frame children borrow, or NULL */
+    SchedTask *task; /* with --sort under sched: where output is deferred */
 } Run;
 
 static void sched_lock_out(Run *, int);
+static void sched_defer_failure(Run *, const char *, const char *, int);
 
 static int emit(Run *r, int channel, const char *bytes, size_t len, int flush)
 {
@@ -98,7 +101,11 @@ static void failure(Run *r, const char *message, const char *path, int terminal)
     r->status = 1;
     if (terminal)
         r->stop = 1;
-    (void)diagnostic(r, message, path);
+    /* Ordered tasks report in walk order, when their output is written. */
+    if (r->task != NULL)
+        sched_defer_failure(r, message, path, terminal);
+    else
+        (void)diagnostic(r, message, path);
 }
 
 static unsigned char folded(unsigned char c, int fold)
@@ -200,10 +207,12 @@ static char *join_path(CuArena *a, const char *parent, CuStr name)
 static int sched_stopped(Sched *);
 static int sched_push(Run *, const char *, int, const IgnoreFrame *);
 static int sched_record(SchedWorker *, const char *, int);
+static int sched_defer_record(Run *, const char *);
 static void sched_output_failure(Run *);
 static int sched_enter(Run *, const IgnoreFrame *, const CuDir *, const char *,
                        unsigned, const IgnoreFrame **, SchedHold **);
 static void sched_drop(Sched *, SchedHold *);
+static int sched_keep(Run *, SchedHold *);
 
 static void ignore_failure(Run *r, const IgnoreError *error)
 {
@@ -352,12 +361,17 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
     if (kind == CU_DIR_DIR && walk_stopped(r))
         return;
     if (selected(r->query, name, kind)) {
-        if (r->worker != NULL)
+        if (r->task != NULL)
+            ok = sched_defer_record(r, path);
+        else if (r->worker != NULL)
             ok = sched_record(r->worker, path, r->query->delimiter);
         else
             ok = fputs(path, r->out) >= 0 &&
                  fputc(r->query->delimiter, r->out) != EOF && !ferror(r->out);
         if (!ok) {
+            /* A deferred record that cannot be kept has stopped its task. */
+            if (r->task != NULL)
+                return;
             if (r->sched != NULL)
                 sched_output_failure(r);
             else
@@ -449,7 +463,7 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
         listing_failure(r, &job, path);
 done:
     listing_release(&job);
-    if (own != NULL)
+    if (own != NULL && !sched_keep(r, own))
         sched_drop(r->sched, own);
     r->hold = inherited;
     /* A scheduled root's seed frames stay until the root barrier. */
@@ -562,9 +576,6 @@ static int parse(Query *q, CuArena *arena, int argc, char **argv)
         } else
             return 2;
     }
-    /* Sorted output is serial; an explicit request for more threads conflicts. */
-    if (q->sort && q->threads > 1)
-        return 2;
     if (i < argc) {
         q->pattern = cu_str_n(argv[i], strlen(argv[i]));
         ++i;
@@ -630,6 +641,7 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
     r.sched = NULL;
     r.worker = NULL;
     r.hold = NULL;
+    r.task = NULL;
     sched_live = 0;
     if (argc == 2 && (strcmp(argv[1], "-h") == 0 ||
         strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "--version") == 0)) {
@@ -648,7 +660,7 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
                 "  --max-depth N       selection depth 0 through 128\n", out)) >= 0)
             /* Two literals: C90 guarantees only 509 characters per string. */
             parsed = fputs("  --no-ignore         bypass ignore rules\n"
-                "  --sort              byte-sorted depth-first order (serial)\n"
+                "  --sort              byte-sorted depth-first order\n"
                 "  -j N, --threads N   threads 1 through 32 (default: CPUs)\n"
                 "  -h, --help          show help alone\n"
                 "  --version           show version alone\n", out);
@@ -664,7 +676,7 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
             /* Validate first: a pre-existing output error does not make usage valid. */
             if (ferror(out))
                 failure(&r, "output failure", NULL, 1);
-            threads = q.sort ? 1 : q.threads != 0 ? q.threads : default_threads();
+            threads = q.threads != 0 ? q.threads : default_threads();
             if (!r.stop && threads > 1) {
                 sched_live = 1;
                 if (!sched_start(&sched, threads, &q, out, err))

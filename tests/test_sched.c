@@ -3,8 +3,11 @@
  *
  * Every threaded result is compared with the serial walker (-j1) on the same
  * fixture: equal status, equal record multiset, equal diagnostic multiset.
+ * With --sort, stdout and stderr must equal the serial bytes exactly.
  * A 64-byte record buffer forces constant flushing and the oversized-record
- * path. Hooks are guarded by one mutex, so they are safe on every worker.
+ * path, and a two-task lookahead keeps ordered helpers at their limit, so the
+ * writer often runs tasks itself. Hooks are guarded by one mutex, so they
+ * are safe on every worker.
  */
 #include "cu.h"
 #include <stdio.h>
@@ -16,6 +19,7 @@ static int sched_dir_open(CuDir *dir, CuArena *arena, const char *path);
 static int sched_dir_next(CuDir *dir, CuDirEntry *entry);
 static void sched_dir_close(CuDir *dir);
 #define SCHED_BUFFER 64U
+#define SCHED_AHEAD 2U
 #define FYND_TASK_ALLOC(size) sched_test_alloc(size)
 #ifndef __wasi__
 /* Native runs pick the CPU count; WASI keeps the production rule (one). */
@@ -239,6 +243,11 @@ static void same_multiset(const char *a, size_t an, const char *b, size_t bn, in
         assert(span_compare(&x[i], &y[i]) == 0);
     free(x);
     free(y);
+}
+
+static void same_bytes(const char *a, size_t an, const char *b, size_t bn)
+{
+    assert(an == bn && (an == 0 || memcmp(a, b, an) == 0));
 }
 
 /* Every record of a also occurs in b (a may be any partial result). */
@@ -635,6 +644,117 @@ static void resource_failures(const char *root)
     release(&reference);
 }
 
+/* --sort with threads writes exactly the serial bytes on both streams: late
+ * EIO, the depth safety limit and borrowed rule frames included, across
+ * repeated runs and repeated roots. */
+static void ordered_equivalence(const char *root)
+{
+    static const char *const jobs[] = {"-j2", "-j3", "-j8", "-j32", NULL};
+    static const char *const flags[][3] = {
+        {NULL}, {"-0", NULL}, {"-H", NULL}, {"--no-ignore", NULL},
+        {"-e", "c", NULL}, {"--max-depth", "2", NULL}
+    };
+    char *argv[12];
+    Result serial, threaded;
+    size_t f, j, a, k, roots;
+    int repeat;
+    char tree[512], big[512];
+    assert(snprintf(tree, sizeof tree, "%s", root) > 0);
+    assert(snprintf(big, sizeof big, "%s/big", root) > 0);
+    for (f = 0; f < sizeof flags / sizeof flags[0]; ++f) {
+        for (roots = 1; roots <= 2; ++roots) {
+            a = 0;
+            argv[a++] = "fynd";
+            argv[a++] = "-j1";
+            argv[a++] = "--sort";
+            for (k = 0; flags[f][k] != NULL; ++k)
+                argv[a++] = (char *)flags[f][k];
+            argv[a++] = "";
+            argv[a++] = tree;
+            if (roots == 2) {
+                argv[a++] = big;
+                argv[a++] = tree;
+            }
+            argv[a] = NULL;
+            serial = call(argv);
+            if (f == 0)
+                assert(serial.status == 1 && serial.err_len != 0);
+            for (j = 0; j < sizeof jobs / sizeof jobs[0]; ++j) {
+                for (repeat = 0; repeat < 3; ++repeat) {
+                    if (jobs[j] != NULL)
+                        argv[1] = (char *)jobs[j];
+                    else
+                        argv[1] = "--sort"; /* default -j, --sort twice */
+                    threaded = call(argv);
+                    assert(threaded.status == serial.status);
+                    same_bytes(threaded.out, threaded.out_len, serial.out, serial.out_len);
+                    same_bytes(threaded.err, threaded.err_len, serial.err, serial.err_len);
+                    release(&threaded);
+                }
+            }
+            release(&serial);
+        }
+    }
+}
+
+/* Output and resource failures stop an ordered walk where the serial walk
+ * would see them: exact reports, and stdout a prefix of the full walk. */
+static void ordered_failures(const char *root)
+{
+    static const char expected[] = "fynd: output failure\nfynd: output flush failure\n";
+    static const char workers[] = "fynd: cannot start listing workers\n";
+    char tree[512];
+    char *argv[6];
+    Result reference, result;
+    FILE *out, *err;
+    long at;
+    assert(snprintf(tree, sizeof tree, "%s/big", root) > 0);
+    argv[0] = "fynd"; argv[1] = "-j1"; argv[2] = "--sort"; argv[3] = "";
+    argv[4] = tree; argv[5] = NULL;
+    reference = call(argv);
+    assert(reference.status == 0 && reference.err_len == 0);
+    argv[1] = "-j8";
+    out = fopen("/dev/full", "w");
+    if (out != NULL) {
+        err = tmpfile();
+        assert(err != NULL);
+        result = call_with(argv, out, err);
+        assert(result.status == 1);
+        result.err = slurp(err, &result.err_len);
+        same_bytes(result.err, result.err_len, expected, sizeof expected - 1);
+        assert(fclose(err) == 0);
+        free(result.err);
+    }
+    argv[1] = "-j4";
+    for (at = 0; at < 60; at += 3) {
+        cu_mutex_lock(hook_mutex);
+        alloc_calls = 0;
+        alloc_fail_at = at;
+        cu_mutex_unlock(hook_mutex);
+        result = call(argv);
+        assert(result.status == 1);
+        assert(memcmp(result.err, "fynd: allocation failure '", 26) == 0 &&
+               memchr(result.err, '\n', result.err_len) == result.err + result.err_len - 1);
+        assert(result.out_len < reference.out_len &&
+               memcmp(result.out, reference.out, result.out_len) == 0);
+        release(&result);
+    }
+    cu_mutex_lock(hook_mutex);
+    alloc_fail_at = -1;
+    cu_mutex_unlock(hook_mutex);
+    for (at = 3; at <= 5; ++at) {
+        cu_thread_fail_at((size_t)at);
+        result = call(argv);
+        cu_thread_fail_at((size_t)-1);
+        assert(result.status == 1);
+        same_bytes(result.err, result.err_len, workers, sizeof workers - 1);
+        assert(result.out_len < reference.out_len &&
+               memcmp(result.out, reference.out, result.out_len) == 0);
+        release(&result);
+    }
+    release(&reference);
+}
+
 static void default_thread_count(void)
 {
     online_cpus = 0;
@@ -679,6 +799,8 @@ int main(void)
     depth_limits(root);
     output_failures(root);
     resource_failures(root);
+    ordered_equivalence(root);
+    ordered_failures(root);
     remove_tree(root);
     puts("scheduler tests passed");
     cu_mutex_destroy(hook_mutex);

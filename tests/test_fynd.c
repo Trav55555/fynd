@@ -250,13 +250,13 @@ static void pure_tests(void)
     assert(parse(&q, &arena, 3, args) == 2);
     args[1] = "-j2"; args[2] = "--no-ignore";
     assert(parse(&q, &arena, 3, args) == 0 && q.threads == 2 && q.no_ignore);
-    /* --sort is serial: an explicit -j above 1 conflicts in either order. */
+    /* --sort combines with any thread count, in either order. */
     args[1] = "--sort"; args[2] = "x";
     assert(parse(&q, &arena, 3, args) == 0 && q.sort && q.threads == 0);
     args[1] = "--sort"; args[2] = "-j2";
-    assert(parse(&q, &arena, 3, args) == 2);
-    args[1] = "-j2"; args[2] = "--sort";
-    assert(parse(&q, &arena, 3, args) == 2);
+    assert(parse(&q, &arena, 3, args) == 0 && q.sort && q.threads == 2);
+    args[1] = "-j32"; args[2] = "--sort";
+    assert(parse(&q, &arena, 3, args) == 0 && q.sort && q.threads == 32);
     args[1] = "-j1"; args[2] = "--sort";
     assert(parse(&q, &arena, 3, args) == 0 && q.sort && q.threads == 1);
     cu_arena_release(&arena);
