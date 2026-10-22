@@ -132,3 +132,14 @@ Warm medians of 15 runs on one 12-CPU host, same output:
 | Home projects | 12 | 206 | 179 |
 | `/usr` | 1 | 350 | 292 |
 | `/usr` | 12 | 60.3 | 55.5 |
+
+## Hidden names re-included by ignore rules
+
+Listing a hidden child without `-H` when a negation decides it was qualified by
+`build/verification/run.jZaRNl`, exit 0, on c-utils `7750e1c`: five C suites,
+three 500-case CLI seeds, the Git differential (now generating hidden names
+and checked against `git check-ignore -v`), required deep checks, and all 37
+named controls, including the new `hidden-ignores-negation` and
+`drop-hidden-before-verdict`. Coverage: main 93.16%, ignore 97.41%, listing
+91.95%, scheduler 96.92%. On the home projects tree, output now equals fd
+10.3.0's (408,325 paths; 50 more than before), at unchanged speed.
