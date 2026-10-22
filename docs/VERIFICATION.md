@@ -19,8 +19,8 @@ reject, including the new `skip-frames-without-plain-rules`. Coverage: coarse
 94.86%, main 96.90%, ignore 95.89%, listing 91.95%; combined 95.74%.
 
 Only `src/ignore.inc`, its C and fuzz tests, and `tests/sensitivity.py` differ
-from the streaming acceptance below. The active `build/fynd` is still the
-streaming-selected executable.
+from the streaming acceptance below. The active `build/fynd` is the
+`run.YOdmVS` executable; the streaming-selected binary is backed up locally.
 
 ## Prior unordered-streaming acceptance
 

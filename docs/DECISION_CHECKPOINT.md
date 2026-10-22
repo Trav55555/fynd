@@ -4,7 +4,8 @@
 > `src/ignore.inc` and its tests after this checkpoint. Current source is
 > qualified by `build/verification/run.YOdmVS`. The source-hash statements below
 > describe `run.z7sAXq`, so the review-checkpoint check now fails with
-> `source hashes differ`. The active `build/fynd` described below is unchanged.
+> `source hashes differ`. The active `build/fynd` is now the `run.YOdmVS`
+> executable, so the binary statements below are historical as well.
 
 Keep the qualified unordered-streaming implementation selected by `run.vbgYhn`.
 The completed-task retirement candidate remains rejected. Later measurements did

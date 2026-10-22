@@ -86,10 +86,12 @@ descriptive, not significance claims.
 | `/usr`, `--no-ignore`, j1 | 310.2 | 304.2 |
 | Python dist-packages, j1 | 11.9 | 11.1 |
 
-## Not changed
+## Activation and open work
 
-The active `build/fynd` remains the prior selected executable. Activating the
-`run.YOdmVS` binary is a separate decision. Remaining ignore costs, not pursued here,
+The active `build/fynd` is now the `run.YOdmVS` executable (SHA256 prefix
+`85a0d2d6ab8211d6`), activated with user approval after it passed 508 CLI checks
+and 140 ignore checks without a rebuild. The prior binary is preserved in
+`build/live-binary/activation-YOdmVS/before/`. Remaining ignore costs, not pursued here,
 are the per-entry absolute-path mapping in `ignore_map` and the per-byte work
 budget. Precompiling common rule shapes (`*.ext`, literal names) is also open.
 Threaded scaling is a separate, larger problem.
