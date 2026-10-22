@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="366" viewBox="0 0 760 366" role="img" aria-labelledby="title desc">
+<title id="title">fynd vs fd benchmark</title>
+<desc id="desc">Median wall time of 21 warm runs, process startup included. fynd -j1 at 012f2e1; fdfind 9.0.0 with one thread; find (GNU findutils) 4.9.0. GitHub-hosted ubuntu-24.04 runner, AMD EPYC 7763 64-Core Processor. Shared CI runners are noisy: compare ratios, not absolute times.</desc>
+<style>
+.bg{fill:#fcfcfb}.rule{stroke:#e1e0d9}.ring{fill:none;stroke:rgba(11,11,11,0.10)}
+.t1{fill:#0b0b0b}.t2{fill:#52514e}.t3{fill:#898781}.good{fill:#006300}.muted{fill:#52514e}
+@media (prefers-color-scheme: dark){
+.bg{fill:#1a1a19}.rule{stroke:#2c2c2a}.ring{stroke:rgba(255,255,255,0.10)}
+.t1{fill:#f0efec}.t2{fill:#c3c2b7}.good{fill:#0ca30c}.muted{fill:#c3c2b7}}
+text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+font-variant-numeric:tabular-nums}
+.title{font-size:16px;font-weight:600}.head{font-size:12px;font-weight:600}
+.cell{font-size:13px}.sub{font-size:12px}.note{font-size:11px}.strong{font-weight:600}
+</style>
+<rect class="bg" width="760" height="366" rx="8"/>
+<rect class="ring" x="0.5" y="0.5" width="759" height="365" rx="8"/>
+<text class="t1 title" x="24" y="36">fynd vs fd, warm median wall time</text>
+<text class="t2 sub" x="24" y="58">Lower is better. fynd -j1 and fd with one thread; GNU find for reference. Commit 012f2e1.</text>
+<text class="t3 head" x="24" y="84">Tree and query</text>
+<text class="t3 head" x="430" y="84" text-anchor="end">fynd ms</text>
+<text class="t3 head" x="520" y="84" text-anchor="end">fd ms</text>
+<text class="t3 head" x="610" y="84" text-anchor="end">find ms</text>
+<text class="t3 head" x="736" y="84" text-anchor="end">fynd vs fd</text>
+<line class="rule" x1="24" x2="736" y1="98" y2="98"/>
+<text class="cell" x="24" y="120"><tspan class="t1">wide: 20,000 files, 1 dir</tspan><tspan class="t2"> · all files</tspan></text>
+<text class="t1 cell strong" x="430" y="120" text-anchor="end">10.57</text>
+<text class="t1 cell" x="520" y="120" text-anchor="end">25.11</text>
+<text class="t1 cell" x="610" y="120" text-anchor="end">18.53</text>
+<text class="good cell strong" x="736" y="120" text-anchor="end">2.38× faster</text>
+<line class="rule" x1="24" x2="736" y1="132" y2="132"/>
+<text class="cell" x="24" y="154"><tspan class="t1">wide: 20,000 files, 1 dir</tspan><tspan class="t2"> · name has 'needle' (1,819)</tspan></text>
+<text class="t1 cell strong" x="430" y="154" text-anchor="end">10.19</text>
+<text class="t1 cell" x="520" y="154" text-anchor="end">21.05</text>
+<text class="t1 cell" x="610" y="154" text-anchor="end">17.96</text>
+<text class="good cell strong" x="736" y="154" text-anchor="end">2.06× faster</text>
+<line class="rule" x1="24" x2="736" y1="166" y2="166"/>
+<text class="cell" x="24" y="188"><tspan class="t1">deep: 768 files, 97 dirs</tspan><tspan class="t2"> · all files</tspan></text>
+<text class="t1 cell strong" x="430" y="188" text-anchor="end">4.01</text>
+<text class="t1 cell" x="520" y="188" text-anchor="end">6.25</text>
+<text class="t1 cell" x="610" y="188" text-anchor="end">4.19</text>
+<text class="good cell strong" x="736" y="188" text-anchor="end">1.56× faster</text>
+<line class="rule" x1="24" x2="736" y1="200" y2="200"/>
+<text class="cell" x="24" y="222"><tspan class="t1">deep: 768 files, 97 dirs</tspan><tspan class="t2"> · name has 'needle' (96)</tspan></text>
+<text class="t1 cell strong" x="430" y="222" text-anchor="end">3.78</text>
+<text class="t1 cell" x="520" y="222" text-anchor="end">4.60</text>
+<text class="t1 cell" x="610" y="222" text-anchor="end">3.97</text>
+<text class="good cell strong" x="736" y="222" text-anchor="end">1.22× faster</text>
+<line class="rule" x1="24" x2="736" y1="234" y2="234"/>
+<text class="cell" x="24" y="256"><tspan class="t1">mixed: 1,452 files, 364 dirs</tspan><tspan class="t2"> · all files</tspan></text>
+<text class="t1 cell strong" x="430" y="256" text-anchor="end">4.76</text>
+<text class="t1 cell" x="520" y="256" text-anchor="end">6.83</text>
+<text class="t1 cell" x="610" y="256" text-anchor="end">7.01</text>
+<text class="good cell strong" x="736" y="256" text-anchor="end">1.44× faster</text>
+<line class="rule" x1="24" x2="736" y1="268" y2="268"/>
+<text class="cell" x="24" y="290"><tspan class="t1">mixed: 1,452 files, 364 dirs</tspan><tspan class="t2"> · name has 'needle' (242)</tspan></text>
+<text class="t1 cell strong" x="430" y="290" text-anchor="end">4.67</text>
+<text class="t1 cell" x="520" y="290" text-anchor="end">6.58</text>
+<text class="t1 cell" x="610" y="290" text-anchor="end">6.85</text>
+<text class="good cell strong" x="736" y="290" text-anchor="end">1.41× faster</text>
+<line class="rule" x1="24" x2="736" y1="302" y2="302"/>
+<text class="t3 note" x="24" y="326">21 warm runs per cell, process startup included. fdfind 9.0.0; find (GNU findutils) 4.9.0.</text>
+<text class="t3 note" x="24" y="343">GitHub-hosted ubuntu-24.04 runner, AMD EPYC 7763 64-Core Processor. Shared runners are noisy: compare ratios.</text>
+</svg>
