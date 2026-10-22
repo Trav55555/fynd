@@ -163,10 +163,11 @@ On POSIX, SIGPIPE may terminate the CLI instead of status 1.
   read from the Git directory it names, as Git does.
   Explicit roots bypass rules for themselves; children still obey them.
   Hidden children require `-H` even when a rule explicitly unignores them.
-  After opening a directory, fixed-name probes load its current `.ignore` and
-  repository `.gitignore` policy before selecting any descendant, even if those
-  names would appear late during enumeration. The `.git` boundary probe uses
-  non-following metadata. Ignore precedence and limits are unchanged.
+  A directory's current `.ignore` and repository `.gitignore` policy is loaded
+  before any of its children is selected, even if those names appear late in
+  the listing. A listing that ends within its first 64 names shows which of
+  `.git`, `.ignore` and `.gitignore` are present; a longer one is probed for
+  them with non-following metadata. Ignore precedence and limits are unchanged.
   See [ignore and thread semantics](docs/IGNORE_THREADS.md) for boundaries and limits.
 - An explicit `--max-depth` cutoff is successful. Without a requested cutoff,
   reaching a directory at depth 128 reports a recursion safety error rather

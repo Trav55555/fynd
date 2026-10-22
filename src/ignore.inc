@@ -248,6 +248,7 @@ static int ignore_parse(CuArena *a, CuStr text, IgnoreFile *out, int *number)
 
 enum { IGNORE_PLAIN, IGNORE_GIT, IGNORE_EXCLUDE, IGNORE_CLASSES };
 #define IGNORE_REPOSITORY_BIT (1U << IGNORE_CLASSES)
+#define IGNORE_UNLISTED (~0U)
 static const char *const ignore_names[] = { ".ignore", ".gitignore" };
 typedef struct IgnoreFrame IgnoreFrame;
 struct IgnoreFrame {
@@ -517,47 +518,69 @@ static int ignore_enter(CuArena *a, const IgnoreFrame *parent,
     return ignore_frame(a, parent, mapped, listed, out, error);
 }
 
-/* Nonfollowing probe of a name in the open listing dir. Returns 1 with
- * *present set, or 0 after reporting an error at the name's full path. */
+/* Nonfollowing probe of a name in directory: through its open listing dir,
+ * or by path when dir is NULL. Returns 1 with *present set, or 0 after
+ * reporting an error at the name's full path. */
 static int ignore_probe(CuArena *a, const CuDir *dir, const char *directory,
                         const char *name, int *present, IgnoreError *error)
 {
     CuFileInfo info;
+    struct stat st;
     char *path;
     int saved;
-    switch (IGNORE_DIR_INFO(dir, name, CU_PATH_NOFOLLOW, &info)) {
-    case CU_INFO_OK: *present = 1; return 1;
-    case CU_INFO_MISSING: *present = 0; return 1;
-    default: break;
+    path = NULL;
+    if (dir != NULL) {
+        switch (IGNORE_DIR_INFO(dir, name, CU_PATH_NOFOLLOW, &info)) {
+        case CU_INFO_OK: *present = 1; return 1;
+        case CU_INFO_MISSING: *present = 0; return 1;
+        default: break;
+        }
+    } else {
+        path = join_path(a, directory, cu_str_cstr(name));
+        if (path == NULL) return ignore_error(error, ENOMEM, directory);
+        if (IGNORE_STAT(path, &st) == 0) { *present = 1; return 1; }
     }
     saved = errno;
-    if (saved == ENOTDIR) { *present = 0; return 1; }
-    path = join_path(a, directory, cu_str_cstr(name));
+    if (saved == ENOENT || saved == ENOTDIR) { *present = 0; return 1; }
+    if (path == NULL) path = join_path(a, directory, cu_str_cstr(name));
     if (path == NULL) return ignore_error(error, ENOMEM, directory);
     return ignore_error(error, saved, path);
 }
 
-/* Acquire current policy before the cursor yields ANY child. dir is the open
- * listing of directory. Presence of a repository marker includes every kind,
+/* The ignore source bit a directory entry's name shows, if any. */
+static unsigned ignore_listed_name(CuStr name)
+{
+    if (name.len == 4 && memcmp(name.ptr, ".git", 4) == 0) return IGNORE_REPOSITORY_BIT;
+    if (name.len == 7 && memcmp(name.ptr, ".ignore", 7) == 0) return 1U << IGNORE_PLAIN;
+    if (name.len == 10 && memcmp(name.ptr, ".gitignore", 10) == 0) return 1U << IGNORE_GIT;
+    return 0;
+}
+
+/* Acquire directory's current policy before any child is selected. listed
+ * holds the ignore_listed_name bits of its complete listing, or is
+ * IGNORE_UNLISTED to probe instead: through dir, its listing while still
+ * open, else by path. Presence of a repository marker includes every kind,
  * even a dangling symbolic link. Only sources that exist are read. */
 static int ignore_stream_enter(CuArena *a, const IgnoreFrame *parent,
                                const CuDir *dir, const char *directory,
-                               const IgnoreFrame **out, IgnoreError *error)
+                               unsigned listed, const IgnoreFrame **out,
+                               IgnoreError *error)
 {
     const IgnoreFrame *f, *ancestor;
-    unsigned listed;
     int k, present, repository;
-    listed = 0;
-    if (!ignore_probe(a, dir, directory, ".git", &present, error)) return 0;
-    if (present) listed |= IGNORE_REPOSITORY_BIT;
-    repository = present;
-    for (ancestor = parent; !repository && ancestor != NULL; ancestor = ancestor->parent)
-        repository = ancestor->repository;
-    /* ignore_frame reads .gitignore only inside a repository. */
-    for (k = 0; k <= IGNORE_GIT; ++k) {
-        if (k == IGNORE_GIT && !repository) continue;
-        if (!ignore_probe(a, dir, directory, ignore_names[k], &present, error)) return 0;
-        if (present) listed |= 1U << k;
+    if (listed == IGNORE_UNLISTED) {
+        listed = 0;
+        if (!ignore_probe(a, dir, directory, ".git", &present, error)) return 0;
+        if (present) listed |= IGNORE_REPOSITORY_BIT;
+        repository = present;
+        for (ancestor = parent; !repository && ancestor != NULL; ancestor = ancestor->parent)
+            repository = ancestor->repository;
+        /* ignore_frame reads .gitignore only inside a repository. */
+        for (k = 0; k <= IGNORE_GIT; ++k) {
+            if (k == IGNORE_GIT && !repository) continue;
+            if (!ignore_probe(a, dir, directory, ignore_names[k], &present, error)) return 0;
+            if (present) listed |= 1U << k;
+        }
     }
     if (!ignore_enter(a, parent, directory, listed, &f, error)) return 0;
     /* A frame with no rules and no repository marker cannot decide or scope

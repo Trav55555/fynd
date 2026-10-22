@@ -5,12 +5,39 @@
 #include <stdio.h>
 #ifndef __cerb__
 #include "cu.h"
+#include <string.h>
+#include <sys/stat.h>
 static int stream_dir_open(CuDir *dir, CuArena *arena, const char *path);
 static int stream_dir_next(CuDir *dir, CuDirEntry *entry);
 static void stream_dir_close(CuDir *dir);
 #define cu_dir_open stream_dir_open
 #define cu_dir_next stream_dir_next
 #define cu_dir_close stream_dir_close
+/* Count probes for ignore sources; a listing that ends within a window
+ * this small shows them instead, and a longer one is still probed. */
+static size_t probe_calls;
+static CuInfoResult stream_dir_info(const CuDir *dir, const char *name,
+                                    CuPathFollow follow, CuFileInfo *out)
+{
+    ++probe_calls;
+    return cu_dir_info(dir, name, follow, out);
+}
+#define IGNORE_DIR_INFO stream_dir_info
+/* By path, the root's .git is looked up once while seeding its ancestors;
+ * any further lookup is a probe. */
+static const char *marker_dir;
+static size_t marker_stats;
+static int stream_lstat(const char *path, struct stat *st)
+{
+    size_t n;
+    n = strlen(path);
+    if (marker_dir != NULL && strstr(path, marker_dir) != NULL &&
+        n >= 5 && strcmp(path + n - 5, "/.git") == 0)
+        ++marker_stats;
+    return lstat(path, st);
+}
+#define IGNORE_STAT stream_lstat
+#define FYND_LISTING_AHEAD 4
 /* Rename the included prototype too when a checker also links fynd.c. */
 #define fynd_main stream_test_fynd_main
 /* Its hooks are process-global and not thread-safe. The default
@@ -26,7 +53,7 @@ static void stream_dir_close(CuDir *dir);
 #include <fcntl.h>
 
 enum { STREAM_NORMAL, STREAM_VISIBLE, STREAM_EIO, STREAM_NAME_OOM,
-       STREAM_OPEN_ERROR, STREAM_MEMORY, STREAM_POLICY_REWRITE,
+       STREAM_OPEN_ERROR, STREAM_MEMORY,
        STREAM_ANCHOR_OOM, STREAM_EMFILE };
 static int hook_mode;
 static FILE *watch_out;
@@ -41,7 +68,6 @@ static size_t live_dirs;
 static size_t peak_live_dirs;
 static size_t next_calls;
 static int anchor_failed;
-static const char *policy_path;
 static size_t failed_open_closes;
 static size_t peak_name_bytes;
 static int fault_fired;
@@ -99,16 +125,7 @@ static int stream_dir_next(CuDir *dir, CuDirEntry *entry)
 {
     int next;
     int saved_debug;
-    FILE *file;
     ++next_calls;
-    if (hook_mode == STREAM_POLICY_REWRITE && !fault_fired) {
-        /* Mutate the owned policy BEFORE even the first real next. A
-         * policy loaded after next would see empty rules and leak blocked. */
-        assert(policy_path != NULL);
-        file = fopen(policy_path, "w");
-        assert(file != NULL && fclose(file) == 0);
-        fault_fired = 1;
-    }
     /* Observe BEFORE calling the real next, including the call returning EOF.
      * No assertion here: old collection must finish and prove correct bytes
      * and cleanup before the first test's final visibility assertion fails.
@@ -189,7 +206,8 @@ static void reset_hooks(int mode)
     peak_live_dirs = 0;
     next_calls = 0;
     anchor_failed = 0;
-    policy_path = NULL;
+    probe_calls = 0;
+    marker_stats = 0;
     failed_open_closes = 0;
     peak_name_bytes = 0;
     fault_fired = 0;
@@ -421,53 +439,64 @@ static void first_path_before_eof(void)
 
 /* Both creation permutations must retain the pre-next policy snapshot.
  * Neither this hook nor the repository test replaces production lstat. */
-static void policy_before_any_next(void)
+/* A listing that ends within FYND_LISTING_AHEAD names shows its ignore
+ * sources, so none is probed; a longer one is probed. Either way policy is
+ * in place before any child is selected, whatever the listing order. */
+static void policy_from_listing(void)
 {
     int permutation;
-    for (permutation = 0; permutation < 2; ++permutation) {
-        char template[] = "/tmp/fynd-stream-XXXXXX";
-        char *root;
-        char blocked[512];
-        char kept[512];
-        char rules[512];
-        char *args[9];
-        const char *expected[1];
-        FILE *file;
-        StreamCheck check;
-        int status;
-        root = fixture_begin(template);
-        fixture_path(blocked, sizeof blocked, root, "blocked-data");
-        fixture_path(kept, sizeof kept, root, "kept-data");
-        fixture_path(rules, sizeof rules, root, ".ignore");
-        make_file(permutation ? kept : blocked);
-        make_file(permutation ? blocked : kept);
-        file = fopen(rules, "w");
-        assert(file != NULL && fputs("blocked-data\n", file) >= 0);
-        assert(fclose(file) == 0);
-        file_args(args, root);
-        args[5] = "-j1";
-        args[6] = "data";
-        expected[0] = kept;
-        reset_hooks(STREAM_POLICY_REWRITE);
-        policy_path = rules;
-        check_begin(&check);
-        status = check_run(&check, 8, args);
-        /* Verify the hook really truncated the source, not merely armed. */
-        file = fopen(rules, "r");
-        assert(file != NULL);
-        assert(fgetc(file) == EOF && !ferror(file) && feof(file));
-        assert(fclose(file) == 0);
-        assert(unlink(blocked) == 0 && unlink(kept) == 0);
-        assert(unlink(rules) == 0 && rmdir(root) == 0);
-        policy_path = NULL;
-        assert(status == 0);
-        expect_paths(check.out, expected, 1, 0);
-        expect_text(check.err, "");
-        check_end(&check);
-        assert(fault_fired && next_calls == 4 && eof_seen);
-        assert(successful_entries == 3 && actual_files == 3);
-        assert(open_attempts == 1 && opened == 1 && closed == 1);
-        assert(peak_live_dirs == 1 && live_dirs == 0);
+    int padded;
+    for (padded = 0; padded < 2; ++padded) {
+        for (permutation = 0; permutation < 2; ++permutation) {
+            char template[] = "/tmp/fynd-stream-XXXXXX";
+            char *root;
+            char blocked[512];
+            char kept[512];
+            char rules[512];
+            char pads[2][512];
+            char *args[9];
+            const char *expected[1];
+            FILE *file;
+            StreamCheck check;
+            int status;
+            int i;
+            root = fixture_begin(template);
+            fixture_path(blocked, sizeof blocked, root, "blocked-data");
+            fixture_path(kept, sizeof kept, root, "kept-data");
+            fixture_path(rules, sizeof rules, root, ".ignore");
+            fixture_path(pads[0], sizeof pads[0], root, "pad-1");
+            fixture_path(pads[1], sizeof pads[1], root, "pad-2");
+            make_file(permutation ? kept : blocked);
+            make_file(permutation ? blocked : kept);
+            for (i = 0; padded && i < 2; ++i)
+                make_file(pads[i]);
+            file = fopen(rules, "w");
+            assert(file != NULL && fputs("blocked-data\n", file) >= 0);
+            assert(fclose(file) == 0);
+            file_args(args, root);
+            args[5] = "-j1";
+            args[6] = "data";
+            expected[0] = kept;
+            reset_hooks(STREAM_NORMAL);
+            marker_dir = strrchr(root, '/');
+            check_begin(&check);
+            status = check_run(&check, 8, args);
+            for (i = 0; padded && i < 2; ++i)
+                assert(unlink(pads[i]) == 0);
+            assert(unlink(blocked) == 0 && unlink(kept) == 0);
+            assert(unlink(rules) == 0 && rmdir(root) == 0);
+            assert(status == 0);
+            expect_paths(check.out, expected, 1, 0);
+            expect_text(check.err, "");
+            check_end(&check);
+            marker_dir = NULL;
+            if (padded)
+                assert(probe_calls != 0);
+            else
+                assert(probe_calls == 0 && marker_stats == 1);
+            assert(open_attempts == 1 && opened == 1 && closed == 1);
+            assert(live_dirs == 0);
+        }
     }
 }
 
@@ -899,7 +928,7 @@ int main(void)
 {
 #ifndef __cerb__
     first_path_before_eof();
-    policy_before_any_next();
+    policy_from_listing();
     cursor_anchor_failure();
     dangling_repository_marker();
     directory_resource_lifetime();

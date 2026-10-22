@@ -11,9 +11,11 @@ static int test_ignore_stat(const char *path, struct stat *st)
     return stat(path, st);
 }
 #define IGNORE_STAT test_ignore_stat
+static size_t test_probe_calls;
 static CuInfoResult test_ignore_dir_info(const CuDir *d, const char *name,
                                         CuPathFollow follow, CuFileInfo *out)
 {
+    ++test_probe_calls;
     if (test_probe_errno != 0) { errno = test_probe_errno; return CU_INFO_ERROR; }
     return cu_dir_info(d, name, follow, out);
 }
@@ -35,7 +37,23 @@ static int stream_enter(CuArena *a, const IgnoreFrame *parent, const char *direc
     int ok;
     cu_arena_init(&scratch);
     assert(cu_dir_open(&dir, &scratch, directory) == 1);
-    ok = ignore_stream_enter(a, parent, &dir, directory, out, e);
+    ok = ignore_stream_enter(a, parent, &dir, directory, IGNORE_UNLISTED, out, e);
+    cu_dir_close(&dir);
+    cu_arena_release(&scratch);
+    return ok;
+}
+
+/* Enter directory's policy from the given listing bits, as visit() does
+ * once its listing has ended. */
+static int listed_enter(CuArena *a, const IgnoreFrame *parent, const char *directory,
+                        unsigned listed, const IgnoreFrame **out, IgnoreError *e)
+{
+    CuArena scratch;
+    CuDir dir;
+    int ok;
+    cu_arena_init(&scratch);
+    assert(cu_dir_open(&dir, &scratch, directory) == 1);
+    ok = ignore_stream_enter(a, parent, &dir, directory, listed, out, e);
     cu_dir_close(&dir);
     cu_arena_release(&scratch);
     return ok;
@@ -695,6 +713,30 @@ static void elision_cases(void)
     assert(strcmp(e.path, p) == 0);
     test_probe_errno = ENOTDIR;
     assert(stream_enter(&a, root, dir, &child, &e) && child == root);
+    test_probe_errno = 0;
+    /* Listing bits replace probes: only the sources they name are read. */
+    dir = join_path(&a, base, cu_str_cstr("rules")); assert(dir != NULL);
+    test_probe_calls = 0;
+    assert(listed_enter(&a, root, dir, 1U << IGNORE_PLAIN, &child, &e));
+    assert(child != root && child->files[IGNORE_PLAIN].count == 1);
+    assert(listed_enter(&a, root, dir, 0, &child, &e) && child == root);
+    p = join_path(&a, base, cu_str_cstr("repo")); assert(p != NULL);
+    assert(listed_enter(&a, root, p, IGNORE_REPOSITORY_BIT, &child, &e));
+    assert(child != root && child->repository);
+    assert(test_probe_calls == 0);
+    /* Without an open listing, probes go by path, with the same errors. */
+    assert(ignore_stream_enter(&a, root, NULL, dir, IGNORE_UNLISTED, &child, &e));
+    assert(child != root && child->files[IGNORE_PLAIN].count == 1);
+    assert(ignore_stream_enter(&a, root, NULL, p, IGNORE_UNLISTED, &child, &e));
+    assert(child != root && child->repository && test_probe_calls == 0);
+    test_probe_errno = EIO;
+    child = seed;
+    assert(!ignore_stream_enter(&a, root, NULL, dir, IGNORE_UNLISTED, &child, &e));
+    assert(e.number == EIO && child == seed);
+    p = join_path(&a, dir, cu_str_cstr(".git")); assert(p != NULL);
+    assert(strcmp(e.path, p) == 0);
+    test_probe_errno = ENOTDIR;
+    assert(ignore_stream_enter(&a, root, NULL, dir, IGNORE_UNLISTED, &child, &e) && child == root);
     test_probe_errno = 0;
     p = join_path(&a, base, cu_str_cstr("repo/.git")); assert(p != NULL);
     assert(rmdir(p) == 0);
