@@ -35,7 +35,7 @@ cli-test: $(BUILD)/fynd | check-cutils
 	python3 -I tests/test_ignore_cli.py $(BUILD)/fynd
 
 bench-test:
-	python3 -m unittest bench.test_bench bench.test_comprehensive_fixtures bench.test_comprehensive
+	python3 -m unittest bench.test_bench bench.test_comprehensive_fixtures bench.test_comprehensive bench.test_render_ci
 
 bench:
 	systemd-run --user --scope -q -p MemoryMax=3G -p MemorySwapMax=0 nice -n 15 bash -c 'ulimit -c 0; exec "$$@"' -- python3 -I bench/bench.py --fynd "$(BENCH_FYND)" --output "$(BUILD)/bench" $(BENCH_ARGS)

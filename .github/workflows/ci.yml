@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-bench:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read pinned c-utils revision
+        id: pin
+        run: echo "revision=$(tr -d '[:space:]' < CUTILS_REVISION)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Trav55555/c-utils
+          ref: ${{ steps.pin.outputs.revision }}
+          path: c-utils
+          persist-credentials: false
+
+      - name: Install benchmark tools
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q fd-find time
+
+      - name: Build and test
+        run: make CUTILS=c-utils all test cli-test bench-test
+
+      - name: Benchmark against fd and GNU find
+        run: python3 -I bench/bench.py --fynd "$PWD/build/fynd" --fd /usr/bin/fdfind --output build/bench --repeats 21
+
+      - name: Render results
+        run: |
+          report=$(ls -d build/bench/run-*/report.json)
+          python3 -I bench/render_ci.py --report "$report" --out build/bench-site \
+            --commit "$GITHUB_SHA" --runner "GitHub-hosted ubuntu-24.04 runner"
+          cp "$report" build/bench-site/report.json
+          cat build/bench-site/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bench-site
+          path: build/bench-site/
+          if-no-files-found: error
+
+  publish-bench:
+    # Only main updates the README widget; PRs report results in their job summary.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test-and-bench
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    concurrency:
+      group: publish-bench
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: bench-site
+          path: site
+
+      - name: Commit results to the bench-results branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          work=$(mktemp -d)
+          git -C "$work" init -q -b bench-results
+          git -C "$work" remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git -C "$work" fetch -q --depth 1 origin bench-results; then
+            git -C "$work" checkout -q -B bench-results FETCH_HEAD
+          fi
+          cp site/bench.svg site/badge.json site/summary.md site/report.json "$work/"
+          python3 -I - "$work" <<'EOF'
+          import json, os, sys
+          from pathlib import Path
+          work = Path(sys.argv[1])
+          badge = json.loads((work / 'badge.json').read_text())
+          entry = {'commit': os.environ['GITHUB_SHA'], 'run_id': os.environ['GITHUB_RUN_ID'],
+                   'fynd_vs_fd': badge['message']}
+          with open(work / 'history.jsonl', 'a') as history:
+              history.write(json.dumps(entry) + '\n')
+          EOF
+          git -C "$work" add -A
+          git -C "$work" -c user.name="github-actions[bot]" \
+            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "bench: ${GITHUB_SHA::7}"
+          git -C "$work" push -q origin bench-results

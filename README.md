@@ -1,5 +1,8 @@
 # fynd
 
+[![CI](https://github.com/Trav55555/fynd/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Trav55555/fynd/actions/workflows/ci.yml)
+[![fynd vs fd](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Trav55555/fynd/bench-results/badge.json)](#benchmark)
+
 A small, read-only file finder in Dependable C, built on
 [c-utils](https://github.com/Trav55555/c-utils).
 
@@ -15,8 +18,23 @@ Native benchmark results are not a full verification pass. Retention requires
 the unchanged required checker profiles and at least 90% coverage in each module;
 actual acceptance receipts are documented separately.
 
-[Build](#build) · [Usage](#usage) · [Behavior and limits](#behavior-and-limits) ·
+[Benchmark](#benchmark) · [Build](#build) · [Usage](#usage) · [Behavior and limits](#behavior-and-limits) ·
 [Development](#development) · [Research](docs/RESEARCH.md)
+
+## Benchmark
+
+[![fynd vs fd benchmark table](https://raw.githubusercontent.com/Trav55555/fynd/bench-results/bench.svg)](https://github.com/Trav55555/fynd/blob/bench-results/summary.md)
+
+CI rebuilds fynd and reruns this table on every push to `main`. It uses the
+[serial benchmark](bench/README.md) on a GitHub-hosted runner: warm caches,
+small generated trees, 21 runs per cell, every output validated against the
+fixture manifest before timing. fd runs with one thread, matching fynd's serial
+default. The times include process startup, and shared runners are noisy.
+Read the ratios, not the absolute milliseconds. Results for each commit are
+kept on the [`bench-results` branch](https://github.com/Trav55555/fynd/tree/bench-results).
+This is not fd's default: with automatic threading, fd is several times faster
+than fynd on large trees. For threaded and larger-tree comparisons, see
+[the full streaming benchmark](docs/STREAMING_FULL_BENCHMARK.md).
 
 ## Build
 
@@ -252,6 +270,8 @@ fd. It runs under the same resource caps, validates selected-file multisets befo
 and during timing, and measures warm wide, deep, and mixed trees. fd uses one
 configured search worker. No cache dropping or timing-ratio gate is used.
 See [the benchmark procedure](bench/README.md) and [recorded baseline](docs/BENCHMARKS.md).
+CI runs the same benchmark with 21 repetitions and renders the README table and
+badge with `bench/render_ci.py`, which `make bench-test` also covers.
 
 The native candidate comparison uses two matched warm waves, with serial fynd
 versus fd's automatic threading as the primary flat-million-file comparison,
