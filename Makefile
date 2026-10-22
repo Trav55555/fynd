@@ -33,6 +33,7 @@ test: $(TEST_BINS) | check-cutils
 cli-test: $(BUILD)/fynd | check-cutils
 	python3 -I tests/test_cli.py $(BUILD)/fynd
 	python3 -I tests/test_ignore_cli.py $(BUILD)/fynd
+	python3 -I tests/test_ignore_git.py $(BUILD)/fynd --cases 200
 
 bench-test:
 	python3 -m unittest bench.test_bench bench.test_comprehensive_fixtures bench.test_comprehensive bench.test_render_ci

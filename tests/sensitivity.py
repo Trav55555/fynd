@@ -27,7 +27,7 @@ FILES = tuple(sorted(set(MUTATION_FILES + ('include/fynd.h', 'cmd/main.c') + C_T
                                         'include/**/*.h', 'tests/**/*.py',
                                         'tests/**/*.h', 'fuzz/**/*.h')
                         for path in SOURCE.glob(pattern)}))
-EXPECTED_MUTATIONS = 27  # 19 retained + 6 scheduler controls replacing 7 coarse/thread ones + frame elision + hold release.
+EXPECTED_MUTATIONS = 28  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse.
 STRICT = ['-std=c89', '-pedantic-errors', '-Wall', '-Wextra', '-Werror',
           '-Wconversion', '-Wshadow', '-Wstrict-prototypes', '-Wmissing-prototypes']
 MUTATIONS = (
@@ -110,6 +110,10 @@ MUTATIONS = (
      "        if (r->len != 0 && r->glob[0] != '*' &&",
      "        if (r->len != 0 && 0 && r->glob[0] != '*' &&",
      'charged-work sensor rejects repeated glob/suffix scans for impossible rules'),
+    ('expand-repeated-doublestar', 'src/ignore.inc',
+     "            while (gl >= 5 && g[3] == '*' && g[4] == '*' && (gl == 5 || g[5] == '/')) {",
+     "            while (gl >= 5 && g[3] == '*' && g[4] == '*' && (gl == 5 || g[5] == '/') && 0) {",
+     'test_ignore work bound: repeated ** on a deep miss must stay linear'),
     ('invert-necessary-start-filter', 'src/ignore.inc',
      '            } else if (base_len == 0 || first != (unsigned char)base[0]) {',
      '            } else if (base_len == 0 || first == (unsigned char)base[0]) {',
