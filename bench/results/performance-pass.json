@@ -1,0 +1,43 @@
+{
+  "schema": "fynd.performance-pass.index/1",
+  "data": "performance-pass-data.json.gz",
+  "sha256": "9e8c7a434cc258913cde19d2014778643267add52b08b4a6e9ab45b974f96428",
+  "uncompressed_sha256": "7e1b0283a63333f00db222778b0cd4e45c765f60fc7aa09c823887459edbfdc7",
+  "csv": "performance-pass-summary.csv",
+  "csv_sha256": "7c6723ada034e802e47afa3e13fbe08a052e4961e2338c59a94c7838ddd0c3ad",
+  "selected_configuration": "selected256:combined-j1/combined-j8",
+  "qualification": "build/performance-pass/combined/build/verification/run.FyCw0V",
+  "cutils_revision": "eafa795805fa997e2db91f9182c4e0f86fa32fb4",
+  "audit": {
+    "screen64": {
+      "status": "PASS",
+      "prechecks": 290,
+      "samples": 1450,
+      "warmups": 145,
+      "groups": 290,
+      "max_timer_delta_ms": 20.642,
+      "coherent_cpu_forgery": "rejected by independent GNU time record",
+      "fd_limit": "raw FD outputs were multiset-validated during each invocation; overwritten bytes cannot be revalidated from scalar hashes"
+    },
+    "qualified64": {
+      "status": "PASS",
+      "prechecks": 330,
+      "samples": 2970,
+      "warmups": 297,
+      "groups": 330,
+      "max_timer_delta_ms": 20.947,
+      "coherent_cpu_forgery": "rejected by independent GNU time record",
+      "fd_limit": "raw FD outputs were multiset-validated during each invocation; overwritten bytes cannot be revalidated from scalar hashes"
+    },
+    "selected256": {
+      "status": "PASS",
+      "prechecks": 363,
+      "samples": 3267,
+      "warmups": 297,
+      "groups": 363,
+      "max_timer_delta_ms": 20.83500000000006,
+      "coherent_cpu_forgery": "rejected by independent GNU time record",
+      "fd_limit": "raw FD outputs were multiset-validated during each invocation; overwritten bytes cannot be revalidated from scalar hashes"
+    }
+  }
+}

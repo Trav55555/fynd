@@ -1,0 +1,47 @@
+{
+  "schema": "fynd.frontier-cost.index/1",
+  "decision": "REJECTED_NO_PROMOTION",
+  "data": "frontier-cost-data.json.gz",
+  "sha256": "cc90eae2ad22b9699ad623f9860b9ea704305eff825cd2f5ffb68391b92c3025",
+  "uncompressed_sha256": "fc1ce983489857018eaa0ee0a079c0a331e266e840c88597da06447fe8e43c0d",
+  "csv": "frontier-cost-summary.csv",
+  "csv_sha256": "003a25ba5fe5aed66b0e8719ef483b6e97ca1802aacd09fe194539a187e900a1",
+  "audit": {
+    "profile-n5ss6kcc": {
+      "status": "PASS",
+      "prechecks": 6,
+      "samples": 72,
+      "probes": 12,
+      "coherent_cpu_forgery": "rejectedbyindependenttimer"
+    },
+    "profile-icp4kzdu": {
+      "status": "PASS",
+      "prechecks": 6,
+      "samples": 72,
+      "probes": 12,
+      "coherent_cpu_forgery": "rejectedbyindependenttimer"
+    },
+    "run-3ytux482": {
+      "status": "PASS",
+      "prechecks": 160,
+      "samples": 1600,
+      "probes": 0,
+      "coherent_cpu_forgery": "rejectedbyindependenttimer",
+      "small_wall_regression": 0.4063538239551847,
+      "small_cpu_reduction_vs_B": 0.06329367338046465
+    },
+    "run-rmfm5ewa": {
+      "status": "PASS",
+      "prechecks": 160,
+      "samples": 1600,
+      "probes": 0,
+      "coherent_cpu_forgery": "rejectedbyindependenttimer",
+      "small_wall_regression": 0.5483077937368575,
+      "small_cpu_reduction_vs_B": 0.0584704527154839
+    }
+  },
+  "production_inputs_matched": 111,
+  "red": "compilevalidbehavior134:sharedleafpublications1,budget0",
+  "green": "7Ctests508CLI140ignoreandfastpass",
+  "qualification": "Notfullqualified,nopromotion;nativecontrolgatefailed"
+}

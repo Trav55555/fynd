@@ -1,0 +1,64 @@
+{
+  "schema": "fynd.poll.index/1",
+  "decision": "REJECTED_NO_PROMOTION",
+  "data": "frontier-poll-data.json.gz",
+  "sha256": "f262366e247c6c5d81408d7b83516993eef194ed2b8bd54499bbc0685cfbfeb7",
+  "uncompressed_sha256": "194e7753eaba10bdba3ff17d19f8c9d5c3a701bd93342fb968139feb4f3897de",
+  "csv": "frontier-poll-summary.csv",
+  "csv_sha256": "8675c91cb89d0c999811f4a5ed2e93a989701c635fe6db459dbd32113a140813",
+  "audit": {
+    "run-huunvhlf": {
+      "status": "PASS",
+      "prechecks": 160,
+      "samples": 1600,
+      "warmups": 160,
+      "small_quiet_regression": 0.08800356002833887,
+      "paired_intervals": {
+        "small-all-file": {
+          "median": 1.0931440233954712,
+          "low": 0.9796683396445985,
+          "high": 1.2090201713401287
+        },
+        "small-none-file": {
+          "median": 1.095240252596235,
+          "low": 1.0628078681935929,
+          "high": 1.1139253316085966
+        },
+        "balanced-none-file": {
+          "median": 1.0665368377594522,
+          "low": 0.9341987407804517,
+          "high": 1.1508319410394046
+        }
+      },
+      "coherent_cpu_forgery": "rejectedbyindependenttimer"
+    },
+    "run-16e5fo17": {
+      "status": "PASS",
+      "prechecks": 160,
+      "samples": 1600,
+      "warmups": 160,
+      "small_quiet_regression": 0.14344954806281174,
+      "paired_intervals": {
+        "small-all-file": {
+          "median": 1.132277212261997,
+          "low": 1.0652904885889636,
+          "high": 1.2780030931923159
+        },
+        "small-none-file": {
+          "median": 1.1641064725791401,
+          "low": 1.0919523908633573,
+          "high": 1.2635677204662132
+        },
+        "balanced-none-file": {
+          "median": 1.028829551803128,
+          "low": 0.7708121110495142,
+          "high": 1.1317590372978485
+        }
+      },
+      "coherent_cpu_forgery": "rejectedbyindependenttimer"
+    }
+  },
+  "production_inputs_matched": 117,
+  "red": "compilevalidold4pollsbudget3behavior134;after3pass",
+  "qualification": "narrow9Ctests508CLI140ignorefastonly; quietsmallgatefailed;nopromotion"
+}

@@ -1,0 +1,19 @@
+/build/
+/build-*/
+/.dcheck/
+/.pi/
+__pycache__/
+*.py[cod]
+*.o
+*.gcda
+*.gcno
+*.profraw
+*.profdata
+/core
+/core.[0-9]*
+.env
+.env.*
+!.env.example
+
+# Raw benchmark samples stay local; summaries (*.json, *.csv) are tracked.
+/bench/results/*-data.json.gz

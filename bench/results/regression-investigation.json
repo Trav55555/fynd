@@ -1,0 +1,13 @@
+{
+  "schema": "fynd.regression.index/1",
+  "data": "regression-investigation-data.json.gz",
+  "sha256": "a348d670be825e71d719c6129f82e742efc5322a308267d2f5753e624fa7c0db",
+  "uncompressed_sha256": "e33aae0e182ce2f4d8c83b34a26311bf99165ccae2130c93ba908aeb328973f7",
+  "prechecks": 96,
+  "timed_outputs": 2304,
+  "warmups": 384,
+  "current_qualification": "build/performance-pass/combined/build/verification/run.FyCw0V",
+  "captured_inputs_matched": 100,
+  "application_changed": false,
+  "findings": "Earlier large small-tree j8 and balanced-serial regressions did not reproduce; no fix; quiet-j8 variability unresolved"
+}
