@@ -250,6 +250,15 @@ static void pure_tests(void)
     assert(parse(&q, &arena, 3, args) == 2);
     args[1] = "-j2"; args[2] = "--no-ignore";
     assert(parse(&q, &arena, 3, args) == 0 && q.threads == 2 && q.no_ignore);
+    /* --sort is serial: an explicit -j above 1 conflicts in either order. */
+    args[1] = "--sort"; args[2] = "x";
+    assert(parse(&q, &arena, 3, args) == 0 && q.sort && q.threads == 0);
+    args[1] = "--sort"; args[2] = "-j2";
+    assert(parse(&q, &arena, 3, args) == 2);
+    args[1] = "-j2"; args[2] = "--sort";
+    assert(parse(&q, &arena, 3, args) == 2);
+    args[1] = "-j1"; args[2] = "--sort";
+    assert(parse(&q, &arena, 3, args) == 0 && q.sort && q.threads == 1);
     cu_arena_release(&arena);
 }
 
@@ -385,6 +394,68 @@ static void preexisting_errors(char *root)
     assert(fclose(out) == 0 && fclose(err) == 0);
 }
 
+/* --sort: exact byte-sorted preorder (A < a < ab < b), hidden only with -H,
+ * and every allocation failure while reading a directory whole. */
+static void sort_cases(char *root)
+{
+    static const char *const names[] = {"b", "ab", "A", ".h"};
+    char dir[1024], path[1024], expected[4096];
+    char *args[7];
+    CuArena arena;
+    FILE *out, *err;
+    size_t i, attempts;
+    int fd, result;
+    assert(snprintf(dir, sizeof dir, "%s/sorted", root) > 0);
+    assert(mkdir(dir, 0700) == 0);
+    assert(snprintf(path, sizeof path, "%s/a", dir) > 0);
+    assert(mkdir(path, 0700) == 0);
+    assert(snprintf(path, sizeof path, "%s/a/z", dir) > 0);
+    fd = open(path, O_CREAT | O_WRONLY, 0600);
+    assert(fd >= 0 && close(fd) == 0);
+    for (i = 0; i < sizeof names / sizeof names[0]; ++i) {
+        assert(snprintf(path, sizeof path, "%s/%s", dir, names[i]) > 0);
+        fd = open(path, O_CREAT | O_WRONLY, 0600);
+        assert(fd >= 0 && close(fd) == 0);
+    }
+    args[0] = "fynd"; args[1] = "--sort"; args[2] = ""; args[3] = dir; args[4] = NULL;
+    assert(snprintf(expected, sizeof expected, "%s\n%s/A\n%s/a\n%s/a/z\n%s/ab\n%s/b\n",
+                    dir, dir, dir, dir, dir, dir) > 0);
+    expect_call(4, args, 0, expected);
+    args[1] = "-H"; args[2] = "--sort"; args[3] = ""; args[4] = dir; args[5] = NULL;
+    assert(snprintf(expected, sizeof expected,
+                    "%s\n%s/.h\n%s/A\n%s/a\n%s/a/z\n%s/ab\n%s/b\n",
+                    dir, dir, dir, dir, dir, dir, dir) > 0);
+    expect_call(5, args, 0, expected);
+    args[1] = "--sort"; args[2] = ""; args[3] = dir; args[4] = NULL;
+    for (i = 0; ; ++i) {
+        cu_arena_init_with(&arena, 64, 1);
+        cu_arena_fail_at(&arena, i);
+        out = tmpfile();
+        err = tmpfile();
+        assert(out != NULL && err != NULL);
+        result = fynd_run(4, args, out, err, &arena);
+        attempts = arena.attempts;
+        if (attempts > i)
+            assert(result == 1 && cu_arena_failed(&arena));
+        else
+            assert(result == 0 && !cu_arena_failed(&arena));
+        cu_arena_release(&arena);
+        assert(fclose(out) == 0 && fclose(err) == 0);
+        if (attempts <= i)
+            break;
+        assert(i < 1000);
+    }
+    for (i = 0; i < sizeof names / sizeof names[0]; ++i) {
+        assert(snprintf(path, sizeof path, "%s/%s", dir, names[i]) > 0);
+        assert(unlink(path) == 0);
+    }
+    assert(snprintf(path, sizeof path, "%s/a/z", dir) > 0);
+    assert(unlink(path) == 0);
+    assert(snprintf(path, sizeof path, "%s/a", dir) > 0);
+    assert(rmdir(path) == 0);
+    assert(rmdir(dir) == 0);
+}
+
 static void success_cases(char *root)
 {
     char path[1024];
@@ -512,6 +583,7 @@ int main(void)
                     root, root, root, root) > 0);
     expect_line_set(3, args, 0, expected);
     success_cases(root);
+    sort_cases(root);
     preexisting_errors(root);
     failures(root);
     /* Retain the first entry, then continue to an independent leaf root.

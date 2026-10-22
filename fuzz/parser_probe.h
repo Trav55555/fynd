@@ -20,6 +20,7 @@ static void check_parser(int argc, char **argv)
     int hidden;
     int no_ignore;
     int threads;
+    int sort;
     int delimiter;
     int depth;
     int i;
@@ -29,6 +30,7 @@ static void check_parser(int argc, char **argv)
     ne = 0; nr = 0; kinds = 0;
     fold = 0; hidden = 0; delimiter = '\n'; depth = -1;
     no_ignore = 0; threads = 0; /* automatic */
+    sort = 0;
     pattern = "";
     valid = 1;
     i = 1;
@@ -40,6 +42,7 @@ static void check_parser(int argc, char **argv)
         if (!strcmp(s, "-i") || !strcmp(s, "--ignore-case")) fold = 1;
         else if (!strcmp(s, "-H") || !strcmp(s, "--hidden")) hidden = 1;
         else if (!strcmp(s, "--no-ignore")) no_ignore = 1;
+        else if (!strcmp(s, "--sort")) sort = 1;
         else if (!strcmp(s, "-0") || !strcmp(s, "--print0")) delimiter = 0;
         else {
             if (!strncmp(s, "-j", 2) && s[2]) v = s + 2;
@@ -79,6 +82,8 @@ static void check_parser(int argc, char **argv)
             if (!valid) break;
         }
     }
+    /* Sorted output is serial: an explicit -j N above 1 conflicts. */
+    if (valid && sort && threads > 1) valid = 0;
     if (valid) {
         if (i < argc) pattern = argv[i++];
         if (i == argc) roots[nr++] = ".";
@@ -93,7 +98,7 @@ static void check_parser(int argc, char **argv)
         assert(result == (valid ? 0 : 2));
         if (valid) {
             assert(q.fold == fold && q.hidden == hidden);
-            assert(q.no_ignore == no_ignore && q.threads == threads);
+            assert(q.no_ignore == no_ignore && q.threads == threads && q.sort == sort);
             assert(q.delimiter == delimiter && q.depth == depth && q.kinds == kinds);
             assert(q.pattern.len == strlen(pattern));
             assert(memcmp(q.pattern.ptr, pattern, q.pattern.len) == 0);

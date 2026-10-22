@@ -277,6 +277,14 @@ static void pure_cases(void)
     match_case("a/**", "a", 0);
     match_case("a/**", "a/b", 1);
     match_case("[!a-c]", "z", 1);
+    /* Repeated ** components match what one does (checked against Git). */
+    match_case("**/**/zzz", "a/b/zzz", 1);
+    match_case("**/**/zzz", "zzz", 1);
+    match_case("a/**/**/zzz", "a/zzz", 1);
+    match_case("a/**/**/zzz", "zzz", 0);
+    match_case("**/**", "x/y", 1);
+    match_case("a/**/**", "a", 0);
+    match_case("**/a/**/**/c/zzz", "a/b/zzz", 0);
     match_case("[^a-c]", "b", 0);
     match_case("[]a]", "]", 1);
     match_case("[z-a]", "z", 0);
@@ -310,6 +318,12 @@ static void pure_cases(void)
     assert(!ignore_glob(deep, 513, deep, 513, 1, &w) && w.failed);
     w.left = 1000000UL; w.failed = 0;
     assert(ignore_glob(deep, 511, deep, 511, 1, &w) && !w.failed);
+    /* Eight repeated ** on a 40-level miss: linear work, not exponential. */
+    {
+        char stars[] = "**/**/**/**/**/**/**/**/zzz";
+        w.left = 20000UL; w.failed = 0;
+        assert(!ignore_glob(stars, sizeof stars - 1, deep, 79, 1, &w) && !w.failed);
+    }
     cu_arena_release(&a);
 }
 

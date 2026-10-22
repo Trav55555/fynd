@@ -113,6 +113,7 @@ operand. Use `--` for a pattern beginning with `-`.
 | `-0`, `--print0` | End each path with NUL instead of newline. |
 | `--max-depth N` | Select through depth 0 to 128. Roots have depth 0. |
 | `--no-ignore` | Bypass all ignore sources without enabling hidden traversal. |
+| `--sort` | Print in byte-sorted depth-first order. Runs serially; combining it with `-j N` above 1 is invalid. |
 | `-j N`, `-jN`, `--threads N` | Use 1 through 32 threads in total. The default is the online CPU count, clamped to 1 through 32; `-j1` is serial. |
 | `-h`, `--help` | Show help as a standalone invocation. |
 | `--version` | Show the version as a standalone invocation. |
@@ -143,9 +144,10 @@ On POSIX, SIGPIPE may terminate the CLI instead of status 1.
 ## Behavior and limits
 
 - Roots are searched in argument order, with each root's records delivered
-  before the next root. Within each root, output order is unspecified, including
-  in default serial mode. Duplicate and overlapping roots retain multiplicity.
-  There is no optional sort flag or legacy sorted walker.
+  before the next root. Within each root, output order is unspecified unless
+  `--sort` is given. Duplicate and overlapping roots retain multiplicity.
+  `--sort` reads each directory whole, so its memory grows with the widest
+  directory; it compares names byte by byte, with a shorter prefix first.
 - Each root itself can match, including explicit files, hidden roots, broken
   symlinks, and FIFO entries. Explicit hidden roots do not enable hidden children.
 - Static symlinks are listed but never deliberately descended. Trailing root
@@ -169,8 +171,8 @@ On POSIX, SIGPIPE may terminate the CLI instead of status 1.
   than silently claiming a complete search.
 - Directory names stream through `CuDir`: each cursor's name arena has one
   active `CuTemp`, rewound before the next entry, with a reusable 4096-byte block
-  anchor. Names are borrowed until the next entry or cursor release. There is
-  no directory-wide name vector, complete-list prerequisite, or sort.
+  anchor. Names are borrowed until the next entry or cursor release. Without
+  `--sort` there is no directory-wide name vector or complete-list prerequisite.
 - With more than one thread, each thread buffers whole records in 64 KiB before
   writing them under a shared output lock. Discovered directories wait on a
   shared task stack until a thread takes them; the stack holds one path per
