@@ -56,7 +56,7 @@ class Suite:
                 raise ValueError('multiple roots require independent expected groups')
             groups = [paths]
         groups = [[os.fsencode(p) for p in group] for group in groups]
-        for jobs in ('-j1', '-j2', '-j4', '-j8'):
+        for jobs in ('-j1', '-j2', '-j4', '-j8', '--sort'):
             rc, out, err = run([self.binary, jobs, '-0', '-t', 'f', *flags,
                                 '', *roots], self.env, self.root)
             self.count += 1

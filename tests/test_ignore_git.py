@@ -76,7 +76,7 @@ def case(fynd, seed, scratch):
                              cwd=root, env=ENV, capture_output=True, check=True).stdout
         want = {p for p in git.decode('utf-8', 'surrogateescape').split('\0')
                 if p and not any(c.startswith('.') for c in p.split('/'))}
-        for jobs in (['-j1'], []):
+        for jobs in (['-j1'], [], ['--sort']):
             rc, err, got = selected(fynd, root, jobs)
             if rc != 0 or err or got != want:
                 return dict(seed=seed, jobs=jobs or 'default', rc=rc, err=err[:200],
@@ -104,7 +104,7 @@ def main(argv=None):
     if failures:
         print(f'FAIL {len(failures)} of {args.cases} Git ignore cases')
         return 1
-    print(f'PASS {args.cases} Git ignore cases (seed {args.seed}): serial and default threads')
+    print(f'PASS {args.cases} Git ignore cases (seed {args.seed}): serial, default threads, --sort')
     return 0
 
 

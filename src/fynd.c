@@ -17,6 +17,7 @@ typedef struct Query {
     int depth;
     int no_ignore;
     int threads;
+    int sort;
 } Query;
 
 typedef struct Sched Sched;
@@ -219,10 +220,119 @@ static int walk_stopped(Run *r)
 }
 
 static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int depth,
+                  const IgnoreFrame *parent);
+
+/* Hidden children need -H, whatever any ignore rule says. */
+static int skips_hidden(const Run *r, CuStr name)
+{
+    return !r->query->hidden && name.ptr[0] == '.';
+}
+
+/* Select, then descend into or queue, one listed child of path. */
+static void visit_child(Run *r, const char *path, int depth, const IgnoreFrame *rules,
+                        CuStr name, CuDirKind kind)
+{
+    CuTemp child;
+    IgnoreError error;
+    char *joined;
+    int verdict;
+    if (skips_hidden(r, name))
+        return;
+    child = cu_temp_begin(r->arena);
+    joined = join_path(r->arena, path, name);
+    verdict = 0;
+    if (joined == NULL)
+        failure(r, "allocation failure", path, 1);
+    else if (!r->query->no_ignore &&
+             !ignore_verdict(r->arena, rules, joined, kind == CU_DIR_DIR, &verdict, &error))
+        ignore_failure(r, &error);
+    else if (verdict != 1) {
+        /* Cutoff and safety-limit directories are visited in place. */
+        if (r->sched != NULL && kind == CU_DIR_DIR &&
+            depth + 1 != r->query->depth && depth + 1 < 128)
+            (void)sched_push(r, joined, depth + 1, rules);
+        else
+            visit(r, joined, name, kind, depth + 1, rules);
+    }
+    cu_temp_end(child);
+}
+
+typedef struct SortedEntry {
+    CuStr name;
+    CuDirKind kind;
+} SortedEntry;
+
+static int sorted_compare(const void *a, const void *b)
+{
+    const SortedEntry *x;
+    const SortedEntry *y;
+    size_t n;
+    int c;
+    x = (const SortedEntry *)a;
+    y = (const SortedEntry *)b;
+    n = x->name.len < y->name.len ? x->name.len : y->name.len;
+    c = memcmp(x->name.ptr, y->name.ptr, n);
+    if (c != 0)
+        return c;
+    return x->name.len < y->name.len ? -1 : x->name.len > y->name.len;
+}
+
+/* --sort: read the whole directory, then visit children in byte order. The
+ * entries live in the caller's directory scope; the cursor closes first. */
+static void visit_sorted(Run *r, ListingJob *job, const char *path, int depth,
+                         const IgnoreFrame *rules)
+{
+    CuVec entries;
+    CuDirEntry entry;
+    SortedEntry item;
+    const SortedEntry *at;
+    const char *copy;
+    unsigned tick;
+    size_t i;
+    int next;
+    CU_VEC_INIT(&entries, r->arena, SortedEntry);
+    tick = 0;
+    while (!r->stop) {
+        if (tick == 0 && walk_stopped(r))
+            break;
+        next = listing_next(job, &entry);
+        if (next != 1) {
+            if (next < 0)
+                failure(r, job->error == ENOMEM ? "allocation failure" :
+                        "cannot list directory", path, listing_resource(job->error));
+            break;
+        }
+        tick = (tick + 1U) % 64U;
+        if (skips_hidden(r, entry.name))
+            continue;
+        copy = cu_str_cstr_copy(r->arena, entry.name);
+        if (copy == NULL) {
+            failure(r, "allocation failure", path, 1);
+            break;
+        }
+        item.name = cu_str_n(copy, entry.name.len);
+        item.kind = entry.kind;
+        CU_VEC_PUSH(&entries, &item);
+        if (cu_vec_failed(&entries)) {
+            failure(r, "allocation failure", path, 1);
+            break;
+        }
+    }
+    listing_release(job);
+    if (r->stop || cu_vec_len(&entries) == 0)
+        return;
+    qsort(CU_VEC_DATA(&entries, SortedEntry), cu_vec_len(&entries), sizeof(SortedEntry),
+          sorted_compare);
+    for (i = 0; i < cu_vec_len(&entries) && !walk_stopped(r); ++i) {
+        at = CU_VEC_AT(&entries, SortedEntry, i);
+        visit_child(r, path, depth, rules, at->name, at->kind);
+    }
+}
+
+static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int depth,
                   const IgnoreFrame *parent)
 {
     CuTemp directory;
-    CuTemp child;
     ListingJob job;
     const IgnoreFrame *rules;
     IgnoreError error;
@@ -231,10 +341,8 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
     SchedHold *own;
     unsigned tick;
     int next;
-    int verdict;
     int ok;
     int seeded;
-    char *joined;
     if (kind == CU_DIR_DIR && walk_stopped(r))
         return;
     if (selected(r->query, name, kind)) {
@@ -291,6 +399,10 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
             goto done;
         }
     }
+    if (r->query->sort) {
+        visit_sorted(r, &job, path, depth, rules);
+        goto done;
+    }
     tick = 0;
     while (!r->stop) {
         if (tick == 0 && walk_stopped(r))
@@ -303,26 +415,7 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
             break;
         }
         tick = (tick + 1U) % 64U;
-        if (!r->query->hidden && entry.name.ptr[0] == '.')
-            continue;
-        child = cu_temp_begin(r->arena);
-        joined = join_path(r->arena, path, entry.name);
-        verdict = 0;
-        if (joined == NULL)
-            failure(r, "allocation failure", path, 1);
-        else if (!r->query->no_ignore &&
-                 !ignore_verdict(r->arena, rules, joined, entry.kind == CU_DIR_DIR,
-                                 &verdict, &error))
-            ignore_failure(r, &error);
-        else if (verdict != 1) {
-            /* Cutoff and safety-limit directories are visited in place. */
-            if (r->sched != NULL && entry.kind == CU_DIR_DIR &&
-                depth + 1 != r->query->depth && depth + 1 < 128)
-                (void)sched_push(r, joined, depth + 1, rules);
-            else
-                visit(r, joined, entry.name, entry.kind, depth + 1, rules);
-        }
-        cu_temp_end(child);
+        visit_child(r, path, depth, rules, entry.name, entry.kind);
         /* Only now may next invalidate entry.name. */
     }
 done:
@@ -382,6 +475,7 @@ static int parse(Query *q, CuArena *arena, int argc, char **argv)
     q->delimiter = '\n';
     q->depth = -1;
     q->threads = 0; /* automatic */
+    q->sort = 0;
     q->no_ignore = 0;
     i = 1;
     while (i < argc) {
@@ -399,6 +493,8 @@ static int parse(Query *q, CuArena *arena, int argc, char **argv)
             q->hidden = 1;
         else if (strcmp(s, "--no-ignore") == 0)
             q->no_ignore = 1;
+        else if (strcmp(s, "--sort") == 0)
+            q->sort = 1;
         else if (strcmp(s, "-j") == 0 || strcmp(s, "--threads") == 0) {
             if (i == argc || !parse_threads(argv[i++], &q->threads))
                 return 2;
@@ -437,6 +533,9 @@ static int parse(Query *q, CuArena *arena, int argc, char **argv)
         } else
             return 2;
     }
+    /* Sorted output is serial; an explicit request for more threads conflicts. */
+    if (q->sort && q->threads > 1)
+        return 2;
     if (i < argc) {
         q->pattern = cu_str_n(argv[i], strlen(argv[i]));
         ++i;
@@ -511,15 +610,16 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
         }
         if (strcmp(argv[1], "--version") == 0)
             parsed = fputs("fynd 0.1.0\n", out);
-        else
-            parsed = fputs("Usage: fynd [OPTIONS] [--] [PATTERN [ROOT ...]]\n"
+        else if ((parsed = fputs("Usage: fynd [OPTIONS] [--] [PATTERN [ROOT ...]]\n"
                 "  -i, --ignore-case   ASCII case folding\n"
                 "  -t, --type KIND     f, d, l, or o (union)\n"
                 "  -e, --extension EXT final suffix (union)\n"
                 "  -H, --hidden        include discovered hidden names\n"
                 "  -0, --print0        NUL-delimited paths\n"
-                "  --max-depth N       selection depth 0 through 128\n"
-                "  --no-ignore         bypass ignore rules\n"
+                "  --max-depth N       selection depth 0 through 128\n", out)) >= 0)
+            /* Two literals: C90 guarantees only 509 characters per string. */
+            parsed = fputs("  --no-ignore         bypass ignore rules\n"
+                "  --sort              byte-sorted depth-first order (serial)\n"
                 "  -j N, --threads N   threads 1 through 32 (default: CPUs)\n"
                 "  -h, --help          show help alone\n"
                 "  --version           show version alone\n", out);
@@ -535,7 +635,7 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
             /* Validate first: a pre-existing output error does not make usage valid. */
             if (ferror(out))
                 failure(&r, "output failure", NULL, 1);
-            threads = q.threads != 0 ? q.threads : default_threads();
+            threads = q.sort ? 1 : q.threads != 0 ? q.threads : default_threads();
             if (!r.stop && threads > 1) {
                 sched_live = 1;
                 if (!sched_start(&sched, threads, &q, out, err))
