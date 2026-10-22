@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "label": "fynd vs fd (1 thread)",
-  "message": "1.63\u00d7 faster (geomean)",
+  "label": "fynd vs fd (defaults)",
+  "message": "1.56\u00d7 faster (geomean)",
   "color": "2ea44f"
 }
