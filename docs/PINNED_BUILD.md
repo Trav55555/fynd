@@ -1,8 +1,10 @@
 # Pinned build safeguard
 
 Normal builds now verify the c-utils source/header contents associated with
-`eafa795805fa997e2db91f9182c4e0f86fa32fb4` before compilation, including when the
-requested executable is already current. The dependency revision did not change.
+the revision in `CUTILS_REVISION` before compilation, including when the
+requested executable is already current. The guard was introduced at
+`eafa795805fa997e2db91f9182c4e0f86fa32fb4`; see [Pin 2](#pin-2) for the current
+revision.
 
 The previous Makefile could compile changed sibling files and overwrite an old
 output on compiler failure. A regression demonstrated that behavior before the
@@ -13,9 +15,11 @@ replaced during this work.
 
 ## What the guard checks
 
-`ci/pinned_cutils.json` binds 16 consumed files to byte sizes and SHA256 hashes:
-`include/cu.h` and 15 C sources. `ci/pinned_cutils.py` rejects missing, extra,
-changed, symlinked or nonregular entries in those source/header directories.
+`ci/pinned_cutils.json` binds the whole c-utils `include/` and `src/` inventory
+to byte sizes and SHA256 hashes, and lists the C sources fynd compiles. Schema
+`fynd.cutils-pin/2` pins `include/cu.h` and 25 C sources and compiles 16 of them.
+`ci/pinned_cutils.py` rejects missing, extra, changed, symlinked or nonregular
+entries in those source/header directories, whether compiled or not.
 It checks the manifest revision against `CUTILS_REVISION`, not Git HEAD.
 Other checkout files are outside this native-build check.
 
@@ -70,3 +74,31 @@ commit, global installation or publication occurred.
 regressions, reviewer counterevidence, complete qualification and live-byte checks.
 [Review checkpoint](REVIEW_CHECKPOINT.md) distinguishes source qualification from
 the unchanged live executable's qualification.
+
+## Pin 2
+
+The pin moved to `7750e1c9855f6e1155772ae1b98f11830b21d074` for `cu_dir_info`,
+which lets a directory's ignore probes (`.git`, `.ignore`, and `.gitignore`
+inside a repository) use `fstatat` on the open listing instead of path lookups.
+That revision also adds nine sources fynd does not use (JSON, HTTP, process,
+socket, task and reader modules). Schema 1 compiled every pinned source, so the
+manifest moved to schema 2: those files stay pinned and inventory-checked, and
+`sources` names the 16 that are compiled, now including `src/cu_metadata.c`.
+`include/cu.h` and `src/cu_append.c` also changed between the two revisions.
+
+Qualified by `build/verification/run.z8rL06`, exit 0, on the tree merged with
+#5: build guards (17 tests, including rejection of an unpinned, dropped or
+unsorted `sources` entry), five C suites, three 500-case CLI seeds, the Git
+differential, required deep checks, and all 31 named controls, including
+`skip-gitignore-probe` and `ignore-probe-absence`. Coverage: main 94.43%,
+ignore 96.30%, listing 91.95%, scheduler 96.66%.
+
+Warm medians of 15 interleaved runs on one 12-CPU host, same output (329,177
+records on the home projects tree):
+
+| Tree | Threads | Before ms | After ms |
+| --- | ---: | ---: | ---: |
+| Home projects, ignore rules | 1 | 1,147 | 1,072 |
+| Home projects, ignore rules | 12 | 171 | 160 |
+| `/usr` | 1 | 362 | 342 |
+| `/usr` | 12 | 51 | 47 |

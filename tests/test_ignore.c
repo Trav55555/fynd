@@ -11,6 +11,13 @@ static int test_ignore_stat(const char *path, struct stat *st)
     return stat(path, st);
 }
 #define IGNORE_STAT test_ignore_stat
+static CuInfoResult test_ignore_dir_info(const CuDir *d, const char *name,
+                                        CuPathFollow follow, CuFileInfo *out)
+{
+    if (test_probe_errno != 0) { errno = test_probe_errno; return CU_INFO_ERROR; }
+    return cu_dir_info(d, name, follow, out);
+}
+#define IGNORE_DIR_INFO test_ignore_dir_info
 #define IGNORE_WORK_LIMIT test_ignore_budget
 #define IGNORE_SOURCE_LIMIT test_ignore_source_budget
 /* Rename the included declaration as well as the definition. */
@@ -18,6 +25,21 @@ static int test_ignore_stat(const char *path, struct stat *st)
 #include "../src/fynd.c"
 #include "../src/ignore.inc"
 #undef fynd_main
+
+/* Enter directory's policy through its open listing, as visit() does. */
+static int stream_enter(CuArena *a, const IgnoreFrame *parent, const char *directory,
+                        const IgnoreFrame **out, IgnoreError *e)
+{
+    CuArena scratch;
+    CuDir dir;
+    int ok;
+    cu_arena_init(&scratch);
+    assert(cu_dir_open(&dir, &scratch, directory) == 1);
+    ok = ignore_stream_enter(a, parent, &dir, directory, out, e);
+    cu_dir_close(&dir);
+    cu_arena_release(&scratch);
+    return ok;
+}
 
 static void match_case(const char *pattern, const char *path, int expected)
 {
@@ -596,16 +618,25 @@ static void elision_cases(void)
     p = join_path(&a, base, cu_str_cstr("rules/.ignore")); assert(p != NULL);
     put_source(p, "y\n", 2);
     assert(ignore_seed(&a, base, &seed, &e));
-    assert(ignore_stream_enter(&a, seed, base, &root, &e) && root != seed);
+    assert(stream_enter(&a, seed, base, &root, &e) && root != seed);
     for (i = 0; i < sizeof names / sizeof names[0]; ++i) {
         dir = join_path(&a, base, cu_str_cstr(names[i])); assert(dir != NULL);
-        assert(ignore_stream_enter(&a, root, dir, &child, &e));
+        assert(stream_enter(&a, root, dir, &child, &e));
         if (i < 2)
             assert(child == root);
         else
             assert(child != root && child->parent == root);
     }
     assert(child->files[IGNORE_PLAIN].count == 1);
+    /* Probe failures name the full marker path; ENOTDIR counts as absent. */
+    test_probe_errno = EIO;
+    child = seed;
+    assert(!stream_enter(&a, root, dir, &child, &e) && e.number == EIO && child == seed);
+    p = join_path(&a, dir, cu_str_cstr(".git")); assert(p != NULL);
+    assert(strcmp(e.path, p) == 0);
+    test_probe_errno = ENOTDIR;
+    assert(stream_enter(&a, root, dir, &child, &e) && child == root);
+    test_probe_errno = 0;
     p = join_path(&a, base, cu_str_cstr("repo/.git")); assert(p != NULL);
     assert(rmdir(p) == 0);
     p = join_path(&a, base, cu_str_cstr("comments/.ignore")); assert(p != NULL);

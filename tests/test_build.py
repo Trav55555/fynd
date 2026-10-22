@@ -22,31 +22,61 @@ import tempfile
 import unittest
 
 
-REVISION = "eafa795805fa997e2db91f9182c4e0f86fa32fb4"
+REVISION = "7750e1c9855f6e1155772ae1b98f11830b21d074"
 # Deliberately independent of the candidate manifest (and available for before/).
 PINNED = {
-    "include/cu.h": ("7d86e831817fcad5c365dc2dba7c87c4cbd5e635f0dd7883a61aa4bee7cec001", 45591),
-    "src/cu_append.c": ("ddad4a4d65b2684bf155474410108699b5790c7e9ff85671edf0fa073bcec75e", 6117),
+    "include/cu.h": ("4b182eb14cc9cf33b1b7e5dc3b711f99cf55312c13c5bf44444098bbde21ae03", 78175),
+    "src/cu_append.c": ("49075f2382c53c67673be8ae543e3df96985c35c5f5789f7c4bd60a824d9ce59", 6670),
     "src/cu_arena.c": ("90aa4b804e6e38900b1ddec1a858c82909f41936560a623e2f24d6365297c8d7", 12263),
+    "src/cu_base64.c": ("caee0eee8af47ae4747a20605bccae1a09dd626c93c645ff56333374b4f4ea2b", 2859),
     "src/cu_bytes.c": ("57e0faf943e2f618cbbcc0b73dec4fc1346486ae71aeb9e3d39b19ae5afb53d8", 4919),
     "src/cu_dir.c": ("254f8afb5581ecae461a5145ce20a397ce0ead3dfacd68e70e1a4a5461921317", 3659),
     "src/cu_file.c": ("902f53ebac1e2e9e6da78afa0d26668ed440310c7f841061c21f9cf14c1360ff", 3014),
     "src/cu_fmt.c": ("a61c5c3ea72f0bbc2ca7dd165ae5ec51293458f5eabcc5531959417a7eae7828", 8023),
+    "src/cu_http.c": ("968731a330737e5226c4f5d49ee88399110dd8386d078eab1f2bbab2ca1e7509", 5917),
+    "src/cu_http_response.c": ("7c0107870733d458c8f95a5b4ea439951776a7be59dd98c64392b80d522a1935", 6977),
     "src/cu_input.c": ("9b5503af37a45c721a6837d79207da5df04a6eabc17211ed7823cdbe579698aa", 2296),
+    "src/cu_json.c": ("40025fe498f0a17e18224a3527ee4c7f3fc55f2d305c75ee6ec6ef9d6ba62620", 22916),
     "src/cu_map.c": ("55297d4a73aeb3a73f19d9b2b753d3aa3950d7b4cb97d44f84d3fd75ddb92b07", 5071),
+    "src/cu_metadata.c": ("f5f5f8624aec7840b1b51b7557dfcb0f293a2c8c4a7b19ab72ea831d604dcc5c", 4057),
     "src/cu_plex.c": ("d74b8927bc441a3cec8e4060a0c4c8cf6f945bab6cf32e89fbc697453b14fa04", 2611),
     "src/cu_pool.c": ("d495eb65feb6e6ee15f8bbad0b9b38b155ca0ca792d9ba7643f1160020eb0ce0", 5306),
+    "src/cu_process.c": ("09beebe9d14e446163a82a0f5d753f5e5ad3559111af430a59f46a50ba104288", 9985),
+    "src/cu_process_io.c": ("ff61fb4bb01260cf81ed3fd69f99025c6e85154b437c3d9c185841b6702a09df", 10421),
+    "src/cu_reader.c": ("0e5ea1d30ba6db33b9a0e3e9f57f3cc3f868dbba6496b1b42a0e62171a84350a", 4204),
     "src/cu_sha256.c": ("80a1723a30bd2cc4cd38a88a03d05f84da8acc66e61948875cf349b6137a1fb9", 5195),
+    "src/cu_socket.c": ("47aaf164c99e3d2a4ef178b353f069cb55dcb7f07408f8f87c0908b27b64216b", 24782),
     "src/cu_str.c": ("bf95df848f00588b4782f00db92fae3c358a64bbe2abbcd682f6e54d53ae0111", 7712),
+    "src/cu_task.c": ("c6bfe0d7909a663fe7607d37e31ed9c32bdda24419ecd265f6716398d0d79010", 5866),
     "src/cu_thread.c": ("f4f81136fa973785a21a3e741998ef5e14de9aa2b289794c08c72481b7e5a483", 5481),
     "src/cu_u64.c": ("ea990339276957591d2c04823c4350c489159500ec4a0d8abadffbb10cab3878", 2493),
     "src/cu_vec.c": ("86b7b1201e74f035959b4984b7fa44ca1bc0b67a289cbec8c3cd1920163bcd91", 5428),
 }
+# The compiled subset; the rest of the inventory is pinned but never compiled.
+COMPILED = [
+    "src/cu_append.c",
+    "src/cu_arena.c",
+    "src/cu_bytes.c",
+    "src/cu_dir.c",
+    "src/cu_file.c",
+    "src/cu_fmt.c",
+    "src/cu_input.c",
+    "src/cu_map.c",
+    "src/cu_metadata.c",
+    "src/cu_plex.c",
+    "src/cu_pool.c",
+    "src/cu_sha256.c",
+    "src/cu_str.c",
+    "src/cu_thread.c",
+    "src/cu_u64.c",
+    "src/cu_vec.c",
+]
 EXPECTED_MANIFEST = {
-    "schema": "fynd.cutils-pin/1",
+    "schema": "fynd.cutils-pin/2",
     "revision": REVISION,
     "files": {name: {"sha256": digest, "size": size}
               for name, (digest, size) in PINNED.items()},
+    "sources": COMPILED,
 }
 STRICT = "-std=c89 -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wshadow -Wstrict-prototypes -Wmissing-prototypes".split()
 DEFAULT_PROJECT = Path(__file__).resolve().parents[1]
@@ -310,7 +340,8 @@ class BuildTests(unittest.TestCase):
     def test_invalid_manifest_refused(self):
         path = self.project / "ci/pinned_cutils.json"
         self.assertTrue(path.is_file(), "candidate must provide the fixed manifest")
-        for kind in ("schema", "revision", "missing", "extra", "digest", "size"):
+        for kind in ("schema", "revision", "missing", "extra", "digest", "size",
+                     "unpinned-source", "dropped-source", "unsorted-sources"):
             with self.subTest(kind=kind):
                 manifest = json.loads(json.dumps(EXPECTED_MANIFEST))
                 if kind in ("schema", "revision"):
@@ -321,6 +352,12 @@ class BuildTests(unittest.TestCase):
                     manifest["files"]["src/extra.c"] = {"sha256": "0" * 64, "size": 0}
                 elif kind == "digest":
                     manifest["files"]["src/cu_vec.c"]["sha256"] = "0" * 64
+                elif kind == "unpinned-source":
+                    manifest["sources"][-1] = "src/cu_unpinned.c"
+                elif kind == "dropped-source":
+                    manifest["sources"].remove("src/cu_metadata.c")
+                elif kind == "unsorted-sources":
+                    manifest["sources"].reverse()
                 else:
                     manifest["files"]["src/cu_vec.c"]["size"] += 1
                 path.write_text(json.dumps(manifest))
@@ -387,9 +424,9 @@ class BuildTests(unittest.TestCase):
     def assert_private_inputs(self, record):
         sources = [Path(name) for name in record["sources"]]
         headers = [Path(name) for name in record["headers"]]
-        self.assertEqual(len(sources), 15)
+        self.assertEqual(len(sources), 16)
         self.assertEqual(len(headers), 1)
-        self.assertEqual({"src/" + path.name for path in sources}, set(PINNED) - {"include/cu.h"})
+        self.assertEqual(["src/" + path.name for path in sources], COMPILED)
         snapshot = headers[0].parent.parent
         self.assertEqual(headers[0], snapshot / "include/cu.h")
         self.assertEqual({path.parent for path in sources}, {snapshot / "src"})
@@ -397,7 +434,8 @@ class BuildTests(unittest.TestCase):
         self.assertFalse(snapshot == self.cutils or self.cutils in snapshot.parents)
         observed = {str(Path(name).relative_to(snapshot)): value
                     for name, value in record["inputs"].items()}
-        self.assertEqual(observed, EXPECTED_MANIFEST["files"], "compiler inputs were not the pinned snapshot")
+        expected = {name: EXPECTED_MANIFEST["files"][name] for name in ["include/cu.h", *COMPILED]}
+        self.assertEqual(observed, expected, "compiler inputs were not the pinned snapshot")
         self.assertFalse(snapshot.exists(), "private dependency snapshot was not removed")
         private_output = Path(record["output"])
         self.assertNotIn(private_output, [self.output / name for name in ["fynd", *self.test_names]])

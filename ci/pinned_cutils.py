@@ -50,15 +50,16 @@ def load_pin():
         raise PinError("cannot read pin policy: " + str(error)) from error
     if not re.fullmatch(r"[0-9a-f]{40}", revision):
         raise PinError("CUTILS_REVISION must contain a complete lowercase commit ID")
-    if not isinstance(policy, dict) or set(policy) != {"schema", "revision", "files"}:
-        raise PinError("manifest must contain only schema, revision and files")
-    if policy["schema"] != "fynd.cutils-pin/1":
+    if not isinstance(policy, dict) or set(policy) != {"schema", "revision", "files", "sources"}:
+        raise PinError("manifest must contain only schema, revision, files and sources")
+    if policy["schema"] != "fynd.cutils-pin/2":
         raise PinError("unsupported manifest schema")
     if policy["revision"] != revision:
         raise PinError("manifest revision does not match CUTILS_REVISION")
+    # files binds the whole include/src inventory; sources is the compiled subset.
     files = policy["files"]
-    if not isinstance(files, dict) or len(files) != 16 or "include/cu.h" not in files:
-        raise PinError("manifest requires include/cu.h and exactly 15 C sources")
+    if not isinstance(files, dict) or len(files) != 26 or "include/cu.h" not in files:
+        raise PinError("manifest requires include/cu.h and exactly 25 C sources")
     for name, entry in files.items():
         if name != "include/cu.h" and not re.fullmatch(r"src/cu_[a-z0-9_]+\.c", name):
             raise PinError("invalid manifest path: " + name)
@@ -68,7 +69,12 @@ def load_pin():
             raise PinError("invalid SHA-256: " + name)
         if type(entry["size"]) is not int or entry["size"] <= 0:
             raise PinError("invalid byte size: " + name)
-    return files
+    sources = policy["sources"]
+    if (not isinstance(sources, list) or len(sources) != 16 or sources != sorted(set(sources)) or
+            not all(isinstance(name, str) and name.startswith("src/") and name in files
+                    for name in sources)):
+        raise PinError("sources must list exactly 16 distinct pinned C sources in order")
+    return files, sources
 
 
 @contextmanager
@@ -146,7 +152,7 @@ def verify(cutils, files, snapshot=None):
         raise PinError("cannot verify dependency: " + str(error)) from error
 
 
-def build(cutils, output, compiler, files):
+def build(cutils, output, compiler, files, sources):
     output = Path(os.path.abspath(output))
     output.parent.mkdir(parents=True, exist_ok=True)
     # Staging beside the destination guarantees same-filesystem publication.
@@ -157,8 +163,8 @@ def build(cutils, output, compiler, files):
         (snapshot / "src").mkdir()
         verify(cutils, files, snapshot)
         binary = private / "binary"
-        sources = [str(snapshot / name) for name in sorted(files) if name.startswith("src/")]
-        command = compiler + ["-I" + str(snapshot / "include")] + sources + ["-o", str(binary)]
+        command = (compiler + ["-I" + str(snapshot / "include")] +
+                   [str(snapshot / name) for name in sources] + ["-o", str(binary)])
         # Only the private snapshot reaches the compiler. Changes to the original
         # dependency after this point do not invalidate these verified bytes.
         try:
@@ -198,11 +204,11 @@ def main():
     if options.mode == "check" and compiler:
         parser.error("check does not accept compiler arguments")
     try:
-        files = load_pin()
+        files, sources = load_pin()
         if options.mode == "check":
             verify(options.cutils, files)
             return 0
-        return build(options.cutils, options.output, compiler, files)
+        return build(options.cutils, options.output, compiler, files, sources)
     except PinError as error:
         print("c-utils pin: " + str(error), file=sys.stderr)
     except (BuildError, OSError) as error:
