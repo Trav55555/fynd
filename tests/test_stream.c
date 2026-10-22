@@ -703,6 +703,36 @@ static void late_errors(void)
     expect_text(check.err, error);
     check_end(&check);
 
+    /* --sort reads a directory before visiting it: a late EIO keeps the
+     * entries already read, and both faults diagnose as when streaming. */
+    {
+        char *sorted[11];
+        memcpy(sorted, args, 6 * sizeof *sorted);
+        sorted[6] = "--sort";
+        sorted[7] = args[6];
+        sorted[8] = args[7];
+        sorted[9] = leaf;
+        sorted[10] = NULL;
+        reset_hooks(STREAM_EIO);
+        check_begin(&check);
+        assert(check_run(&check, 10, sorted) == 1);
+        assert(fault_fired && successful_entries == 1 && actual_files == 1);
+        expected[0] = strcmp(first_name, "a\nraw") == 0 ? a : b;
+        expected[1] = leaf;
+        expect_paths(check.out, expected, 2, 1);
+        expected_error(error, sizeof error, "cannot list directory", directory);
+        expect_text(check.err, error);
+        check_end(&check);
+        reset_hooks(STREAM_NAME_OOM);
+        check_begin(&check);
+        assert(check_run(&check, 10, sorted) == 1);
+        assert(fault_fired && successful_entries == 0 && open_attempts == 1);
+        expect_paths(check.out, NULL, 0, 0);
+        expected_error(error, sizeof error, "allocation failure", directory);
+        expect_text(check.err, error);
+        check_end(&check);
+    }
+
     reset_hooks(STREAM_OPEN_ERROR);
     missing_path = missing;
     check_begin(&check);

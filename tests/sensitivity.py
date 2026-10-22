@@ -27,7 +27,8 @@ FILES = tuple(sorted(set(MUTATION_FILES + ('include/fynd.h', 'cmd/main.c') + C_T
                                         'include/**/*.h', 'tests/**/*.py',
                                         'tests/**/*.h', 'fuzz/**/*.h')
                         for path in SOURCE.glob(pattern)}))
-EXPECTED_MUTATIONS = 29  # 19 retained + 6 scheduler controls replacing 7 coarse/thread ones + frame elision + hold release + two dir-relative probe controls.
+EXPECTED_MUTATIONS = 31  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
+                         # + two dir-relative probe controls.
 STRICT = ['-std=c89', '-pedantic-errors', '-Wall', '-Wextra', '-Werror',
           '-Wconversion', '-Wshadow', '-Wstrict-prototypes', '-Wmissing-prototypes']
 MUTATIONS = (
@@ -40,8 +41,8 @@ MUTATIONS = (
      'if (q->kinds != 0 && (q->kinds & (1U << (unsigned int)kind)) == 0 && 0)',
      'type union and FIFO selection checks'),
     ('include-hidden', 'src/fynd.c',
-     "if (!r->query->hidden && entry.name.ptr[0] == '.')",
-     "if (!r->query->hidden && entry.name.ptr[0] == '.' && 0)",
+     "    return !r->query->hidden && name.ptr[0] == '.';",
+     "    return !r->query->hidden && name.ptr[0] == '.' && 0;",
      'default hidden pruning checks'),
     ('follow-root-links', 'src/fynd.c',
      'if (lstat(path, &st) != 0)',
@@ -118,6 +119,14 @@ MUTATIONS = (
      "        if (r->len != 0 && r->glob[0] != '*' &&",
      "        if (r->len != 0 && 0 && r->glob[0] != '*' &&",
      'charged-work sensor rejects repeated glob/suffix scans for impossible rules'),
+    ('skip-sort', 'src/fynd.c',
+     '    qsort(CU_VEC_DATA(&entries, SortedEntry), cu_vec_len(&entries), sizeof(SortedEntry),',
+     '    if (0) qsort(CU_VEC_DATA(&entries, SortedEntry), cu_vec_len(&entries), sizeof(SortedEntry),',
+     'test_cli --sort output must equal the oracle\'s exact byte-sorted preorder'),
+    ('expand-repeated-doublestar', 'src/ignore.inc',
+     "            while (gl >= 5 && g[3] == '*' && g[4] == '*' && (gl == 5 || g[5] == '/')) {",
+     "            while (gl >= 5 && g[3] == '*' && g[4] == '*' && (gl == 5 || g[5] == '/') && 0) {",
+     'test_ignore work bound: repeated ** on a deep miss must stay linear'),
     ('invert-necessary-start-filter', 'src/ignore.inc',
      '            } else if (base_len == 0 || first != (unsigned char)base[0]) {',
      '            } else if (base_len == 0 || first == (unsigned char)base[0]) {',

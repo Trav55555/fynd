@@ -108,6 +108,7 @@ python3 -I tests/test_cli.py build/native/fynd --cases 500 --seed 1
 python3 -I tests/test_cli.py build/native/fynd --cases 500 --seed 7
 python3 -I tests/test_cli.py build/native/fynd --cases 500 --seed 42
 python3 -I tests/test_ignore_cli.py build/native/fynd --cases 64 --seed 47
+python3 -I tests/test_ignore_git.py build/native/fynd --cases 1000 --seed 1000
 "$dcheck" fast cmd/main.c --json > "$receipt/cli.json"
 "$dcheck" deep --json > "$receipt/deep.json"
 python3 -I tests/check_receipt.py "$receipt/deep.json"

@@ -121,6 +121,12 @@ static int ignore_glob(const char *g, size_t gl, const char *p, size_t pl,
         gc = ignore_component_len(g, gl, w);
         if (w->failed) return 0;
         if (gc == 2 && g[0] == '*' && g[1] == '*') {
+            /* Repeated ** components match what one does (as in Git); one
+             * keeps the retry below linear instead of exponential. */
+            while (gl >= 5 && g[3] == '*' && g[4] == '*' && (gl == 5 || g[5] == '/')) {
+                if (!ignore_tick(w)) return 0;
+                g += 3; gl -= 3;
+            }
             if (gc == gl) return 1;
             if (ignore_glob(g + 3, gl - 3, p, pl, depth + 1, w)) return 1;
             for (at = 0; at < pl && !w->failed; ++at) {
