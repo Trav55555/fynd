@@ -40,14 +40,21 @@ jobs:
         run: make CUTILS=c-utils all test cli-test bench-test
 
       - name: Benchmark against fd and GNU find
-        run: python3 -I bench/bench.py --fynd "$PWD/build/fynd" --fd /usr/bin/fdfind --output build/bench --repeats 21
+        run: |
+          python3 -I bench/bench.py --fynd "$PWD/build/fynd" --fd /usr/bin/fdfind \
+            --output build/bench-single --repeats 21
+          python3 -I bench/bench.py --fynd "$PWD/build/fynd" --fd /usr/bin/fdfind \
+            --output build/bench-defaults --repeats 21 --defaults
 
       - name: Render results
         run: |
-          report=$(ls -d build/bench/run-*/report.json)
-          python3 -I bench/render_ci.py --report "$report" --out build/bench-site \
-            --commit "$GITHUB_SHA" --runner "GitHub-hosted ubuntu-24.04 runner"
-          cp "$report" build/bench-site/report.json
+          single=$(ls -d build/bench-single/run-*/report.json)
+          defaults=$(ls -d build/bench-defaults/run-*/report.json)
+          python3 -I bench/render_ci.py --report "$single" --defaults-report "$defaults" \
+            --out build/bench-site --commit "$GITHUB_SHA" \
+            --runner "GitHub-hosted ubuntu-24.04 runner, $(nproc) CPUs"
+          cp "$single" build/bench-site/report.json
+          cp "$defaults" build/bench-site/report-defaults.json
           cat build/bench-site/summary.md >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -84,7 +91,8 @@ jobs:
           if git -C "$work" fetch -q --depth 1 origin bench-results; then
             git -C "$work" checkout -q -B bench-results FETCH_HEAD
           fi
-          cp site/bench.svg site/badge.json site/summary.md site/report.json "$work/"
+          cp site/bench.svg site/badge.json site/summary.md site/report.json \
+            site/report-defaults.json "$work/"
           python3 -I - "$work" <<'EOF'
           import json, os, sys
           from pathlib import Path
