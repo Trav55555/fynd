@@ -27,8 +27,8 @@ FILES = tuple(sorted(set(MUTATION_FILES + ('include/fynd.h', 'cmd/main.c') + C_T
                                         'include/**/*.h', 'tests/**/*.py',
                                         'tests/**/*.h', 'fuzz/**/*.h')
                         for path in SOURCE.glob(pattern)}))
-EXPECTED_MUTATIONS = 31  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
-                         # + two dir-relative probe controls.
+EXPECTED_MUTATIONS = 33  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
+                         # + two dir-relative probe controls + two .git file controls.
 STRICT = ['-std=c89', '-pedantic-errors', '-Wall', '-Wextra', '-Werror',
           '-Wconversion', '-Wshadow', '-Wstrict-prototypes', '-Wmissing-prototypes']
 MUTATIONS = (
@@ -107,6 +107,14 @@ MUTATIONS = (
      '    case CU_INFO_MISSING: *present = 0; return 1;',
      '    case CU_INFO_MISSING: *present = 1; return 1;',
      'test_ignore elision: a directory without sources must reuse the parent frame'),
+    ('ignore-gitfile', 'src/ignore.inc',
+     '    if (S_ISREG(st.st_mode)) {',
+     '    if (S_ISREG(st.st_mode) && 0) {',
+     'test_ignore requires a .git file\'s gitdir for info/exclude'),
+    ('ignore-commondir', 'src/ignore.inc',
+     '    if (text.ptr != NULL) {\n        git = ignore_git_path(a, git, text);',
+     '    if (text.ptr != NULL && 0) {\n        git = ignore_git_path(a, git, text);',
+     'test_ignore requires commondir for linked worktrees'),
     ('retain-visit-hold', 'src/fynd.c',
      '    if (own != NULL)\n        sched_drop(r->sched, own);',
      '    if (own != NULL && 0)\n        sched_drop(r->sched, own);',

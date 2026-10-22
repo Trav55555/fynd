@@ -102,3 +102,12 @@ records on the home projects tree):
 | Home projects, ignore rules | 12 | 171 | 160 |
 | `/usr` | 1 | 362 | 342 |
 | `/usr` | 12 | 51 | 47 |
+
+## Excludes through a `.git` file
+
+Reading `info/exclude` through a `.git` file (linked worktrees, submodules)
+was qualified by `build/verification/run.eRMq0D`, exit 0, on c-utils
+`7750e1c`: the same suites, the Git differential with linked worktrees and
+separate git directories, and all 33 named controls, including the new
+`ignore-gitfile` and `ignore-commondir`. Coverage: main 94.43%, ignore
+97.35%, listing 91.95%, scheduler 96.92%.
