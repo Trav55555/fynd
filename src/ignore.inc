@@ -449,7 +449,8 @@ static int ignore_stream_enter(CuArena *a, const IgnoreFrame *parent,
     char *probe;
     struct stat st;
     unsigned listed;
-    int saved;
+    int saved, k;
+    const IgnoreFrame *f;
     listed = (1U << IGNORE_PLAIN) | (1U << IGNORE_GIT);
     probe = join_path(a, directory, cu_str_cstr(".git"));
     if (probe == NULL) return ignore_error(error, ENOMEM, directory);
@@ -460,7 +461,16 @@ static int ignore_stream_enter(CuArena *a, const IgnoreFrame *parent,
         if (saved != ENOENT && saved != ENOTDIR)
             return ignore_error(error, saved, probe);
     }
-    return ignore_enter(a, parent, directory, listed, out, error);
+    if (!ignore_enter(a, parent, directory, listed, &f, error)) return 0;
+    /* A frame with no rules and no repository marker cannot decide or scope
+     * any verdict: reuse the parent. Its storage stays in the caller's scope. */
+    for (k = 0; k < IGNORE_CLASSES; ++k)
+        if (f->files[k].count != 0) break;
+    if (k == IGNORE_CLASSES && !f->repository &&
+        f->global_loaded == parent->global_loaded)
+        f = parent;
+    *out = f;
+    return 1;
 }
 
 static int ignore_seed(CuArena *a, const char *root,

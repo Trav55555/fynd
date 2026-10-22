@@ -8,7 +8,17 @@ The subsequent [full streaming benchmark](STREAMING_FULL_BENCHMARK.md) validates
 Its source identities still match the selected qualification below. Benchmark
 artifact audits and CPU-forgery controls are separate from release qualification.
 
-## Current source: final-component ignore matching
+## Current source: shared-stack thread scheduler
+
+Receipt: `build/verification/run.XyeMPG`, exit 0. It qualifies the
+[shared-stack scheduler](SCHEDULER.md), which replaced the FIFO pool and made
+threads the default. Five C suites (`test_sched.c` replaces `test_parallel.c`
+and `test_batches.c`), 6,324 CLI checks across seeds 1, 7 and 42, 332 ignore
+CLI checks and required deep checks pass; authority, regions and CBMC remain
+optional skips. All 26 named behavioral controls reject. Coverage: main 95.04%,
+ignore 95.96%, listing 91.95%, scheduler 97.99%; combined 95.84%.
+
+## Previous source: final-component ignore matching
 
 Receipt: `build/verification/run.YOdmVS`, exit 0. It qualifies the
 [final-component ignore matcher](IGNORE_MATCHER.md), the current working source.

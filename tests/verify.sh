@@ -52,9 +52,10 @@ if not all((app / name).is_file() for name in build_guard):
 # test_cursor.c is discovered automatically when supplied alongside the five
 # current suites; make, sensitivity and coverage must use that same full list.
 c_tests = sorted(str(path.relative_to(app)) for path in (app / 'tests').glob('test*.c'))
-required_c = {'tests/test_fynd.c', 'tests/test_ignore.c', 'tests/test_parallel.c',
-              'tests/test_batches.c', 'tests/test_stream.c'}
-retired_c = {'tests/test_sort.c', 'tests/test_listing.c', 'tests/test_listing_worker.c'}
+required_c = {'tests/test_fynd.c', 'tests/test_ignore.c', 'tests/test_sched.c',
+              'tests/test_stream.c'}
+retired_c = {'tests/test_sort.c', 'tests/test_listing.c', 'tests/test_listing_worker.c',
+             'tests/test_parallel.c', 'tests/test_batches.c'}
 if not required_c.issubset(c_tests) or retired_c.intersection(c_tests):
     raise SystemExit('missing active C suite or stale retired sorting/listing suite')
 make_tests = sorted(str(path.relative_to(app)) for path in (app / 'tests').glob('test_*.c'))
@@ -72,7 +73,7 @@ if 'tests/output_oracle.py' not in helpers:
     raise SystemExit('missing byte-exact unordered output helper')
 modules = sorted(str(path.relative_to(app)) for path in (app / 'src').iterdir()
                  if path.suffix in {'.c', '.inc'})
-if not {'src/fynd.c', 'src/ignore.inc', 'src/listing.inc', 'src/coarse.inc'}.issubset(modules):
+if not {'src/fynd.c', 'src/ignore.inc', 'src/listing.inc', 'src/sched.inc'}.issubset(modules):
     raise SystemExit('missing required source module')
 (receipt / 'qualification-inputs.json').write_text(json.dumps({
     'c_tests': c_tests, 'semantics': semantics, 'fuzz': fuzz,

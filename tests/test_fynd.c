@@ -3,6 +3,9 @@ static int test_dir_next(CuDir *dir, CuDirEntry *entry);
 #define cu_dir_next test_dir_next
 /* Rename both the included prototype and body when dcheck also links src/fynd.c. */
 #define fynd_main test_fynd_main
+/* These sensors use process-global hooks and serial diagnostic order. The default
+ * thread count is pinned to one; tests/test_sched.c covers threaded walks. */
+#define FYND_ONLINE_CPUS() 1L
 #include "../src/fynd.c"
 #undef cu_dir_next
 #include <assert.h>
@@ -238,7 +241,7 @@ static void pure_tests(void)
     args[1] = "--"; args[2] = "-literal";
     assert(parse(&q, &arena, 3, args) == 0);
     assert(q.pattern.len == 8 && q.roots.len == 1);
-    assert(q.threads == 1 && !q.no_ignore);
+    assert(q.threads == 0 && !q.no_ignore);
     args[1] = "-j";
     assert(parse(&q, &arena, 2, args) == 2);
     args[2] = "32";

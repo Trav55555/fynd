@@ -10,8 +10,8 @@ Search basenames with literal text, filter by type or extension, and stream
 paths in unspecified order within each root. Unlike [cgrep](https://github.com/Trav55555/cgrep),
 fynd finds the files themselves rather than searching their contents.
 
-**Experimental.** Serial by default, with opt-in threaded subtree traversal
-and ignore-file support. No regex selection, file mutation, or command execution.
+**Experimental.** Threaded by default (one thread per online CPU), with a
+serial `-j1` mode and ignore-file support. No regex selection, file mutation, or command execution.
 Linux is the initial native target. This is not a complete fd or GNU find replacement.
 
 Native benchmark results are not a full verification pass. Retention requires
@@ -28,13 +28,14 @@ actual acceptance receipts are documented separately.
 CI rebuilds fynd and reruns this table on every push to `main`. It uses the
 [serial benchmark](bench/README.md) on a GitHub-hosted runner: warm caches,
 small generated trees, 21 runs per cell, every output validated against the
-fixture manifest before timing. fd runs with one thread, matching fynd's serial
-default. The times include process startup, and shared runners are noisy.
-Read the ratios, not the absolute milliseconds. Results for each commit are
-kept on the [`bench-results` branch](https://github.com/Trav55555/fynd/tree/bench-results).
-This is not fd's default: with automatic threading, fd is several times faster
-than fynd on large trees. For threaded and larger-tree comparisons, see
-[the full streaming benchmark](docs/STREAMING_FULL_BENCHMARK.md).
+fixture manifest before timing. It compares two settings: one thread each
+(fynd `-j1`, fd `--threads 1`), and each tool's default, with no thread option
+(fynd uses the online CPU count; fd picks its own). The times include process
+startup, and shared runners are noisy, so read the ratios rather than the
+absolute milliseconds. These trees are small; larger trees favor threads more.
+Results for each commit are kept on the
+[`bench-results` branch](https://github.com/Trav55555/fynd/tree/bench-results).
+See [the scheduler report](docs/SCHEDULER.md) for larger and real-world trees.
 
 ## Build
 
@@ -112,7 +113,7 @@ operand. Use `--` for a pattern beginning with `-`.
 | `-0`, `--print0` | End each path with NUL instead of newline. |
 | `--max-depth N` | Select through depth 0 to 128. Roots have depth 0. |
 | `--no-ignore` | Bypass all ignore sources without enabling hidden traversal. |
-| `-j N`, `-jN`, `--threads N` | Use 1 through 32 traversal workers. Default 1 is serial; larger values add a coordinator. |
+| `-j N`, `-jN`, `--threads N` | Use 1 through 32 threads in total. The default is the online CPU count, clamped to 1 through 32; `-j1` is serial. |
 | `-h`, `--help` | Show help as a standalone invocation. |
 | `--version` | Show the version as a standalone invocation. |
 
@@ -170,40 +171,37 @@ On POSIX, SIGPIPE may terminate the CLI instead of status 1.
   active `CuTemp`, rewound before the next entry, with a reusable 4096-byte block
   anchor. Names are borrowed until the next entry or cursor release. There is
   no directory-wide name vector, complete-list prerequisite, or sort.
-- With `-j N` above 1, queued, running, DONE-but-unread jobs and the job currently
-  being delivered together occupy at most N pending slots. Aggregate output
-  payload is at most N MiB in 256 KiB credits, not N MiB per job. Each slot has
-  one exclusive credit; remaining credits are shared. Returned shared credits
-  can unblock any producer; the FIFO head retains its exclusive progress path.
-  Unread jobs retain their slots, and credits remain pinned through output I/O
-  and cancellation until safe return or worker join.
-- Active traversal can retain up to 128 directory handles per worker, plus
-  coordinator handles and temporary ignore/policy handles. Cursor name/temp
-  arenas, paths, rule state, stacks, bounded transport metadata, allocator slack,
-  and the coordinator's
-  one deferred-child lookahead per frame are outside the payload bound. This
-  is not a total RSS cap. EMFILE/ENFILE are terminal resource failures; fynd
-  does not raise descriptor limits.
+- With more than one thread, each thread buffers whole records in 64 KiB before
+  writing them under a shared output lock. Discovered directories wait on a
+  shared task stack until a thread takes them; the stack holds one path per
+  pending directory, so it grows with directories found but not yet listed.
+  Ignore rules loaded for a directory stay in memory until its root finishes;
+  directories without rule files or a `.git` marker load nothing. This is not a
+  total RSS cap.
+- Serial traversal can retain up to 128 directory handles; a threaded walk holds
+  one listing handle per thread, plus temporary ignore/policy handles.
+  EMFILE/ENFILE are terminal resource failures; fynd does not raise descriptor
+  limits.
 - Filesystem metadata is not a snapshot. Intermediate symlink components and
   directory-replacement races can resolve outside a root. This walker is not
   a sandbox or a race-proof no-follow boundary.
 - Directory-close errors are not exposed by the current c-utils API. Native
   Windows, unusual integer-width platforms, and race-proof traversal are unverified.
 
-Default serial traversal and explicit `-j1` create no thread, mutex, or condition
-primitives. Larger `-j` values use coarse streaming subtree workers; workers
-never enqueue descendants. Only the coordinator writes caller streams. Whole
-jobs drain through the existing FIFO transport, which can block behind its
-head; this is an internal delivery detail, not a public DFS or arrival-order
-guarantee, nor a promise of identical serial and threaded order. A single child
-prefix stays on the coordinator until a useful fork; its parent cursor closes
-before deferred recursion. Pending work drains, or cancels and joins, before
-borrowed rules and paths leave scope. Failed or unsupported requested startup
-returns 1 without silent fallback. Different resource costs and races can change
-failure prefixes. No speedup is promised.
+`-j1` creates no thread, mutex, or condition primitives. With more threads, the
+main thread walks each root itself and starts the other threads only when it
+finds the first subdirectory, so a root without subdirectories starts none.
+Every thread lists one directory at a time and pushes the subdirectories it
+finds as tasks for any thread to take. Each root finishes, and every thread
+writes out its buffered records, before the next root starts, so root groups
+keep argument order. Order within a root is unspecified and differs between
+runs. A resource or output failure stops all threads, drops queued
+directories, and joins every thread before shared memory is released. Failed
+thread startup returns 1 without silent serial fallback. Different resource
+costs and races can change failure prefixes.
 
-See [the original design](docs/DESIGN.md) and
-[ignore/thread extension](docs/IGNORE_THREADS.md) for ownership and failures.
+See [the scheduler design](docs/SCHEDULER.md), [the original design](docs/DESIGN.md)
+and [ignore/thread extension](docs/IGNORE_THREADS.md) for ownership and failures.
 Their historical sorted-listing contracts are superseded by this candidate's
 streaming contract above. Pattern and path handling are byte-oriented rather
 than locale-aware.
@@ -287,5 +285,5 @@ The full qualification receipt is separate from these performance measurements.
 The original research agenda is tracked in [docs/RESEARCH.md](docs/RESEARCH.md).
 Further work includes Git config/worktree fidelity, glob or regex matching, additional
 metadata filters, platform coverage, license selection, name-collision checks,
-and broader performance comparisons. Threaded traversal is opt-in; benchmark it
-on your workloads rather than assuming more workers help.
+and broader performance comparisons. Thread counts above the default rarely help;
+benchmark `-j` on your own workloads.

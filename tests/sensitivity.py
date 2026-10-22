@@ -12,9 +12,10 @@ import sys
 import tempfile
 
 
-MUTATION_FILES = ('src/fynd.c', 'src/ignore.inc', 'src/listing.inc', 'src/coarse.inc')
+MUTATION_FILES = ('src/fynd.c', 'src/ignore.inc', 'src/listing.inc', 'src/sched.inc')
 SOURCE = Path(__file__).resolve().parent.parent
-RETIRED_C_TESTS = {'test_sort.c', 'test_listing.c', 'test_listing_worker.c'}
+RETIRED_C_TESTS = {'test_sort.c', 'test_listing.c', 'test_listing_worker.c',
+                   'test_parallel.c', 'test_batches.c'}
 C_TESTS = tuple(str(path.relative_to(SOURCE))
                 for path in sorted((SOURCE / 'tests').glob('test*.c'))
                 if path.name not in RETIRED_C_TESTS)
@@ -26,7 +27,7 @@ FILES = tuple(sorted(set(MUTATION_FILES + ('include/fynd.h', 'cmd/main.c') + C_T
                                         'include/**/*.h', 'tests/**/*.py',
                                         'tests/**/*.h', 'fuzz/**/*.h')
                         for path in SOURCE.glob(pattern)}))
-EXPECTED_MUTATIONS = 26  # 28 original - 9 retired contracts + 6 cursor + 1 frame-skip control.
+EXPECTED_MUTATIONS = 26  # 19 retained + 6 scheduler controls replacing 7 coarse/thread ones + frame elision.
 STRICT = ['-std=c89', '-pedantic-errors', '-Wall', '-Wextra', '-Werror',
           '-Wconversion', '-Wshadow', '-Wstrict-prototypes', '-Wmissing-prototypes']
 MUTATIONS = (
@@ -58,7 +59,7 @@ MUTATIONS = (
      'return error == ENOMEM || error == E2BIG || error == EMFILE || error == ENFILE;',
      'return error == ENOMEM || error == E2BIG || error == EMFILE || error == ENFILE || error == EIO;',
      'retained late-EIO partial output, nonterminal status and independent-root continuation; '
-     'parallel root/worker EIO must drain pending borrowers before scope unwind'),
+     'test_sched worker late EIO stays nonterminal with serial-equal output'),
     ('truncate-joined-path-1023', 'src/fynd.c',
      '    path[n + name.len] = 0;',
      '    path[n + name.len] = 0;\n'
@@ -74,40 +75,33 @@ MUTATIONS = (
      'else if (verdict != 2)',
      'ignored directory pruning and ignored file exclusion checks'),
     ('suppress-thread-start', 'src/fynd.c',
-     'if (!r.stop && q.threads > 1)',
-     'if (!r.stop && q.threads > 32)',
-     'private OVERLAP worker-entry assertion before the real-opendir barrier (not a timeout)'),
-    ('ignore-publication-condition-failure', 'src/coarse.inc',
-     '        !cu_cond_init(&pool->publication, &pool->arena) ||',
-     '        cu_cond_init(&pool->publication, &pool->arena) < 0 ||',
-     'pool arena and native startup fault sweeps reject failed publication-condition init'),
-    ('lose-final-tail', 'src/coarse.inc',
-     '        if (!pool->stop && task->fill != NULL)',
-     '        if (!pool->stop && task->fill != NULL && 0)',
-     'exact output membership and final DONE/unread tails, including an exact-capacity tail'),
-    ('steal-slot-reservation', 'src/coarse.inc',
-     '        batch = task->reserved;',
-     '        batch = pool->nbatches > (size_t)pool->count ? '
-     'pool->slots[0]->reserved : task->reserved;',
-     'shared geometry owner-list conservation rejects another slot borrowing the head reserve'),
-    ('wrong-io-owner', 'src/coarse.inc',
-     '            pool->io = batch;',
-     '            pool->io = pool->nbatches > (size_t)pool->count ? '
-     'task->reserved : batch;',
-     'shared dequeue conservation and actual FILE-buffer identity reject a false IO owner'),
-    ('recycle-failed-io', 'src/coarse.inc',
-     '                pool_abort(pool);\n                return;',
-     '                if (batch->reserved_for == NULL) {\n'
-     '                    cu_mutex_lock(pool->mutex);\n'
-     '                    batch_return_locked(pool, batch);\n'
-     '                    cu_mutex_unlock(pool->mutex);\n'
-     '                }\n'
-     '                pool_abort(pool);\n                return;',
-     'deterministic short FILE write retains shared B_IO through worker exit, join and finish'),
-    ('ignore-pending-bound', 'src/coarse.inc',
-     '    if (pool->stop || pool->pending == pool->count) {',
-     '    if (pool->stop) {',
-     'final DONE/unread tasks retain capacity: a third offer must return full'),
+     'if (!r.stop && threads > 1)',
+     'if (!r.stop && threads > 32)',
+     'test_sched: forced primitive-init failure must report the requested workers'),
+    ('serial-default', 'src/fynd.c',
+     '    online = FYND_ONLINE_CPUS();',
+     '    online = 1L;',
+     'test_sched: without -j the online CPU count must start workers'),
+    ('drop-worker-settle-flush', 'src/sched.inc',
+     '    ok = sched_flush(w);\n    cu_arena_release(&w->arena);',
+     '    ok = 1;\n    w->used = 0;\n    cu_arena_release(&w->arena);',
+     'test_sched equivalence: records buffered at the root barrier must be written'),
+    ('drop-coordinator-settle', 'src/sched.inc',
+     '    ok = sched_settle(w);\n    cu_mutex_lock(s->mu);\n    while (s->acked != s->started)',
+     '    ok = 1;\n    w->used = 0;\n    cu_mutex_lock(s->mu);\n    while (s->acked != s->started)',
+     'test_sched equivalence: worker 0 records must be written at the barrier'),
+    ('suppress-output-failure-report', 'src/sched.inc',
+     '    if (first)\n        (void)diagnostic(r, "output failure", NULL);',
+     '    if (first && 0)\n        (void)diagnostic(r, "output failure", NULL);',
+     'test_sched exact /dev/full diagnostics: one output failure report'),
+    ('keep-empty-ignore-frames', 'src/ignore.inc',
+     '    if (k == IGNORE_CLASSES && !f->repository &&',
+     '    if (k == IGNORE_CLASSES && !f->repository && 0 &&',
+     'test_ignore elision: ruleless, non-repository directories reuse the parent frame'),
+    ('lose-settle-failure', 'src/sched.inc',
+     '    report = s->settle_failed && !s->output_reported;',
+     '    report = 0;',
+     'test_sched barrier write failure must be reported once'),
     ('disable-necessary-start-filter', 'src/ignore.inc',
      "        if (r->len != 0 && r->glob[0] != '*' &&",
      "        if (r->len != 0 && 0 && r->glob[0] != '*' &&",
@@ -154,7 +148,7 @@ MUTATIONS = (
      '        job->error = 0;\n'
      '    job->state = job->error != 0 ? -1 : 2;\n'
      '    return job->error != 0 ? -1 : 0;',
-     'test_fynd/test_stream late EIO and test_parallel pending root/worker EIO '
+     'test_fynd/test_stream late EIO and test_sched worker late EIO '
      'require failure status and escaped diagnostics, not successful EOF'),
     ('skip-current-policy-before-enumeration', 'src/fynd.c',
      '        if (!ignore_stream_enter(r->arena, rules, path, &rules, &error)) {',
@@ -251,7 +245,7 @@ def main():
     if args.cases < 100:
         parser.error('--cases must be at least 100 (full 508-check CLI baseline)')
     required_tests = {'tests/test_fynd.c', 'tests/test_ignore.c',
-                      'tests/test_parallel.c', 'tests/test_batches.c', 'tests/test_stream.c'}
+                      'tests/test_sched.c', 'tests/test_stream.c'}
     if not required_tests.issubset(C_TESTS):
         parser.error('missing required active C fixtures')
     if (len(MUTATIONS) != EXPECTED_MUTATIONS or

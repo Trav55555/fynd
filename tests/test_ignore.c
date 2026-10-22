@@ -544,6 +544,73 @@ static void filesystem_cases(void)
     /* Fixture files intentionally remain in the unique test temporary dir. */
 }
 
+/* A directory without rules or a .git marker reuses its parent frame, so a
+ * threaded walk keeps no per-directory policy for it. */
+static void elision_cases(void)
+{
+#ifdef __wasi__
+    char base[] = "/tmp/fynd-elision-fixture";
+#else
+    char base[] = "/tmp/fynd-elision-XXXXXX";
+#endif
+    static const char *const names[] = {"plain", "comments", "repo", "rules"};
+    CuArena a;
+    const IgnoreFrame *seed, *root, *child;
+    IgnoreError e;
+    char *dir, *p, *oldhome, *oldxdg;
+    size_t i;
+#ifdef __wasi__
+    assert(mkdir(base, 0700) == 0);
+#else
+    assert(mkdtemp(base) != NULL);
+#endif
+    cu_arena_init(&a);
+    oldhome = getenv("HOME"); oldxdg = getenv("XDG_CONFIG_HOME");
+    if (oldhome != NULL) oldhome = ignore_copy(&a, oldhome, strlen(oldhome));
+    if (oldxdg != NULL) oldxdg = ignore_copy(&a, oldxdg, strlen(oldxdg));
+    assert(setenv("HOME", base, 1) == 0 && setenv("XDG_CONFIG_HOME", base, 1) == 0);
+    p = join_path(&a, base, cu_str_cstr(".ignore")); assert(p != NULL);
+    put_source(p, "x\n", 2);
+    for (i = 0; i < sizeof names / sizeof names[0]; ++i) {
+        dir = join_path(&a, base, cu_str_cstr(names[i])); assert(dir != NULL);
+        assert(mkdir(dir, 0700) == 0);
+    }
+    p = join_path(&a, base, cu_str_cstr("comments/.ignore")); assert(p != NULL);
+    put_source(p, "# none\n\n", 8);
+    p = join_path(&a, base, cu_str_cstr("repo/.git")); assert(p != NULL);
+    assert(mkdir(p, 0700) == 0);
+    p = join_path(&a, base, cu_str_cstr("rules/.ignore")); assert(p != NULL);
+    put_source(p, "y\n", 2);
+    assert(ignore_seed(&a, base, &seed, &e));
+    assert(ignore_stream_enter(&a, seed, base, &root, &e) && root != seed);
+    for (i = 0; i < sizeof names / sizeof names[0]; ++i) {
+        dir = join_path(&a, base, cu_str_cstr(names[i])); assert(dir != NULL);
+        assert(ignore_stream_enter(&a, root, dir, &child, &e));
+        if (i < 2)
+            assert(child == root);
+        else
+            assert(child != root && child->parent == root);
+    }
+    assert(child->files[IGNORE_PLAIN].count == 1);
+    p = join_path(&a, base, cu_str_cstr("repo/.git")); assert(p != NULL);
+    assert(rmdir(p) == 0);
+    p = join_path(&a, base, cu_str_cstr("comments/.ignore")); assert(p != NULL);
+    assert(unlink(p) == 0);
+    p = join_path(&a, base, cu_str_cstr("rules/.ignore")); assert(p != NULL);
+    assert(unlink(p) == 0);
+    for (i = 0; i < sizeof names / sizeof names[0]; ++i) {
+        dir = join_path(&a, base, cu_str_cstr(names[i])); assert(dir != NULL);
+        assert(rmdir(dir) == 0);
+    }
+    p = join_path(&a, base, cu_str_cstr(".ignore")); assert(p != NULL);
+    assert(unlink(p) == 0);
+    assert(rmdir(base) == 0);
+    if (oldhome != NULL) assert(setenv("HOME", oldhome, 1) == 0); else assert(unsetenv("HOME") == 0);
+    if (oldxdg != NULL) assert(setenv("XDG_CONFIG_HOME", oldxdg, 1) == 0);
+    else assert(unsetenv("XDG_CONFIG_HOME") == 0);
+    cu_arena_release(&a);
+}
+
 static void allocation_cases(void)
 {
     CuArena a;
@@ -577,6 +644,7 @@ int main(void)
     filter_work_cases();
 #ifndef __cerb__
     filesystem_cases();
+    elision_cases();
     allocation_cases();
 #endif
     return 0;

@@ -106,14 +106,17 @@ def identity(path, flag, output, timeout):
     return dict(path=path, sha256=hashlib.sha256(Path(path).read_bytes()).hexdigest(), version=version)
 
 
-def commands(tools, shape, pattern, threads=1):
+def commands(tools, shape, pattern, threads=1, defaults=False):
+    """defaults=True omits every thread option, so each tool uses its own default."""
+    fynd_jobs = [] if defaults else ['-j' + str(threads)]
+    fd_jobs = [] if defaults else ['--threads', '1']
     result = {
-        'fynd': [tools['fynd'], '--no-ignore', '-j' + str(threads), '-0', '-H', '-t', 'f', pattern, shape],
+        'fynd': [tools['fynd'], '--no-ignore', *fynd_jobs, '-0', '-H', '-t', 'f', pattern, shape],
         'find': [tools['find'], shape, '-type', 'f', '-name', '*' + pattern + '*', '-print0'],
     }
     if tools['fd']:
         result['fd'] = [tools['fd'], '-0', '-H', '-I', '--no-ignore-parent',
-                        '--case-sensitive', '--fixed-strings', '--threads', '1',
+                        '--case-sensitive', '--fixed-strings', *fd_jobs,
                         '--color', 'never', '-t', 'f', pattern, shape]
     return result
 
@@ -143,7 +146,8 @@ def run(args, output):
         base = Path(directory)
         report['fixture_cwd'] = str(base)
         report['requested'] = dict(fynd=args.fynd, fd=args.fd, find=args.find, time=args.time,
-                                   repeats=args.repeats, quick=args.quick, timeout=args.timeout, fynd_threads=args.fynd_threads)
+                                   repeats=args.repeats, quick=args.quick, timeout=args.timeout, fynd_threads=args.fynd_threads,
+                                   defaults=args.defaults)
         params, manifests = fixture(base, args.quick)
         report['fixture'] = dict(parameters=params, shapes={
             shape: dict(files=len(paths), directories=sum(1 for _ in os.walk(base / shape)), bytes_per_file=0, needle_files=sum(b'needle' in p.rsplit(b'/', 1)[-1] for p in paths),
@@ -155,7 +159,8 @@ def run(args, output):
             for query, pattern in (('all', ''), ('needle', 'needle')):
                 expected = [p for p in paths if pattern.encode() in p.rsplit(b'/', 1)[-1]]
                 group = [(f'{shape}-{query}-{tool}', argv, expected)
-                         for tool, argv in commands(tools, shape, pattern, args.fynd_threads).items()]
+                         for tool, argv in commands(tools, shape, pattern, args.fynd_threads,
+                                                           args.defaults).items()]
                 jobs.extend(group)
                 groups.append(group)
         (output / 'metadata.json').write_text(json.dumps(report, indent=2) + '\n')
@@ -208,6 +213,8 @@ def main(argv=None):
     parser.add_argument('--output', type=Path, default=Path('build/bench'), help='parent for a unique run directory')
     parser.add_argument('--repeats', type=positive, default=5)
     parser.add_argument('--fynd-threads', type=int, choices=range(1, 33), default=1)
+    parser.add_argument('--defaults', action='store_true',
+                        help='omit thread options so fynd and fd use their own defaults')
     parser.add_argument('--timeout', type=positive, default=120, help='seconds per invocation')
     parser.add_argument('--quick', action='store_true')
     args = parser.parse_args(argv)

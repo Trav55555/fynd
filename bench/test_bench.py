@@ -135,6 +135,19 @@ class BenchTests(unittest.TestCase):
         self.assertNotEqual(report['order'][0], report['order'][1])
         self.assertTrue(all(s['peak_rss_kib'] == 123 for s in report['samples']))
 
+    def test_commands_thread_modes(self):
+        tools = {'fynd': 'FYND', 'find': 'FIND', 'fd': 'FD'}
+        single = bench.commands(tools, 'wide', 'x')
+        self.assertIn('-j1', single['fynd'])
+        self.assertEqual(single['fd'][single['fd'].index('--threads') + 1], '1')
+        four = bench.commands(tools, 'wide', 'x', threads=4)
+        self.assertIn('-j4', four['fynd'])
+        defaults = bench.commands(tools, 'wide', 'x', threads=4, defaults=True)
+        self.assertFalse([arg for arg in defaults['fynd'] if arg.startswith('-j')])
+        self.assertNotIn('--threads', defaults['fd'])
+        self.assertEqual(defaults['find'], single['find'])
+        self.assertEqual(defaults['fynd'][-2:], ['x', 'wide'])
+
     def test_positive(self):
         for value in ('0', '-1'):
             with self.assertRaises(Exception):

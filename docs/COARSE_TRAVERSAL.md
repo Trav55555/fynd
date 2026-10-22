@@ -1,5 +1,8 @@
 # Coarse ordered traversal
 
+> **Historical.** `src/coarse.inc` and its tests were removed when the
+> [shared-stack scheduler](SCHEDULER.md) replaced this design.
+
 Historical ordered walker. The [current streaming walker](STREAMING.md) removes
 complete listings and sorting while retaining bounded FIFO whole-task transport.
 Its output within each root is unspecified, and late read errors keep earlier

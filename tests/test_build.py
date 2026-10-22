@@ -285,7 +285,9 @@ class BuildTests(unittest.TestCase):
         manifest = json.loads((self.project / "ci/pinned_cutils.json").read_text())
         self.assertEqual(manifest, EXPECTED_MANIFEST)
         self.assertEqual((self.project / "CUTILS_REVISION").read_text().strip(), REVISION)
-        self.assertEqual(len(self.test_names), 6, "all six native C suites must be copied/discovered")
+        self.assertEqual(self.test_names,
+                         ["test_cursor", "test_fynd", "test_ignore", "test_sched", "test_stream"],
+                         "all five native C suites must be copied/discovered")
         self.assertFalse((self.cutils / ".git").exists())
 
     def test_invalid_inventory_refused(self):
