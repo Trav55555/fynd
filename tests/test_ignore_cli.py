@@ -211,6 +211,13 @@ def fd_sources(s):
     check('.fdignore above .ignore, outside a repository',
           ['fdt/hidden-by-ignore', 'fdt/ok', 'fdt/sub/keep.log'], ('fdt',))
     check('ancestor .fdignore', ['fdt/sub/keep.log'], ('fdt/sub',))
+    # Independent of whether the fixture itself sits inside a repository:
+    # .fdignore above a nested repository marker still applies below it.
+    s.put('fdn/.fdignore', b'drop\n')
+    s.put('fdn/inner/.git', b'gitdir: /nonexistent\n')
+    for p in ('drop', 'keep'):
+        s.put('fdn/inner/' + p)
+    check('.fdignore applies across a repository boundary', ['fdn/inner/keep'], ('fdn',))
     s.put('home/fd/ignore', b'/fdg/top\nloose.tmp\nfdg/sub/anchored\n')
     for p in ('top', 'loose.tmp', 'sub/top', 'sub/loose.tmp', 'sub/anchored', 'sub/kept'):
         s.put('fdg/' + p)

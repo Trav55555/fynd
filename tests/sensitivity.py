@@ -42,7 +42,7 @@ MUTATIONS = (
     ('fdignore-only-in-repositories', 'src/ignore.inc',
      '                if (values[k] == 0 && (k < IGNORE_GIT || repo != NULL))',
      '                if (values[k] == 0 && (k == IGNORE_PLAIN || repo != NULL))',
-     'ignore CLI and fd oracle: .fdignore applies outside a repository'),
+     'ignore CLI and fd oracle: .fdignore applies across a repository boundary'),
     ('skip-fd-global', 'src/ignore.inc',
      '    if (v == 0 && !work.failed && frame->origin->fd_global.count != 0) {',
      '    if (v == 0 && !work.failed && frame->origin->fd_global.count != 0 && 0) {',
