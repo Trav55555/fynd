@@ -24,7 +24,7 @@ def fold(value):
 
 
 def oracle(roots, pattern=b'', kinds=(), extensions=(), hidden=False,
-           insensitive=False, depth=128):
+           insensitive=False, depth=256):
     result = []
     pattern = fold(pattern) if insensitive else pattern
     extensions = {fold(e) if insensitive else e for e in extensions}
@@ -165,24 +165,29 @@ def fixed(s):
     for args in ([b'--wat'], [b'-it'], [b'--type=f'], [b'-t'], [b'-t', b'ff'],
                  [b'-t', b'x'], [b'-e'], [b'-e', b''], [b'-e', b'.txt'],
                  [b'-e', b'a/b'], [b'--max-depth'], [b'--max-depth', b'-1'],
-                 [b'--max-depth', b'129'], [b'--max-depth', b'1x'],
+                 [b'--max-depth', b'257'], [b'--max-depth', b'1x'], [b'-d', b'257'],
+                 [b'-d257'], [b'-d'], [b'-V', b'r'],
                  [b'--max-depth', b''], [b'--max-depth', b'999999999999999999999'],
                  [b'', b''], [b'--help', b'r'], [b'--version', b'r'],
                  [b'-h', b'-0']):
         s.check('invalid invocation', list(args), status=2, diagnostic=True)
-    for flag in (b'-h', b'--help', b'--version'):
+    for flag in (b'-h', b'--help', b'--version', b'-V'):
         proc = subprocess.run([s.binary, flag], capture_output=True, timeout=10)
         s.count += 1
         assert proc.returncode == 0 and proc.stdout and not proc.stderr, flag
+    version = subprocess.run([s.binary, b'--version'], capture_output=True, timeout=10).stdout
+    assert subprocess.run([s.binary, b'-V'], capture_output=True, timeout=10).stdout == version
     os.mkdir(b'deep')
     path = b'deep'
     paths = [path]
-    for _ in range(129):
+    for _ in range(257):
         path += b'/d'
         os.mkdir(path)
         paths.append(path)
-    s.records('explicit 128 cutoff', [b'-0', b'--max-depth', b'128', b'', b'deep'], paths[:129])
-    s.records('default safety error', [b'-0', b'', b'deep'], paths[:129],
+    s.records('explicit 256 cutoff', [b'-0', b'--max-depth', b'256', b'', b'deep'], paths[:257])
+    s.records('explicit -d cutoff', [b'-0', b'-d', b'3', b'', b'deep'], paths[:4])
+    s.records('joined -d cutoff', [b'-0', b'-d3', b'', b'deep'], paths[:4])
+    s.records('default safety error', [b'-0', b'', b'deep'], paths[:257],
               status=1, diagnostic=True)
     os.mkdir(b'ignored')
     with open(b'ignored/.gitignore', 'wb') as stream:
@@ -295,7 +300,7 @@ def generated(s, cases, seed):
                     touch(path)
             hidden = rng.choice([False, True])
             insensitive = rng.choice([False, True])
-            depth = rng.choice([0, 1, 2, 4, 128])
+            depth = rng.choice([0, 1, 2, 4, 256])
             kinds = rng.choice([(), ('f',), ('d',), ('l', 'o'), ('f', 'd')])
             extensions = rng.choice([(), (b'txt',), (b'TXT', b'json')])
             pattern = rng.choice([b'', b'a', b'Beta', b'.', b'\xfe', b'not-found'])
@@ -340,7 +345,7 @@ def thread_matrix(s):
     for roots in ([b'wide'], [b'wide', b'r', b'wide']):
         for flags in ([], [b'-H'], [b'--max-depth', b'1'], [b'-t', b'l']):
             groups = [oracle([root], hidden=b'-H' in flags,
-                             depth=1 if b'1' in flags else 128,
+                             depth=1 if b'1' in flags else 256,
                              kinds=('l',) if b'l' in flags else ()) for root in roots]
             expected = [path for group in groups for path in group]
             for jobs in ([b'-j', b'1'], [b'-j2'], [b'--threads', b'4'], [b'-j8']):

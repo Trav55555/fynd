@@ -6,6 +6,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+/* Directory depth at which a walk stops with a recursion safety error, and
+ * the largest --max-depth. The walk recurses once per level. */
+#define FYND_DEPTH_LIMIT 256
+
 typedef struct Query {
     CuStr pattern;
     CuVec extensions;
@@ -260,7 +264,7 @@ static void visit_child(Run *r, const char *path, int depth, const IgnoreFrame *
     else if (verdict != 1 && (!hidden || verdict == -1)) {
         /* Cutoff and safety-limit directories are visited in place. */
         if (r->sched != NULL && kind == CU_DIR_DIR &&
-            depth + 1 != r->query->depth && depth + 1 < 128)
+            depth + 1 != r->query->depth && depth + 1 < FYND_DEPTH_LIMIT)
             (void)sched_push(r, joined, depth + 1, rules);
         else
             visit(r, joined, name, kind, depth + 1, rules);
@@ -381,7 +385,7 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
     }
     if (kind != CU_DIR_DIR || depth == r->query->depth)
         return;
-    if (depth == 128) {
+    if (depth == FYND_DEPTH_LIMIT) {
         failure(r, "recursion safety limit", path, 0);
         return;
     }
@@ -484,7 +488,7 @@ static int parse_depth(const char *s, int *out)
         if (*s < '0' || *s > '9')
             return 0;
         digit = (unsigned int)(*s - '0');
-        if (value > 12 || (value == 12 && digit > 8))
+        if (value > FYND_DEPTH_LIMIT / 10 || value * 10 + (int)digit > FYND_DEPTH_LIMIT)
             return 0;
         value = value * 10 + (int)digit;
         ++s;
@@ -570,8 +574,11 @@ static int parse(Query *q, CuArena *arena, int argc, char **argv)
             CU_VEC_PUSH(&q->extensions, &view);
             if (cu_vec_failed(&q->extensions))
                 return 1;
-        } else if (strcmp(s, "--max-depth") == 0) {
+        } else if (strcmp(s, "--max-depth") == 0 || strcmp(s, "-d") == 0) {
             if (i == argc || !parse_depth(argv[i++], &q->depth))
+                return 2;
+        } else if (s[0] == '-' && s[1] == 'd') {
+            if (!parse_depth(s + 2, &q->depth))
                 return 2;
         } else
             return 2;
@@ -643,13 +650,13 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
     r.hold = NULL;
     r.task = NULL;
     sched_live = 0;
-    if (argc == 2 && (strcmp(argv[1], "-h") == 0 ||
-        strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "--version") == 0)) {
+    if (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0 ||
+        strcmp(argv[1], "-V") == 0 || strcmp(argv[1], "--version") == 0)) {
         if (ferror(out)) {
             failure(&r, "output failure", NULL, 1);
             return r.status;
         }
-        if (strcmp(argv[1], "--version") == 0)
+        if (strcmp(argv[1], "-V") == 0 || strcmp(argv[1], "--version") == 0)
             parsed = fputs("fynd 0.1.0\n", out);
         else if ((parsed = fputs("Usage: fynd [OPTIONS] [--] [PATTERN [ROOT ...]]\n"
                 "  -i, --ignore-case   ASCII case folding\n"
@@ -657,13 +664,13 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
                 "  -e, --extension EXT final suffix (union)\n"
                 "  -H, --hidden        include discovered hidden names\n"
                 "  -0, --print0        NUL-delimited paths\n"
-                "  --max-depth N       selection depth 0 through 128\n", out)) >= 0)
+                "  -d, --max-depth N   selection depth 0 through 256\n", out)) >= 0)
             /* Two literals: C90 guarantees only 509 characters per string. */
             parsed = fputs("  --no-ignore         bypass ignore rules\n"
                 "  --sort              byte-sorted depth-first order\n"
                 "  -j N, --threads N   threads 1 through 32 (default: CPUs)\n"
                 "  -h, --help          show help alone\n"
-                "  --version           show version alone\n", out);
+                "  -V, --version       show version alone\n", out);
         if (parsed < 0 || ferror(out))
             failure(&r, "output failure", NULL, 1);
     } else {

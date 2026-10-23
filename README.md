@@ -111,12 +111,12 @@ operand. Use `--` for a pattern beginning with `-`.
 | `-e`, `--extension EXT` | Select the final nonempty suffix after a dot. Repeat to select a union. Give the suffix without a dot or slash. |
 | `-H`, `--hidden` | Include discovered dot-prefixed names and descend into hidden directories. |
 | `-0`, `--print0` | End each path with NUL instead of newline. |
-| `--max-depth N` | Select through depth 0 to 128. Roots have depth 0. |
+| `-d N`, `-dN`, `--max-depth N` | Select through depth 0 to 256. Roots have depth 0. |
 | `--no-ignore` | Bypass all ignore sources without enabling hidden traversal. |
 | `--sort` | Print in byte-sorted depth-first order. Uses the same threads as an unsorted walk; output and diagnostics equal `--sort -j1` byte for byte. |
 | `-j N`, `-jN`, `--threads N` | Use 1 through 32 threads in total. The default is the online CPU count, clamped to 1 through 32; `-j1` is serial. |
 | `-h`, `--help` | Show help as a standalone invocation. |
-| `--version` | Show the version as a standalone invocation. |
+| `-V`, `--version` | Show the version as a standalone invocation. |
 
 Name, type, and extension predicates are ANDed. Repeated types and repeated
 extensions each form a union. Filters do not prune unmatched directories.
@@ -175,7 +175,7 @@ On POSIX, SIGPIPE may terminate the CLI instead of status 1.
   them with non-following metadata. Ignore precedence and limits are unchanged.
   See [ignore and thread semantics](docs/IGNORE_THREADS.md) for boundaries and limits.
 - An explicit `--max-depth` cutoff is successful. Without a requested cutoff,
-  reaching a directory at depth 128 reports a recursion safety error rather
+  reaching a directory at depth 256 reports a recursion safety error rather
   than silently claiming a complete search.
 - Directory names stream through `CuDir`: each cursor's name arena has one
   active `CuTemp`, rewound before the next entry, with a reusable 4096-byte block
@@ -189,7 +189,7 @@ On POSIX, SIGPIPE may terminate the CLI instead of status 1.
   directory below it still needs them; directories without rule files or a
   `.git` marker load nothing. This is not a
   total RSS cap.
-- Serial traversal can retain up to 128 directory handles; a threaded walk holds
+- Serial traversal can retain up to 256 directory handles; a threaded walk holds
   one listing handle per thread, plus temporary ignore/policy handles.
   EMFILE/ENFILE are terminal resource failures; fynd does not raise descriptor
   limits.

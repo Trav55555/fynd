@@ -90,7 +90,7 @@ static void check_depth(const char *text)
         if (*p < 48 || *p > 57) valid = 0;
         if (valid) {
             n = n * 10 + (unsigned long)(*p - 48);
-            if (n > 128) valid = 0;
+            if (n > 256) valid = 0;
         }
     }
     got = -7;

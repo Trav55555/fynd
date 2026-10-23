@@ -284,7 +284,7 @@ static void make_file(const char *path, const char *bytes)
  * tasks, hidden names, raw newline names and a late-EIO directory. */
 static void build_fixture(const char *root)
 {
-    char path[512];
+    char path[1024];
     int i, j, k;
     assert(snprintf(path, sizeof path, "%s/big", root) > 0);
     make_dir(path);
@@ -345,7 +345,7 @@ static void build_fixture(const char *root)
     }
     assert(snprintf(path, sizeof path, "%s/chain", root) > 0);
     make_dir(path);
-    for (i = 0; i < 130; ++i) {
+    for (i = 0; i < FYND_DEPTH_LIMIT + 2; ++i) {
         assert(strlen(path) + 3 < sizeof path);
         strcat(path, "/c");
         make_dir(path);
@@ -514,14 +514,14 @@ static void depth_limits(const char *root)
            memcmp(result.err, "fynd: recursion safety limit '", 30) == 0 &&
            memchr(result.err, '\n', result.err_len) == result.err + result.err_len - 1);
     spans = records(result.out, result.out_len, '\n', &n);
-    assert(n == 129);
+    assert(n == FYND_DEPTH_LIMIT + 1);
     free(spans);
     release(&result);
-    argv[2] = "--max-depth"; argv[3] = "128"; argv[4] = ""; argv[5] = tree; argv[6] = NULL;
+    argv[2] = "--max-depth"; argv[3] = "256"; argv[4] = ""; argv[5] = tree; argv[6] = NULL;
     result = call(argv);
     assert(result.status == 0 && result.err_len == 0);
     spans = records(result.out, result.out_len, '\n', &n);
-    assert(n == 129);
+    assert(n == FYND_DEPTH_LIMIT + 1);
     free(spans);
     release(&result);
 }

@@ -3,9 +3,9 @@ int main(void)
 {
     char *defaults[] = {"fynd", NULL};
     char *options[] = {"fynd", "-i", "-i", "-H", "-0", "-t", "f", "-t", "d",
-        "-e", "C", "-e", "h", "--max-depth", "0", "--max-depth", "128", "x", "a", "b", NULL};
+        "-e", "C", "-e", "h", "--max-depth", "0", "--max-depth", "256", "x", "a", "b", NULL};
     char *literal[] = {"fynd", "--", "-i", "-H", NULL};
-    char *bad[] = {"fynd", "--max-depth", "129", NULL};
+    char *bad[] = {"fynd", "--max-depth", "257", NULL};
     char *empty[] = {"fynd", "", "", NULL};
     char *operand[] = {"fynd", "x", "--unknown", NULL};
     char *jobs[] = {"fynd", "--no-ignore", "-j", "01", "-j32", "--threads", "2", NULL};
@@ -30,7 +30,7 @@ int main(void)
     check_parser(3, bad);
     check_parser(3, empty);
     check_parser(3, operand);
-    check_depth("00128");
+    check_depth("00256");
     check_match((const unsigned char *)"Ab", 2, (const unsigned char *)"a", 1);
     check_size(3, 4, 1);
     return 0;

@@ -26,7 +26,7 @@ Against fd's automatic threading, `-j8` stayed 2-5x slower on large trees.
 - **Tasks.** `visit()` lists one directory. When a scheduler is active, each
   descending child directory becomes a task (path, depth, borrowed ignore
   frame) on a LIFO stack under one mutex, instead of a recursive call. Cutoff
-  and depth-128 directories are still visited in place, so `--max-depth` and
+  and depth-limit directories are still visited in place, so `--max-depth` and
   the recursion safety limit behave as in the serial walker.
 - **Output.** Each thread buffers whole records (64 KiB) and writes them to
   the caller's stream under an output mutex. Records never interleave.
@@ -128,7 +128,7 @@ The scheduler itself was first qualified by `build/verification/run.XyeMPG`, exi
 `tests/test_sched.c` compares every threaded run with `-j1` on status, record
 multiset and diagnostic multiset, for six flag sets at 2, 3, 8 and 32 threads
 and the default. It also covers root-group order with duplicate roots, threads
-first starting on a later root, the depth-128 limit and `--max-depth 128`,
+first starting on a later root, the depth limit and `--max-depth` at it,
 exact `/dev/full` diagnostics during the walk and at the barrier, stderr
 failure, task allocation failure, and thread start failure before the walk and
 for the first, second or third thread. It uses a 64-byte record buffer to force

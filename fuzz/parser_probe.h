@@ -74,7 +74,7 @@ static void check_parser(int argc, char **argv)
                 if (!*v) valid = 0;
                 while (*v && valid) {
                     if (*v < '0' || *v > '9') valid = 0;
-                    else { d = d * 10 + (*v - '0'); if (d > 128) valid = 0; }
+                    else { d = d * 10 + (*v - '0'); if (d > 256) valid = 0; }
                     ++v;
                 }
                 depth = d;

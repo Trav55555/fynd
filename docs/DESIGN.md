@@ -31,7 +31,7 @@ are usage errors. `--` ends option recognition. No short-option clusters or
   `.config.json` has `json`. Applies to every kind, not only regular files.
 - `-H`, `--hidden`: include and descend into discovered dot-prefixed names.
 - `-0`, `--print0`: NUL records instead of newline records.
-- `--max-depth N`: explicit selection depth, 0 through 128. Root is depth 0.
+- `-d N`, `--max-depth N`: explicit selection depth, 0 through 256. Root is depth 0.
   Objects at the limit can be selected, but their directories are not opened.
 - `-h`, `--help` and `--version`: sole-argument informational invocations.
   Print to stdout and return success, or runtime failure if output fails.
@@ -45,9 +45,11 @@ A private Query record owns the validated pattern view, type mask,
 extension views, roots, ASCII mode, hidden policy, record delimiter, and
 requested depth. Views borrow argv only until the invocation returns.
 The default requested depth is unbounded; a separate recursion safety
-boundary at directory depth 128 reports an incomplete search with status 1
+boundary at directory depth 256 reports an incomplete search with status 1
 if traversal would continue. An explicit --max-depth cutoff is successful.
-Neither limit silently truncates a path.
+Neither limit silently truncates a path. The walk recurses once per level:
+a 1,000-level native walk needed between 1 and 1.5 MiB of stack, so 256
+levels fit default thread stacks; the WASI suite walks all 256 levels.
 
 ## Traversal and output
 
