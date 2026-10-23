@@ -27,13 +27,42 @@ FILES = tuple(sorted(set(MUTATION_FILES + ('include/fynd.h', 'cmd/main.c') + C_T
                                         'include/**/*.h', 'tests/**/*.py',
                                         'tests/**/*.h', 'fuzz/**/*.h')
                         for path in SOURCE.glob(pattern)}))
-EXPECTED_MUTATIONS = 39  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
+EXPECTED_MUTATIONS = 46  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
                          # + two dir-relative probe controls + two .git file controls
                          # + two listing-presence controls + two hidden re-inclusion controls
-                         # + two ordered-writer controls.
+                         # + two ordered-writer controls + four fd ignore-source controls
+                         # + two case controls + one diagnostic reason control.
 STRICT = ['-std=c89', '-pedantic-errors', '-Wall', '-Wextra', '-Werror',
           '-Wconversion', '-Wshadow', '-Wstrict-prototypes', '-Wmissing-prototypes']
 MUTATIONS = (
+    ('unlisted-fdignore-name', 'src/ignore.inc',
+     '    if (name.len == 9 && memcmp(name.ptr, ".fdignore", 9) == 0) return 1U << IGNORE_FD;',
+     '    if (name.len == 9 && memcmp(name.ptr, ".fdignore", 9) == 0) return 0;',
+     'ignore CLI .fdignore fixtures require a listed .fdignore to be read'),
+    ('fdignore-only-in-repositories', 'src/ignore.inc',
+     '                if (values[k] == 0 && (k < IGNORE_GIT || repo != NULL))',
+     '                if (values[k] == 0 && (k == IGNORE_PLAIN || repo != NULL))',
+     'ignore CLI and fd oracle: .fdignore applies outside a repository'),
+    ('skip-fd-global', 'src/ignore.inc',
+     '    if (v == 0 && !work.failed && frame->origin->fd_global.count != 0) {',
+     '    if (v == 0 && !work.failed && frame->origin->fd_global.count != 0 && 0) {',
+     'ignore CLI and fd oracle: global fd rules relative to the working directory'),
+    ('skip-fd-loose-outside', 'src/ignore.inc',
+     '        else\n            v = ignore_file_verdict(&frame->origin->fd_loose,',
+     '        else if (0)\n            v = ignore_file_verdict(&frame->origin->fd_loose,',
+     'ignore CLI: unanchored global fd rules still match outside the working directory'),
+    ('smart-case-exact', 'src/fynd.c',
+     '        q->fold = 1;\n        for (s = q->pattern.ptr;',
+     '        q->fold = 0;\n        for (s = q->pattern.ptr;',
+     'CLI smart-case fixtures and smart-case random oracle'),
+    ('extension-case-exact', 'src/fynd.c',
+     '        if (ext.len == wanted->len && contains(ext, *wanted, 1))',
+     '        if (ext.len == wanted->len && contains(ext, *wanted, q->fold))',
+     'CLI extension fixtures ignore case under -s and capital patterns'),
+    ('drop-diagnostic-reason', 'src/fynd.c',
+     '    if (number != 0) {\n        reason = strerror(number);',
+     '    if (number != 0 && 0) {\n        reason = strerror(number);',
+     'exact diagnostics in test_fynd, test_stream and the CLI end with the reason'),
     ('suppress-name-filter', 'src/fynd.c',
      'if (!contains(name, q->pattern, q->fold))',
      'if (!contains(name, q->pattern, q->fold) && 0)',
@@ -94,8 +123,8 @@ MUTATIONS = (
      '    ok = 1;\n    w->used = 0;\n    cu_mutex_lock(s->mu);\n    while (s->acked != s->started)',
      'test_sched equivalence: worker 0 records must be written at the barrier'),
     ('suppress-output-failure-report', 'src/sched.inc',
-     '    if (first)\n        (void)diagnostic(r, "output failure", NULL);',
-     '    if (first && 0)\n        (void)diagnostic(r, "output failure", NULL);',
+     '    if (first)\n        (void)diagnostic(r, "output failure", NULL, 0);',
+     '    if (first && 0)\n        (void)diagnostic(r, "output failure", NULL, 0);',
      'test_sched exact /dev/full diagnostics: one output failure report'),
     ('keep-empty-ignore-frames', 'src/ignore.inc',
      '    if (k == IGNORE_CLASSES && !f->repository &&',
@@ -142,9 +171,9 @@ MUTATIONS = (
      '            } else if (base_len == 0 || first == (unsigned char)base[0]) {',
      'literal/escape/high-byte/last-match oracle rejects false-negative rejection'),
     ('skip-frames-without-plain-rules', 'src/ignore.inc',
-     '        rel = f->files[IGNORE_PLAIN].count == 0 && f->files[IGNORE_GIT].count == 0 &&\n'
-     '              f->files[IGNORE_EXCLUDE].count == 0 ? NULL :',
-     '        rel = f->files[IGNORE_PLAIN].count == 0 ? NULL :',
+     '        rel = k == IGNORE_CLASSES ? NULL : ignore_relative(mapped, f->directory);',
+     '        rel = f->files[IGNORE_PLAIN].count == 0 ? NULL :\n'
+     '              ignore_relative(mapped, f->directory);',
      'ignore CLI oracle rejects dropping frames that hold only Git-class rules'),
     ('suppress-name-enomem-normalization', 'src/listing.inc',
      '    next = cu_dir_next(&job->dir, entry);\n'

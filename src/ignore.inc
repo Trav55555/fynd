@@ -246,10 +246,11 @@ static int ignore_parse(CuArena *a, CuStr text, IgnoreFile *out, int *number)
 #define IGNORE_DIR_INFO cu_dir_info
 #endif
 
-enum { IGNORE_PLAIN, IGNORE_GIT, IGNORE_EXCLUDE, IGNORE_CLASSES };
+/* Highest precedence first. Classes before IGNORE_GIT apply everywhere. */
+enum { IGNORE_FD, IGNORE_PLAIN, IGNORE_GIT, IGNORE_EXCLUDE, IGNORE_CLASSES };
 #define IGNORE_REPOSITORY_BIT (1U << IGNORE_CLASSES)
 #define IGNORE_UNLISTED (~0U)
-static const char *const ignore_names[] = { ".ignore", ".gitignore" };
+static const char *const ignore_names[] = { ".fdignore", ".ignore", ".gitignore" };
 typedef struct IgnoreFrame IgnoreFrame;
 struct IgnoreFrame {
     const IgnoreFrame *parent;
@@ -262,6 +263,12 @@ struct IgnoreFrame {
     const char *global_path;
     int global_loaded;
     int repository;
+    /* fd's own global file, origin frame only: every rule relative to the
+     * working directory fd_base, or NULL if that is unknown; fd_loose holds
+     * just the unanchored rules, which also match outside it. */
+    IgnoreFile fd_global;
+    IgnoreFile fd_loose;
+    const char *fd_base;
 };
 
 static int ignore_error(IgnoreError *error, int number, const char *path)
@@ -476,7 +483,7 @@ static int ignore_frame(CuArena *a, const IgnoreFrame *parent,
     }
     for (k = 0; k < IGNORE_CLASSES; ++k) {
         f->files[k].rules = NULL; f->files[k].count = 0;
-        if (k != IGNORE_PLAIN && !has_repository) continue;
+        if (k >= IGNORE_GIT && !has_repository) continue;
         if (k == IGNORE_EXCLUDE) {
             if (!f->repository) continue;
             if (!ignore_exclude_path(a, directory, &path, error)) return 0;
@@ -551,6 +558,7 @@ static int ignore_probe(CuArena *a, const CuDir *dir, const char *directory,
 static unsigned ignore_listed_name(CuStr name)
 {
     if (name.len == 4 && memcmp(name.ptr, ".git", 4) == 0) return IGNORE_REPOSITORY_BIT;
+    if (name.len == 9 && memcmp(name.ptr, ".fdignore", 9) == 0) return 1U << IGNORE_FD;
     if (name.len == 7 && memcmp(name.ptr, ".ignore", 7) == 0) return 1U << IGNORE_PLAIN;
     if (name.len == 10 && memcmp(name.ptr, ".gitignore", 10) == 0) return 1U << IGNORE_GIT;
     return 0;
@@ -594,6 +602,39 @@ static int ignore_stream_enter(CuArena *a, const IgnoreFrame *parent,
     return 1;
 }
 
+/* fd's global ignore file: $XDG_CONFIG_HOME/fd/ignore, else
+ * ~/.config/fd/ignore. Its rules are relative to the working directory, so a
+ * path outside it can match only an unanchored rule. */
+static int ignore_seed_fd(CuArena *a, IgnoreFrame *origin, const char *root,
+                          IgnoreError *error)
+{
+    const char *env;
+    char *path;
+    IgnoreError ignored;
+    size_t i;
+    origin->fd_global.rules = NULL; origin->fd_global.count = 0;
+    origin->fd_loose.rules = NULL; origin->fd_loose.count = 0;
+    origin->fd_base = NULL;
+    env = getenv("XDG_CONFIG_HOME");
+    if (env != NULL && *env != 0) path = join_path(a, env, cu_str_cstr("fd/ignore"));
+    else {
+        env = getenv("HOME");
+        if (env == NULL || *env == 0) return 1;
+        path = join_path(a, env, cu_str_cstr(".config/fd/ignore"));
+    }
+    if (path == NULL) return ignore_error(error, ENOMEM, root);
+    if (!ignore_read(a, path, &origin->fd_global, error)) return 0;
+    if (origin->fd_global.count == 0) return 1;
+    origin->fd_loose.rules = CU_PUSH(a, IgnoreRule, origin->fd_global.count);
+    if (origin->fd_loose.rules == NULL) return ignore_error(error, ENOMEM, path);
+    for (i = 0; i < origin->fd_global.count; ++i)
+        if (!origin->fd_global.rules[i].anchored)
+            origin->fd_loose.rules[origin->fd_loose.count++] = origin->fd_global.rules[i];
+    /* Without a working directory, only the unanchored rules can apply. */
+    origin->fd_base = ignore_absolute(a, ".", &ignored);
+    return 1;
+}
+
 static int ignore_seed(CuArena *a, const char *root,
                        const IgnoreFrame **out, IgnoreError *error)
 {
@@ -630,6 +671,7 @@ static int ignore_seed(CuArena *a, const char *root,
     for (k = 0; k < IGNORE_CLASSES; ++k) {
         origin->files[k].rules = NULL; origin->files[k].count = 0;
     }
+    if (!ignore_seed_fd(a, origin, root, error)) return 0;
     env = getenv("XDG_CONFIG_HOME");
     global = NULL;
     if (env != NULL && *env != 0) global = join_path(a, env, cu_str_cstr("git/ignore"));
@@ -734,12 +776,12 @@ static int ignore_verdict(CuArena *a, const IgnoreFrame *frame,
     for (k = 0; k < IGNORE_CLASSES; ++k) values[k] = 0;
     for (f = frame; f != NULL; f = f->parent) {
         /* Most frames load no rules; empty files never decide or charge work. */
-        rel = f->files[IGNORE_PLAIN].count == 0 && f->files[IGNORE_GIT].count == 0 &&
-              f->files[IGNORE_EXCLUDE].count == 0 ? NULL :
-              ignore_relative(mapped, f->directory);
+        for (k = 0; k < IGNORE_CLASSES; ++k)
+            if (f->files[k].count != 0) break;
+        rel = k == IGNORE_CLASSES ? NULL : ignore_relative(mapped, f->directory);
         if (rel != NULL) {
             for (k = 0; k < IGNORE_CLASSES; ++k) {
-                if (values[k] == 0 && (k == IGNORE_PLAIN || repo != NULL))
+                if (values[k] == 0 && (k < IGNORE_GIT || repo != NULL))
                     values[k] = ignore_file_verdict(&f->files[k], rel, strlen(rel), is_dir, &work);
             }
         }
@@ -754,6 +796,15 @@ static int ignore_verdict(CuArena *a, const IgnoreFrame *frame,
             rel = ignore_relative(mapped, f->directory);
             if (rel != NULL) v = ignore_file_verdict(&frame->global, rel, strlen(rel), is_dir, &work);
         }
+    }
+    /* fd's global file is last, as fd reads it. */
+    if (v == 0 && !work.failed && frame->origin->fd_global.count != 0) {
+        rel = frame->origin->fd_base == NULL ? NULL :
+              ignore_relative(mapped, frame->origin->fd_base);
+        if (rel != NULL)
+            v = ignore_file_verdict(&frame->origin->fd_global, rel, strlen(rel), is_dir, &work);
+        else
+            v = ignore_file_verdict(&frame->origin->fd_loose, mapped, strlen(mapped), is_dir, &work);
     }
     cu_temp_end(scratch);
     if (work.failed) return ignore_error(error, E2BIG, path);

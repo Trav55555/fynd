@@ -24,19 +24,22 @@ def fold(value):
 
 
 def oracle(roots, pattern=b'', kinds=(), extensions=(), hidden=False,
-           insensitive=False, depth=256):
+           case=None, depth=256):
+    """case is b'-i', b'-s', or None for fd's smart case: a pattern without
+    an ASCII capital ignores case. Extensions always ignore ASCII case."""
     result = []
+    insensitive = case == b'-i' or (case is None and fold(pattern) == pattern)
     pattern = fold(pattern) if insensitive else pattern
-    extensions = {fold(e) if insensitive else e for e in extensions}
+    extensions = {fold(e) for e in extensions}
 
     def visit(path, level):
         mode = os.lstat(path).st_mode
         kind = ('d' if stat.S_ISDIR(mode) else 'f' if stat.S_ISREG(mode)
                 else 'l' if stat.S_ISLNK(mode) else 'o')
         name = path.rsplit(b'/', 1)[-1] if path != b'/' else b'/'
-        name = fold(name) if insensitive else name
         stem, dot, suffix = name.rpartition(b'.')
-        extension = suffix if dot and stem and suffix else None
+        extension = fold(suffix) if dot and stem and suffix else None
+        name = fold(name) if insensitive else name
         if (pattern in name and (not kinds or kind in kinds)
                 and (not extensions or extension in extensions)):
             result.append(path)
@@ -142,15 +145,17 @@ def fixed(s):
               [b'-0', b'', b"missing-\x01\n\t\r\x1b'\\\x7f\xff", b'r/B.txt'],
               [b'r/B.txt'], groups=[[], [b'r/B.txt']], status=1,
               expected_stderr=(b"fynd: cannot stat root 'missing-"
-                               b"\\x01\\x0a\\x09\\x0d\\x1b\\x27\\x5c\\x7f\\xff'\n"))
+                               b"\\x01\\x0a\\x09\\x0d\\x1b\\x27\\x5c\\x7f\\xff': " +
+                               os.strerror(errno.ENOENT).encode() + b"\n"))
     os.mkdir(b'ext')
     for name in (b'.profile', b'.config.json', b'a.', b'a.txt', b'A.TXT', b'x.tar.gz',
                  b'caf\xc3\xa9.TXT', b'CAF\xc3\x89.txt'):
         touch(b'ext/' + name)
     os.mkdir(b'ext/dir.txt')
     os.symlink(b'absent', b'ext/link.txt')
-    s.records('extension applies to all kinds', [b'-0', b'-e', b'txt', b'', b'ext'],
-              [b'ext/CAF\xc3\x89.txt', b'ext/a.txt', b'ext/dir.txt', b'ext/link.txt'])
+    s.records('extension applies to all kinds, ignoring case', [b'-0', b'-e', b'txt', b'', b'ext'],
+              [b'ext/A.TXT', b'ext/CAF\xc3\x89.txt', b'ext/a.txt', b'ext/caf\xc3\xa9.TXT',
+               b'ext/dir.txt', b'ext/link.txt'])
     s.records('extension union and dotfile', [b'-0', b'-H', b'-e', b'json',
               b'--extension', b'gz', b'', b'ext'], [b'ext/.config.json', b'ext/x.tar.gz'])
     s.records('dotfile and trailing dot lack suffix', [b'-0', b'-H', b'-e',
@@ -159,6 +164,20 @@ def fixed(s):
               b'caf\xc3\xa9', b'ext'], [b'ext/caf\xc3\xa9.TXT'])
     s.records('fold extension', [b'-0', b'--ignore-case', b'-e', b'TXT', b'a.', b'ext'],
               [b'ext/A.TXT', b'ext/a.txt'])
+    s.records('smart case: lowercase pattern ignores case', [b'-0', b'a.', b'ext'],
+              [b'ext/A.TXT', b'ext/a.', b'ext/a.txt'])
+    s.records('smart case: capital means exact', [b'-0', b'A.', b'ext'], [b'ext/A.TXT'])
+    s.records('case-sensitive', [b'-0', b'-s', b'a.', b'ext'], [b'ext/a.', b'ext/a.txt'])
+    s.records('--case-sensitive', [b'-0', b'--case-sensitive', b'a.', b'ext'],
+              [b'ext/a.', b'ext/a.txt'])
+    s.records('last case option wins', [b'-0', b'-s', b'-i', b'A.', b'ext'],
+              [b'ext/A.TXT', b'ext/a.', b'ext/a.txt'])
+    s.records('last case option wins after -i', [b'-0', b'-i', b'-s', b'a.', b'ext'],
+              [b'ext/a.', b'ext/a.txt'])
+    s.records('extension ignores case under -s', [b'-0', b'-s', b'-e', b'TXT', b'a.', b'ext'],
+              [b'ext/a.txt'])
+    s.records('smart case is ASCII only', [b'-0', b'-e', b'txt', b'caf\xc3\xa9', b'ext'],
+              [b'ext/caf\xc3\xa9.TXT'])
     touch(b'-i')
     s.check('end options', [b'--', b'-i'], b'./-i\n')
     s.records('options stop at operand', [b'-0', b'', b'-i'], [b'-i'])
@@ -274,7 +293,8 @@ def long_paths(s):
     s.records('over-PATH_MAX root error is not truncated and continues',
               [b'-0', b'', impossible, b'r/B.txt'], [b'r/B.txt'],
               groups=[[], [b'r/B.txt']], status=1,
-              expected_stderr=b"fynd: cannot stat root '" + impossible + b"'\n")
+              expected_stderr=(b"fynd: cannot stat root '" + impossible + b"': " +
+                               os.strerror(errno.ENAMETOOLONG).encode() + b"\n"))
 
 
 def generated(s, cases, seed):
@@ -299,7 +319,7 @@ def generated(s, cases, seed):
                 else:
                     touch(path)
             hidden = rng.choice([False, True])
-            insensitive = rng.choice([False, True])
+            mode = rng.choice([None, b'-i', b'-s'])
             depth = rng.choice([0, 1, 2, 4, 256])
             kinds = rng.choice([(), ('f',), ('d',), ('l', 'o'), ('f', 'd')])
             extensions = rng.choice([(), (b'txt',), (b'TXT', b'json')])
@@ -310,13 +330,13 @@ def generated(s, cases, seed):
             args = [b'-0', b'--max-depth', str(depth).encode()]
             if hidden:
                 args.append(b'-H')
-            if insensitive:
-                args.append(b'-i')
+            if mode is not None:
+                args.append(mode)
             for kind in kinds:
                 args += [b'-t', kind.encode()]
             for extension in extensions:
                 args += [b'-e', extension]
-            groups = [oracle([root], pattern, kinds, extensions, hidden, insensitive, depth)
+            groups = [oracle([root], pattern, kinds, extensions, hidden, mode, depth)
                       for root in roots]
             expected = [path for group in groups for path in group]
             s.records('random seed=%d case=%d' % (seed, case),

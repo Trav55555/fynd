@@ -475,7 +475,7 @@ static void filesystem_cases(void)
         assert(strcmp(ps->display_root, spelling) == 0);
         p = join_path(&a, spelling, cu_str_cstr("physical-ancestor")); assert(p != NULL);
         assert(ignore_verdict(&a, ps, p, 0, &v, &e) && v == 1);
-        assert(ignore_enter(&a, ps, spelling, 1U, &pf, &e));
+        assert(ignore_enter(&a, ps, spelling, 1U << IGNORE_PLAIN, &pf, &e));
         p = join_path(&a, spelling, cu_str_cstr("hidden")); assert(p != NULL);
         assert(ignore_verdict(&a, pf, p, 0, &v, &e) && v == 1);
         p = join_path(&a, spelling, cu_str_cstr("lexical-only")); assert(p != NULL);
@@ -496,11 +496,11 @@ static void filesystem_cases(void)
     p = join_path(&a, p, cu_str_cstr(".ignore")); assert(p != NULL);
     put_source(p, "!ancestor\n", 10);
     p = join_path(&a, sub, cu_str_cstr("nested")); assert(p != NULL);
-    assert(ignore_enter(&a, root, p, 1, &child, &e));
+    assert(ignore_enter(&a, root, p, 1U << IGNORE_PLAIN, &child, &e));
     p = join_path(&a, p, cu_str_cstr(".git")); assert(p != NULL);
     put_source(p, "gitdir: missing\n", 16);
     p = join_path(&a, sub, cu_str_cstr("nested")); assert(p != NULL);
-    assert(ignore_enter(&a, root, p, 1U | IGNORE_REPOSITORY_BIT, &nested, &e));
+    assert(ignore_enter(&a, root, p, (1U << IGNORE_PLAIN) | IGNORE_REPOSITORY_BIT, &nested, &e));
     p = join_path(&a, p, cu_str_cstr("git")); assert(p != NULL);
     assert(ignore_verdict(&a, child, p, 0, &v, &e) && v == 1);
     assert(ignore_verdict(&a, nested, p, 0, &v, &e) && v == 0);
@@ -576,7 +576,7 @@ static void filesystem_cases(void)
     assert(!ignore_enter(&a, root, "/not-the-root", 0, &sentinel, &e) && sentinel == root);
     p = join_path(&a, sub, cu_str_cstr(".ignore")); assert(p != NULL);
     put_source(p, "a\0b", 3);
-    assert(!ignore_enter(&a, seed, sub, 1, &sentinel, &e) && e.number == EINVAL && sentinel == root);
+    assert(!ignore_enter(&a, seed, sub, 1U << IGNORE_PLAIN, &sentinel, &e) && e.number == EINVAL && sentinel == root);
     assert(strcmp(e.path, p) == 0);
     assert(unlink(p) == 0);
     assert(mkdir(p, 0700) == 0);
@@ -596,7 +596,7 @@ static void filesystem_cases(void)
     assert(ignore_read(&a, p, &f, &e) && f.count == 1);
     put_source(p, "abcd", 4);
     sentinel = root;
-    assert(!ignore_enter(&a, seed, sub, 1, &sentinel, &e));
+    assert(!ignore_enter(&a, seed, sub, 1U << IGNORE_PLAIN, &sentinel, &e));
     assert(e.number == E2BIG && sentinel == root && strcmp(e.path, p) == 0);
     test_ignore_source_budget = 16777216UL;
     assert(unlink(p) == 0);
@@ -617,7 +617,7 @@ static void filesystem_cases(void)
             assert(ignore_seed(&faults, sub, &s, &e));
             cu_arena_fail_at(&faults, faults.attempts + fail);
             r = root;
-            ok = ignore_enter(&faults, s, sub, 1U | IGNORE_REPOSITORY_BIT, &r, &e);
+            ok = ignore_enter(&faults, s, sub, (1U << IGNORE_PLAIN) | IGNORE_REPOSITORY_BIT, &r, &e);
             if (!ok) assert(e.number == ENOMEM && r == root);
             cu_arena_release(&faults);
             if (ok) break;

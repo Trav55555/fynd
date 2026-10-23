@@ -56,6 +56,7 @@ typedef struct SchedEvent {
     SchedTask *child; /* NULL for a failure */
     const char *message;
     const char *path; /* in the result, or NULL */
+    int number;
     int terminal;
 } SchedEvent;
 
@@ -198,13 +199,15 @@ static int sched_defer_record(Run *r, const char *path)
 }
 
 /* message is a literal; path is copied into the result. */
-static void sched_defer_failure(Run *r, const char *message, const char *path, int terminal)
+static void sched_defer_failure(Run *r, const char *message, const char *path, int number,
+                                int terminal)
 {
     SchedEvent event;
     event.at = cu_vec_len(&r->task->out);
     event.child = NULL;
     event.message = message;
     event.path = NULL;
+    event.number = number;
     event.terminal = terminal;
     if (path != NULL) {
         event.path = cu_str_cstr_copy(&r->task->result, cu_str_cstr(path));
@@ -348,7 +351,7 @@ static int sched_enter(Run *r, const IgnoreFrame *parent, const CuDir *dir, cons
         h = (SchedHold *)FYND_TASK_ALLOC(sizeof *h);
         if (h == NULL) {
             sched_fail_task(r, 1);
-            failure(r, "allocation failure", path, 1);
+            failure(r, "allocation failure", path, 0, 1);
             return 0;
         }
         cu_arena_init(&h->arena);
@@ -394,7 +397,7 @@ static void sched_output_failure(Run *r)
     r->status = 1;
     r->stop = 1;
     if (first)
-        (void)diagnostic(r, "output failure", NULL);
+        (void)diagnostic(r, "output failure", NULL, 0);
 }
 
 static int sched_flush(SchedWorker *w)
@@ -449,7 +452,7 @@ static int sched_launch(Run *r)
         if (!cu_thread_start(&s->workers[i].thread, &s->arena, 0, sched_worker,
                              &s->workers[i])) {
             sched_fail_task(r, 1);
-            failure(r, "cannot start listing workers", NULL, 1);
+            failure(r, "cannot start listing workers", NULL, 0, 1);
             return 0;
         }
         cu_mutex_lock(s->mu);
@@ -474,7 +477,7 @@ static int sched_push(Run *r, const char *path, int depth, const IgnoreFrame *ru
     task = (SchedTask *)FYND_TASK_ALLOC(sizeof *task + n);
     if (task == NULL) {
         sched_fail_task(r, 1);
-        failure(r, "allocation failure", path, 1);
+        failure(r, "allocation failure", path, 0, 1);
         return 0;
     }
     memcpy(task->path, path, n + 1);
@@ -493,6 +496,7 @@ static int sched_push(Run *r, const char *path, int depth, const IgnoreFrame *ru
         event.child = task;
         event.message = NULL;
         event.path = NULL;
+        event.number = 0;
         event.terminal = 0;
         if (!sched_defer(r, &event)) {
             free(task);
@@ -764,7 +768,7 @@ static int sched_write(Run *r, const SchedTask *t, size_t *at, size_t end)
     size_t n;
     n = end - *at;
     if (n != 0 && (fwrite(t->out.data + *at, 1, n, r->out) != n || ferror(r->out))) {
-        failure(r, "output failure", NULL, 1);
+        failure(r, "output failure", NULL, 0, 1);
         return 0;
     }
     *at = end;
@@ -788,7 +792,7 @@ static int sched_drain(Sched *s, Run *r, SchedTask *t)
             if (!sched_drain(s, r, e->child))
                 return 0;
         } else {
-            failure(r, e->message, e->path, e->terminal);
+            failure(r, e->message, e->path, e->number, e->terminal);
             if (r->stop)
                 return 0;
         }
@@ -796,7 +800,7 @@ static int sched_drain(Sched *s, Run *r, SchedTask *t)
     if (!sched_write(r, t, &at, cu_vec_len(&t->out)))
         return 0;
     if (t->failed) {
-        failure(r, "allocation failure", NULL, 1);
+        failure(r, "allocation failure", NULL, 0, 1);
         return 0;
     }
     cu_arena_release(&t->result);
@@ -832,7 +836,7 @@ static void sched_root_ordered(Sched *s, Run *r, const char *path)
     n = strlen(path);
     root = (SchedTask *)FYND_TASK_ALLOC(sizeof *root + n);
     if (root == NULL) {
-        failure(r, "allocation failure", path, 1);
+        failure(r, "allocation failure", path, 0, 1);
         return;
     }
     memcpy(root->path, path, n + 1);
@@ -925,7 +929,7 @@ static void sched_root(Sched *s, Run *r, const char *path)
     cu_mutex_unlock(s->mu);
     r->worker = NULL;
     if (report)
-        failure(r, "output failure", NULL, 1);
+        failure(r, "output failure", NULL, 0, 1);
 }
 
 static void sched_finish(Sched *s)

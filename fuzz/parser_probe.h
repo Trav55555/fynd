@@ -28,7 +28,7 @@ static void check_parser(int argc, char **argv)
     int result;
     int d;
     ne = 0; nr = 0; kinds = 0;
-    fold = 0; hidden = 0; delimiter = '\n'; depth = -1;
+    fold = -1; hidden = 0; delimiter = '\n'; depth = -1;
     no_ignore = 0; threads = 0; /* automatic */
     sort = 0;
     pattern = "";
@@ -40,6 +40,7 @@ static void check_parser(int argc, char **argv)
         if (s[0] != '-' || s[1] == 0) break;
         ++i;
         if (!strcmp(s, "-i") || !strcmp(s, "--ignore-case")) fold = 1;
+        else if (!strcmp(s, "-s") || !strcmp(s, "--case-sensitive")) fold = 0;
         else if (!strcmp(s, "-H") || !strcmp(s, "--hidden")) hidden = 1;
         else if (!strcmp(s, "--no-ignore")) no_ignore = 1;
         else if (!strcmp(s, "--sort")) sort = 1;
@@ -84,6 +85,12 @@ static void check_parser(int argc, char **argv)
     }
     if (valid) {
         if (i < argc) pattern = argv[i++];
+        /* Smart case: any ASCII capital in the pattern means exact. */
+        if (fold < 0) {
+            fold = 1;
+            for (v = pattern; *v; ++v)
+                if (*v >= 'A' && *v <= 'Z') fold = 0;
+        }
         if (i == argc) roots[nr++] = ".";
         while (i < argc) {
             if (!*argv[i]) valid = 0;

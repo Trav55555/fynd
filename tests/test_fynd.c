@@ -614,11 +614,12 @@ int main(void)
         assert(memcmp(bytes, expected, n) == 0);
         if (strcmp(listing_first, "a") == 0)
             assert(snprintf(errors, sizeof errors,
-                "fynd: cannot list directory '%s/a'\nfynd: cannot list directory '%s'\n",
-                root, root) > 0);
+                "fynd: cannot list directory '%s/a': %s\n"
+                "fynd: cannot list directory '%s': %s\n",
+                root, strerror(EIO), root, strerror(EIO)) > 0);
         else
             assert(snprintf(errors, sizeof errors,
-                "fynd: cannot list directory '%s'\n", root) > 0);
+                "fynd: cannot list directory '%s': %s\n", root, strerror(EIO)) > 0);
         rewind(err);
         n = fread(bytes, 1, sizeof bytes, err);
         assert(!ferror(err) && n == strlen(errors));

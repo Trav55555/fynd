@@ -5,6 +5,9 @@ int main(void)
     char *options[] = {"fynd", "-i", "-i", "-H", "-0", "-t", "f", "-t", "d",
         "-e", "C", "-e", "h", "--max-depth", "0", "--max-depth", "256", "x", "a", "b", NULL};
     char *literal[] = {"fynd", "--", "-i", "-H", NULL};
+    char *smart[] = {"fynd", "Ab", NULL};
+    char *exact[] = {"fynd", "-i", "--case-sensitive", "ab", NULL};
+    char *folded[] = {"fynd", "-s", "--ignore-case", "AB", NULL};
     char *bad[] = {"fynd", "--max-depth", "257", NULL};
     char *empty[] = {"fynd", "", "", NULL};
     char *operand[] = {"fynd", "x", "--unknown", NULL};
@@ -27,6 +30,9 @@ int main(void)
     check_parser(1, defaults);
     check_parser(20, options);
     check_parser(4, literal);
+    check_parser(2, smart);
+    check_parser(4, exact);
+    check_parser(4, folded);
     check_parser(3, bad);
     check_parser(3, empty);
     check_parser(3, operand);

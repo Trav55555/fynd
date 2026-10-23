@@ -91,7 +91,8 @@ Use an empty pattern to search a root without a name constraint:
 
 ```sh
 ./build/fynd '' src/
-./build/fynd -i README .
+./build/fynd readme .
+./build/fynd -s README .
 ./build/fynd -t f -e c -e h '' src/ include/
 ./build/fynd --max-depth 1 '' .
 ./build/fynd -0 -t f '' src/
@@ -106,9 +107,10 @@ operand. Use `--` for a pattern beginning with `-`.
 
 | Option | Behavior |
 | --- | --- |
-| `-i`, `--ignore-case` | Fold ASCII letter case for pattern and extension comparisons. |
+| `-i`, `--ignore-case` | Fold ASCII letter case in the pattern comparison. This is the default for a pattern without an ASCII capital letter, as in fd. |
+| `-s`, `--case-sensitive` | Compare the pattern exactly. This is the default for a pattern with an ASCII capital letter. The last of `-i` and `-s` wins. |
 | `-t`, `--type KIND` | Select `f` regular files, `d` directories, `l` symlinks, or `o` other objects. Repeat to select a union. |
-| `-e`, `--extension EXT` | Select the final nonempty suffix after a dot. Repeat to select a union. Give the suffix without a dot or slash. |
+| `-e`, `--extension EXT` | Select the final nonempty suffix after a dot, ignoring ASCII case, as fd does. Repeat to select a union. Give the suffix without a dot or slash. |
 | `-H`, `--hidden` | Include discovered dot-prefixed names and descend into hidden directories. |
 | `-0`, `--print0` | End each path with NUL instead of newline. |
 | `-d N`, `-dN`, `--max-depth N` | Select through depth 0 to 256. Roots have depth 0. |
@@ -117,6 +119,10 @@ operand. Use `--` for a pattern beginning with `-`.
 | `-j N`, `-jN`, `--threads N` | Use 1 through 32 threads in total. The default is the online CPU count, clamped to 1 through 32; `-j1` is serial. |
 | `-h`, `--help` | Show help as a standalone invocation. |
 | `-V`, `--version` | Show the version as a standalone invocation. |
+
+`fynd readme` finds `README.md`, but `fynd README` does not find `readme.txt`:
+like fd, fynd ignores case unless the pattern has a capital letter. Only ASCII
+letters fold, so `é` never matches `É`, and only ASCII capitals turn folding off.
 
 Name, type, and extension predicates are ANDed. Repeated types and repeated
 extensions each form a union. Filters do not prune unmatched directories.
@@ -141,6 +147,10 @@ output failures stop traversal, cancel work, and join workers before borrowed
 rules or paths are released. Already emitted output is never rolled back.
 On POSIX, SIGPIPE may terminate the CLI instead of status 1.
 
+A diagnostic names the failed operation and the quoted path, then the system's
+reason when there is one, such as
+`fynd: cannot open directory './locked': Permission denied`.
+
 ## Behavior and limits
 
 - Roots are searched in argument order, with each root's records delivered
@@ -159,8 +169,15 @@ On POSIX, SIGPIPE may terminate the CLI instead of status 1.
   `-0`; bytes from different result records never interleave, even across worker
   batches. Use `-0` for arbitrary filenames. Newline output can be ambiguous
   and can contain terminal control bytes.
-- Ignore precedence is `.ignore`, repository `.gitignore`, `info/exclude`,
-  then the conventional global Git ignore file. Proper ancestors are included.
+- Ignore precedence is `.fdignore`, `.ignore`, repository `.gitignore`,
+  `info/exclude`, the conventional global Git ignore file, then fd's global
+  file, `$XDG_CONFIG_HOME/fd/ignore` or `~/.config/fd/ignore`. Proper ancestors
+  are included. `.fdignore` and `.ignore` apply inside and outside repositories.
+  As in fd, the global fd file's rules are relative to the working directory;
+  outside it, only rules without a slash can match. fynd compares real
+  locations, so a root spelled with `..` that leads back into the working
+  directory sees anchored rules apply; fd builds differ there, and upstream
+  fd 10.3.0 also never applies them under an absolute root.
   In a linked worktree or submodule, where `.git` is a file, `info/exclude` is
   read from the Git directory it names, as Git does.
   Explicit roots bypass rules for themselves; children still obey them.
@@ -168,10 +185,10 @@ On POSIX, SIGPIPE may terminate the CLI instead of status 1.
   a `!` negation, such as `!.gitkeep` or `!.github/`, as in fd and ripgrep.
   This includes `.git` itself under a rule like `!.*`. With `--no-ignore`, no
   hidden child is listed without `-H`.
-  A directory's current `.ignore` and repository `.gitignore` policy is loaded
+  A directory's current `.fdignore`, `.ignore` and repository `.gitignore` policy is loaded
   before any of its children is selected, even if those names appear late in
   the listing. A listing that ends within its first 64 names shows which of
-  `.git`, `.ignore` and `.gitignore` are present; a longer one is probed for
+  `.git`, `.fdignore`, `.ignore` and `.gitignore` are present; a longer one is probed for
   them with non-following metadata. Ignore precedence and limits are unchanged.
   See [ignore and thread semantics](docs/IGNORE_THREADS.md) for boundaries and limits.
 - An explicit `--max-depth` cutoff is successful. Without a requested cutoff,
