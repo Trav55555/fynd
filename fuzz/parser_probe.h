@@ -45,7 +45,7 @@ static void check_parser(int argc, char **argv)
         else if (!strcmp(s, "--sort")) sort = 1;
         else if (!strcmp(s, "-0") || !strcmp(s, "--print0")) delimiter = 0;
         else {
-            if (!strncmp(s, "-j", 2) && s[2]) v = s + 2;
+            if ((!strncmp(s, "-j", 2) || !strncmp(s, "-d", 2)) && s[2]) v = s + 2;
             else {
                 if (i == argc) { valid = 0; break; }
                 v = argv[i++];
@@ -69,7 +69,7 @@ static void check_parser(int argc, char **argv)
             } else if (!strcmp(s, "-e") || !strcmp(s, "--extension")) {
                 if (!*v || strpbrk(v, "./") != NULL) valid = 0;
                 else extensions[ne++] = argv[i - 1];
-            } else if (!strcmp(s, "--max-depth")) {
+            } else if (!strcmp(s, "--max-depth") || !strncmp(s, "-d", 2)) {
                 d = 0;
                 if (!*v) valid = 0;
                 while (*v && valid) {
