@@ -167,3 +167,13 @@ binary:
 
 Peak RSS rises from 2.6 MB to 12.2 MB on the home tree and from 2.7 MB to
 11.4 MB on `/usr`, for results held up to 1,024 directories ahead.
+
+## Depth limit 256 and fd's -d and -V
+
+Raising the recursion safety limit and --max-depth range from 128 to 256
+(cgrep's nesting limit), and accepting fd's `-d N`, `-dN` and `-V`, was
+qualified by `build/verification/run.o4ARmw`, exit 0, on c-utils `7750e1c`:
+five C suites (the stream suite walks all 256 levels, under WASI too), three
+500-case CLI seeds, the Git differential, required deep checks including
+fuzzing, and all 39 named controls. Coverage: main 94.13%, ignore 97.41%,
+listing 91.95%, scheduler 96.79%.
