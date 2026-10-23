@@ -201,9 +201,10 @@ static void pure_tests(void)
     assert(!joined_size(0, (size_t)-1, 0, &size));
     assert(joined_size((size_t)-1 - 1, 0, 0, &size) && size == (size_t)-1);
     assert(!joined_size((size_t)-1, 0, 0, &size));
-    assert(parse_depth("000128", &depth) && depth == 128);
+    assert(parse_depth("000256", &depth) && depth == 256);
     assert(parse_depth("0", &depth) && depth == 0);
-    assert(!parse_depth("129", &depth));
+    assert(!parse_depth("257", &depth));
+    assert(!parse_depth("260", &depth));
     assert(!parse_depth("-1", &depth));
     assert(!parse_depth("1x", &depth));
     assert(!parse_depth("", &depth));
@@ -529,18 +530,21 @@ static void success_cases(char *root)
     assert(snprintf(path, sizeof path, "%s/deep", root) > 0);
     assert(mkdir(path, 0700) == 0);
     n = strlen(path);
-    for (i = 0; i < 128; ++i) {
+    for (i = 0; i < FYND_DEPTH_LIMIT; ++i) {
         memcpy(path + n, "/d", 3); n += 2;
         assert(mkdir(path, 0700) == 0);
     }
-    args[1] = "--max-depth"; args[2] = "128";
+    args[1] = "--max-depth"; args[2] = "256";
     args[3] = "no-match";
-    path[n - 256] = 0; args[4] = path;
+    path[n - 2 * FYND_DEPTH_LIMIT] = 0; args[4] = path;
     expect_call(5, args, 0, "");
+    args[1] = "-d"; expect_call(5, args, 0, "");
+    args[1] = "-d256"; args[2] = "no-match"; args[3] = path;
+    expect_call(4, args, 0, "");
     args[1] = "no-match"; args[2] = path;
     expect_call(3, args, 1, "");
-    path[n - 256] = '/';
-    for (i = 0; i < 128; ++i) {
+    path[n - 2 * FYND_DEPTH_LIMIT] = '/';
+    for (i = 0; i < FYND_DEPTH_LIMIT; ++i) {
         assert(rmdir(path) == 0); n -= 2; path[n] = 0;
     }
     assert(rmdir(path) == 0);
@@ -623,8 +627,10 @@ int main(void)
     }
     listing_countdown = -1;
     args[3] = NULL;
-    args[1] = "--max-depth"; args[2] = "129";
+    args[1] = "--max-depth"; args[2] = "257";
     expect_call(3, args, 2, "");
+    args[1] = "-d257"; args[2] = NULL;
+    expect_call(2, args, 2, "");
     args[1] = "-it"; expect_call(2, args, 2, "");
     args[1] = "--help"; args[2] = root; expect_call(3, args, 2, "");
     args[1] = ""; args[2] = ""; expect_call(3, args, 2, "");

@@ -625,7 +625,7 @@ static void directory_resource_lifetime(void)
         n = strlen(directory);
         memcpy(path, directory, n + 1);
         failed[0] = 0;
-        for (i = 0; i < 128; ++i) {
+        for (i = 0; i < FYND_DEPTH_LIMIT; ++i) {
             assert(n + 3 <= sizeof path);
             memcpy(path + n, "/d", 3);
             n += 2;
@@ -652,7 +652,7 @@ static void directory_resource_lifetime(void)
         /* Default serial recursion: no explicit depth cutoff, no host limit
          * changes, and no attempt to exhaust actual process descriptors. */
         status = check_run(&check, inject ? 10 : 8, args);
-        for (i = 0; i < 128; ++i) {
+        for (i = 0; i < FYND_DEPTH_LIMIT; ++i) {
             assert(rmdir(path) == 0);
             n -= 2;
             path[n] = 0;
@@ -664,18 +664,20 @@ static void directory_resource_lifetime(void)
         expect_text(check.err, error);
         check_end(&check);
         assert(actual_files == 0 && live_dirs == 0 && opened == closed);
-        assert(peak_live_dirs <= 128);
+        assert(peak_live_dirs <= FYND_DEPTH_LIMIT);
         if (inject) {
             assert(fault_fired && open_attempts == 64);
             assert(opened == 63 && closed == 63 && peak_live_dirs == 63);
             assert(failed_open_closes == 1 && !eof_seen);
             assert(next_calls == 63 && successful_entries == 63);
         } else {
-            /* visit checks depth==128 BEFORE open; depths 0..127 remain
-             * simultaneously live in default serial recursion. */
-            assert(open_attempts == 128 && opened == 128 && closed == 128);
-            assert(peak_live_dirs == 128 && failed_open_closes == 0);
-            assert(next_calls == 256 && successful_entries == 128 && eof_seen);
+            /* visit checks the depth limit BEFORE open; every shallower
+             * depth stays live at once in default serial recursion. */
+            assert(open_attempts == FYND_DEPTH_LIMIT && opened == FYND_DEPTH_LIMIT &&
+                   closed == FYND_DEPTH_LIMIT);
+            assert(peak_live_dirs == FYND_DEPTH_LIMIT && failed_open_closes == 0);
+            assert(next_calls == 2 * FYND_DEPTH_LIMIT && successful_entries == FYND_DEPTH_LIMIT &&
+                   eof_seen);
         }
     }
 }
