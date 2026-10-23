@@ -177,3 +177,14 @@ five C suites (the stream suite walks all 256 levels, under WASI too), three
 500-case CLI seeds, the Git differential, required deep checks including
 fuzzing, and all 39 named controls. Coverage: main 94.13%, ignore 97.41%,
 listing 91.95%, scheduler 96.79%.
+
+## fd's ignore sources, smart case and diagnostic reasons
+
+Reading `.fdignore` and fd's global ignore file, fd's smart case with `-s`
+and case-insensitive `-e`, and the system's reason at the end of a
+diagnostic were qualified by `build/verification/run.ahW0c7`, exit 0, on
+c-utils `7750e1c`: five C suites, three 500-case CLI seeds, the ignore suite
+with its fd 10.3.0 oracle, the Git differential, required deep checks
+including fuzzing and the Cerberus semantics harnesses, and all 46 named
+controls. Coverage: main 93.99%, ignore 95.78%, listing 91.95%, scheduler
+96.80%.

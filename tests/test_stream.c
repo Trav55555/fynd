@@ -334,8 +334,9 @@ static void expect_text(FILE *file, const char *expected)
     assert(fgetc(file) == EOF && !ferror(file) && feof(file));
 }
 
+/* A nonzero number appends its strerror reason, as fynd does. */
 static void expected_error(char *dest, size_t capacity, const char *message,
-                           const char *path)
+                           const char *path, int number)
 {
     static const char hex[] = "0123456789abcdef";
     const unsigned char *p;
@@ -356,6 +357,12 @@ static void expected_error(char *dest, size_t capacity, const char *message,
         }
     }
     dest[n++] = '\'';
+    dest[n] = 0;
+    if (number != 0) {
+        written = snprintf(dest + n, capacity - n, ": %s", strerror(number));
+        assert(written > 0 && (size_t)written < capacity - n - 1);
+        n += (size_t)written;
+    }
     dest[n++] = '\n';
     dest[n] = 0;
 }
@@ -532,7 +539,7 @@ static void cursor_anchor_failure(void)
     assert(rmdir(root) == 0);
     assert(status == 1);
     expect_paths(check.out, NULL, 0, 0);
-    expected_error(error, sizeof error, "allocation failure", directory);
+    expected_error(error, sizeof error, "allocation failure", directory, 0);
     expect_text(check.err, error);
     check_end(&check);
     assert(fault_fired && anchor_failed && next_calls == 0);
@@ -646,7 +653,7 @@ static void directory_resource_lifetime(void)
         }
         expected_error(error, sizeof error,
                        inject ? "cannot open directory" : "recursion safety limit",
-                       inject ? failed : path);
+                       inject ? failed : path, inject ? EMFILE : 0);
         reset_hooks(inject ? STREAM_EMFILE : STREAM_NORMAL);
         check_begin(&check);
         /* Default serial recursion: no explicit depth cutoff, no host limit
@@ -721,7 +728,7 @@ static void late_errors(void)
     }
     expected[1] = leaf;
     expect_paths(check.out, expected, 2, 1);
-    expected_error(error, sizeof error, "cannot list directory", directory);
+    expected_error(error, sizeof error, "cannot list directory", directory, EIO);
     expect_text(check.err, error);
     check_end(&check);
 
@@ -730,7 +737,7 @@ static void late_errors(void)
     assert(check_run(&check, 9, args) == 1);
     assert(fault_fired && successful_entries == 0 && open_attempts == 1);
     expect_paths(check.out, NULL, 0, 0);
-    expected_error(error, sizeof error, "allocation failure", directory);
+    expected_error(error, sizeof error, "allocation failure", directory, 0);
     expect_text(check.err, error);
     check_end(&check);
 
@@ -751,7 +758,7 @@ static void late_errors(void)
         expected[0] = strcmp(first_name, "a\nraw") == 0 ? a : b;
         expected[1] = leaf;
         expect_paths(check.out, expected, 2, 1);
-        expected_error(error, sizeof error, "cannot list directory", directory);
+        expected_error(error, sizeof error, "cannot list directory", directory, EIO);
         expect_text(check.err, error);
         check_end(&check);
         reset_hooks(STREAM_NAME_OOM);
@@ -759,7 +766,7 @@ static void late_errors(void)
         assert(check_run(&check, 10, sorted) == 1);
         assert(fault_fired && successful_entries == 0 && open_attempts == 1);
         expect_paths(check.out, NULL, 0, 0);
-        expected_error(error, sizeof error, "allocation failure", directory);
+        expected_error(error, sizeof error, "allocation failure", directory, 0);
         expect_text(check.err, error);
         check_end(&check);
     }
@@ -772,7 +779,7 @@ static void late_errors(void)
     assert(open_attempts == 1 && successful_entries == 0);
     expected[0] = leaf;
     expect_paths(check.out, expected, 1, 1);
-    expected_error(error, sizeof error, "cannot open directory", directory);
+    expected_error(error, sizeof error, "cannot open directory", directory, ENOENT);
     expect_text(check.err, error);
     check_end(&check);
     missing_path = NULL;

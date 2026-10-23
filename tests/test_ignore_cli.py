@@ -49,7 +49,7 @@ class Suite:
             f.write(data)
 
     def check(self, label, paths, roots=('tree',), flags=(), status=0, error=False,
-              groups=None):
+              groups=None, cwd=None):
         expected = b''.join(os.fsencode(p) + b'\0' for p in paths)
         if groups is None:
             if len(roots) != 1:
@@ -58,7 +58,8 @@ class Suite:
         groups = [[os.fsencode(p) for p in group] for group in groups]
         for jobs in ('-j1', '-j2', '-j4', '-j8', '--sort'):
             rc, out, err = run([self.binary, jobs, '-0', '-t', 'f', *flags,
-                                '', *roots], self.env, self.root)
+                                '', *roots], self.env,
+                               os.path.join(self.root, cwd) if cwd else self.root)
             self.count += 1
             assert (rc == status and bool(err) == error and
                     _output.matches_output(out, groups)), (
@@ -173,6 +174,83 @@ def precedence(s):
     s.check('--no-ignore re-includes no hidden name', unhidden, ('repo',), ('--no-ignore',))
 
 
+def fd_binary(s):
+    fd = shutil.which('fd') or shutil.which('fdfind')
+    if fd:
+        rc, version, _ = run([fd, '--version'], s.env, s.root)
+        if rc or b'10.3.0' not in version:
+            fd = None
+    return fd
+
+
+def fd_sources(s):
+    """fd's own sources: .fdignore above .ignore, then fd's global file,
+    whose rules are relative to the working directory."""
+    fd = fd_binary(s)
+    if not fd:
+        s.skips.append('fd 10.3.0 unavailable: fd ignore-source oracle')
+
+    def check(label, paths, roots, cwd=None, flags=(), oracle=True):
+        s.check(label, paths, roots, flags, cwd=cwd)
+        if fd and oracle:
+            # fd builds disagree on anchored global rules under absolute or
+            # '..' roots (Debian's anchors at the working directory, as fynd
+            # does; upstream's never matches), so those cases are literal.
+            rc, out, err = run([fd, '--color', 'never', '-j1', '-0', '-tf', *flags,
+                                '', *roots], s.env,
+                               os.path.join(s.root, cwd) if cwd else s.root)
+            records = out[:-1].split(b'\0') if out else []
+            assert rc == 0 and not err and Counter(records) == Counter(
+                os.fsencode(p) for p in paths), (label, records, paths)
+
+    s.put('fdt/.ignore', b'*.log\nhidden-by-ignore\n')
+    s.put('fdt/.fdignore', b'!hidden-by-ignore\nonly-fd\n')
+    s.put('fdt/sub/.fdignore', b'!keep.log\n')
+    for p in ('a.log', 'hidden-by-ignore', 'only-fd', 'ok', 'sub/keep.log', 'sub/b.log'):
+        s.put('fdt/' + p)
+    check('.fdignore above .ignore, outside a repository',
+          ['fdt/hidden-by-ignore', 'fdt/ok', 'fdt/sub/keep.log'], ('fdt',))
+    check('ancestor .fdignore', ['fdt/sub/keep.log'], ('fdt/sub',))
+    # Independent of whether the fixture itself sits inside a repository:
+    # .fdignore above a nested repository marker still applies below it.
+    s.put('fdn/.fdignore', b'drop\n')
+    s.put('fdn/inner/.git', b'gitdir: /nonexistent\n')
+    for p in ('drop', 'keep'):
+        s.put('fdn/inner/' + p)
+    check('.fdignore applies across a repository boundary', ['fdn/inner/keep'], ('fdn',))
+    s.put('home/fd/ignore', b'/fdg/top\nloose.tmp\nfdg/sub/anchored\n')
+    for p in ('top', 'loose.tmp', 'sub/top', 'sub/loose.tmp', 'sub/anchored', 'sub/kept'):
+        s.put('fdg/' + p)
+    check('global fd rules anchor at the working directory',
+          ['fdg/sub/kept', 'fdg/sub/top'], ('fdg',))
+    absolute = os.path.join(s.root, 'fdg')
+    check('global fd rules under an absolute root',
+          [absolute + '/sub/kept', absolute + '/sub/top'], (absolute,), oracle=False)
+    check('global fd anchors move with the working directory',
+          ['./sub/anchored', './sub/kept', './sub/top', './top'],
+          ('.',), cwd='fdg')
+    check('outside the working directory only unanchored rules apply',
+          ['../fdg/sub/anchored', '../fdg/sub/kept', '../fdg/sub/top', '../fdg/top'],
+          ('../fdg',), cwd='fdt', oracle=False)
+    s.put('fdg/kept')
+    s.put('fdg/.ignore', b'!loose.tmp\n')
+    check('.ignore negation above the global fd file',
+          ['fdg/kept', 'fdg/loose.tmp', 'fdg/sub/kept', 'fdg/sub/loose.tmp', 'fdg/sub/top'],
+          ('fdg',))
+    check('--no-ignore bypasses fd sources',
+          ['fdg/kept', 'fdg/loose.tmp', 'fdg/sub/anchored', 'fdg/sub/kept',
+           'fdg/sub/loose.tmp', 'fdg/sub/top', 'fdg/top'], ('fdg',), flags=('--no-ignore',))
+    xdg = s.env.pop('XDG_CONFIG_HOME')
+    try:
+        s.put('home/.config/fd/ignore', b'kept\n')
+        check('HOME fallback for the global fd file',
+              ['fdg/loose.tmp', 'fdg/sub/anchored', 'fdg/sub/loose.tmp', 'fdg/sub/top',
+               'fdg/top'], ('fdg',))
+    finally:
+        s.env['XDG_CONFIG_HOME'] = xdg
+        os.remove(os.path.join(s.root, 'home/fd/ignore'))
+
+
 def external(s, cases, seed):
     git = shutil.which('git')
     fd = shutil.which('fd') or shutil.which('fdfind')
@@ -233,6 +311,7 @@ def main():
         s = Suite(os.path.abspath(a.binary), root)
         literals(s)
         precedence(s)
+        fd_sources(s)
         external(s, a.cases, a.seed)
         print('PASS %d fynd checks' % s.count)
         for skip in s.skips:

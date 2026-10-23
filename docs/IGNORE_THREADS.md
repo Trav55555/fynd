@@ -93,30 +93,38 @@ Never destroy a running arena to cancel it.
 
 ## Ignore policy
 
-Only `.ignore`, Git sources, and the conventional global Git ignore file are
-recognized. No `.rgignore`, `.fdignore`, or new finder-specific file is added.
-High to low precedence is:
+fynd reads the sources fd reads: `.fdignore`, `.ignore`, Git sources, the
+conventional global Git ignore file, and fd's global file. It reads no
+`.rgignore`. High to low precedence is:
 
-1. `.ignore`, at any directory including proper ancestors.
-2. `.gitignore`, within the nearest detected repository.
-3. That repository's `info/exclude`, in its Git common directory: `.git`
+1. `.fdignore`, at any directory including proper ancestors.
+2. `.ignore`, at any directory including proper ancestors.
+3. `.gitignore`, within the nearest detected repository.
+4. That repository's `info/exclude`, in its Git common directory: `.git`
    itself, or for a `.git` file (linked worktrees, submodules) the directory
    its `gitdir:` line names, or that directory's `commondir` when present.
    A relative path in either is taken from the file's own directory, and a
    `.git` file without a `gitdir:` line supplies no exclude source.
-4. `$XDG_CONFIG_HOME/git/ignore` for nonempty XDG_CONFIG_HOME, otherwise
+5. `$XDG_CONFIG_HOME/git/ignore` for nonempty XDG_CONFIG_HOME, otherwise
    `$HOME/.config/git/ignore` for nonempty HOME.
+6. fd's global file, `$XDG_CONFIG_HOME/fd/ignore` or `$HOME/.config/fd/ignore`
+   on the same terms, read once per root. Its rules are relative to the
+   working directory, as in fd. A path outside the working directory can
+   match only its rules without a slash. Paths are compared by real location,
+   like every other source; fd compares the paths it prints, so builds of fd
+   10.3.0 differ on absolute roots and on roots spelled with `..` (Debian's
+   anchors as fynd does).
 
 Within each source class, the deepest matching file wins, then its last matching
 line. Git sources require a repository marker and stop at the nearest nested
-repository. `.ignore` remains active across repository boundaries. Global rules
+repository. `.fdignore` and `.ignore` remain active across repository boundaries. Global rules
 use repository-relative paths, not the command's root spelling. A `.git` marker
 of any kind establishes a boundary; a `.git` file is read only to find
 `info/exclude`. Git configuration, including core.excludesFile, is not parsed.
 
 A directory's sources are found before any of its children is selected. Up to
 64 names are read first (every name under `--sort`); a listing that ends
-within them shows which of `.git`, `.ignore` and `.gitignore` are present, so
+within them shows which of `.git`, `.fdignore`, `.ignore` and `.gitignore` are present, so
 nothing is probed. A longer listing is probed through its open cursor, and one
 cut short by a listing failure is probed by path, so the children read before
 the failure are still selected under current policy. Policy is therefore read

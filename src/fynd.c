@@ -15,7 +15,7 @@ typedef struct Query {
     CuVec extensions;
     CuVec roots;
     unsigned int kinds;
-    int fold;
+    int fold; /* -1 until parse resolves smart case */
     int hidden;
     int delimiter;
     int depth;
@@ -44,7 +44,7 @@ typedef struct Run {
 } Run;
 
 static void sched_lock_out(Run *, int);
-static void sched_defer_failure(Run *, const char *, const char *, int);
+static void sched_defer_failure(Run *, const char *, const char *, int, int);
 
 static int emit(Run *r, int channel, const char *bytes, size_t len, int flush)
 {
@@ -63,8 +63,10 @@ static int emit(Run *r, int channel, const char *bytes, size_t len, int flush)
     return ok;
 }
 
-static int diagnostic(Run *r, const char *message, const char *path)
+/* A nonzero number appends the system's reason for it. */
+static int diagnostic(Run *r, const char *message, const char *path, int number)
 {
+    const char *reason;
     static const char hex[] = "0123456789abcdef";
     const unsigned char *p;
     char escaped[4];
@@ -94,22 +96,28 @@ static int diagnostic(Run *r, const char *message, const char *path)
         if (!emit(r, EMIT_ERR, "'", 1, 0))
             ok = 0;
     }
+    if (number != 0) {
+        reason = strerror(number);
+        if (!emit(r, EMIT_ERR, ": ", 2, 0) || !emit(r, EMIT_ERR, reason, strlen(reason), 0))
+            ok = 0;
+    }
     if (!emit(r, EMIT_ERR, "\n", 1, 1))
         ok = 0;
     sched_lock_out(r, 0);
     return ok;
 }
 
-static void failure(Run *r, const char *message, const char *path, int terminal)
+static void failure(Run *r, const char *message, const char *path, int number,
+                    int terminal)
 {
     r->status = 1;
     if (terminal)
         r->stop = 1;
     /* Ordered tasks report in walk order, when their output is written. */
     if (r->task != NULL)
-        sched_defer_failure(r, message, path, terminal);
+        sched_defer_failure(r, message, path, number, terminal);
     else
-        (void)diagnostic(r, message, path);
+        (void)diagnostic(r, message, path, number);
 }
 
 static unsigned char folded(unsigned char c, int fold)
@@ -168,7 +176,8 @@ static int selected(const Query *q, CuStr name, CuDirKind kind)
     ext = cu_str_n(name.ptr + dot + 1, name.len - dot - 1);
     for (i = 0; i < q->extensions.len; ++i) {
         wanted = CU_VEC_AT(&q->extensions, CuStr, i);
-        if (ext.len == wanted->len && contains(ext, *wanted, q->fold))
+        /* Extensions ignore ASCII case, as fd's do. */
+        if (ext.len == wanted->len && contains(ext, *wanted, 1))
             return 1;
     }
     return 0;
@@ -220,8 +229,13 @@ static int sched_keep(Run *, SchedHold *);
 
 static void ignore_failure(Run *r, const IgnoreError *error)
 {
+    /* EINVAL (a NUL or nonregular source) and E2BIG (size or matching work)
+     * are fynd's own codes, not the system's reasons. */
     failure(r, listing_resource(error->number) ? "ignore resource failure" :
-            "cannot load ignore rules", error->path, listing_resource(error->number));
+            "cannot load ignore rules", error->path,
+            error->number == EINVAL || error->number == E2BIG ||
+            error->number == ENOMEM ? 0 : error->number,
+            listing_resource(error->number));
 }
 
 /* Poll only on directory entry and every 64 loop entries, not per leaf/output. */
@@ -257,7 +271,7 @@ static void visit_child(Run *r, const char *path, int depth, const IgnoreFrame *
     joined = join_path(r->arena, path, name);
     verdict = 0;
     if (joined == NULL)
-        failure(r, "allocation failure", path, 1);
+        failure(r, "allocation failure", path, 0, 1);
     else if (!r->query->no_ignore &&
              !ignore_verdict(r->arena, rules, joined, kind == CU_DIR_DIR, &verdict, &error))
         ignore_failure(r, &error);
@@ -301,7 +315,7 @@ static int sorted_compare(const void *a, const void *b)
 static void listing_failure(Run *r, const ListingJob *job, const char *path)
 {
     failure(r, job->error == ENOMEM ? "allocation failure" : "cannot list directory",
-            path, listing_resource(job->error));
+            path, job->error == ENOMEM ? 0 : job->error, listing_resource(job->error));
 }
 
 /* Read up to limit names of job into entries, in the caller's directory
@@ -329,14 +343,14 @@ static int read_ahead(Run *r, ListingJob *job, const char *path, size_t limit,
             continue;
         copy = cu_str_cstr_copy(r->arena, entry.name);
         if (copy == NULL) {
-            failure(r, "allocation failure", path, 1);
+            failure(r, "allocation failure", path, 0, 1);
             return -2;
         }
         item.name = cu_str_n(copy, entry.name.len);
         item.kind = entry.kind;
         CU_VEC_PUSH(entries, &item);
         if (cu_vec_failed(entries)) {
-            failure(r, "allocation failure", path, 1);
+            failure(r, "allocation failure", path, 0, 1);
             return -2;
         }
     }
@@ -379,14 +393,14 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
             if (r->sched != NULL)
                 sched_output_failure(r);
             else
-                failure(r, "output failure", NULL, 1);
+                failure(r, "output failure", NULL, 0, 1);
             return;
         }
     }
     if (kind != CU_DIR_DIR || depth == r->query->depth)
         return;
     if (depth == FYND_DEPTH_LIMIT) {
-        failure(r, "recursion safety limit", path, 0);
+        failure(r, "recursion safety limit", path, 0, 0);
         return;
     }
     directory = cu_temp_begin(r->arena);
@@ -401,7 +415,7 @@ static void visit(Run *r, const char *path, CuStr name, CuDirKind kind, int dept
     if (!listing_open(&job)) {
         failure(r, job.error == ENOMEM ? "allocation failure" :
                 (job.operation == 1 ? "cannot open directory" : "cannot list directory"),
-                path, listing_resource(job.error));
+                path, job.error == ENOMEM ? 0 : job.error, listing_resource(job.error));
         goto done;
     }
     /* --sort reads the whole directory before visiting it. */
@@ -517,7 +531,7 @@ static int parse(Query *q, CuArena *arena, int argc, char **argv)
     CU_VEC_INIT(&q->extensions, arena, CuStr);
     CU_VEC_INIT(&q->roots, arena, CuStr);
     q->kinds = 0;
-    q->fold = 0;
+    q->fold = -1;
     q->hidden = 0;
     q->delimiter = '\n';
     q->depth = -1;
@@ -536,6 +550,8 @@ static int parse(Query *q, CuArena *arena, int argc, char **argv)
         ++i;
         if (strcmp(s, "-i") == 0 || strcmp(s, "--ignore-case") == 0)
             q->fold = 1;
+        else if (strcmp(s, "-s") == 0 || strcmp(s, "--case-sensitive") == 0)
+            q->fold = 0;
         else if (strcmp(s, "-H") == 0 || strcmp(s, "--hidden") == 0)
             q->hidden = 1;
         else if (strcmp(s, "--no-ignore") == 0)
@@ -586,6 +602,13 @@ static int parse(Query *q, CuArena *arena, int argc, char **argv)
     if (i < argc) {
         q->pattern = cu_str_n(argv[i], strlen(argv[i]));
         ++i;
+    }
+    /* Smart case, as in fd: an ASCII capital in the pattern means exact. */
+    if (q->fold < 0) {
+        q->fold = 1;
+        for (s = q->pattern.ptr; s != q->pattern.ptr + q->pattern.len; ++s)
+            if (*s >= 'A' && *s <= 'Z')
+                q->fold = 0;
     }
     if (i == argc) {
         view = cu_str_n(".", 1);
@@ -653,13 +676,16 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
     if (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0 ||
         strcmp(argv[1], "-V") == 0 || strcmp(argv[1], "--version") == 0)) {
         if (ferror(out)) {
-            failure(&r, "output failure", NULL, 1);
+            failure(&r, "output failure", NULL, 0, 1);
             return r.status;
         }
         if (strcmp(argv[1], "-V") == 0 || strcmp(argv[1], "--version") == 0)
             parsed = fputs("fynd 0.1.0\n", out);
         else if ((parsed = fputs("Usage: fynd [OPTIONS] [--] [PATTERN [ROOT ...]]\n"
-                "  -i, --ignore-case   ASCII case folding\n"
+                "  -i, --ignore-case   ASCII case folding (default for a\n"
+                "                      pattern without capitals)\n"
+                "  -s, --case-sensitive\n"
+                "                      exact case\n"
                 "  -t, --type KIND     f, d, l, or o (union)\n"
                 "  -e, --extension EXT final suffix (union)\n"
                 "  -H, --hidden        include discovered hidden names\n"
@@ -672,22 +698,22 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
                 "  -h, --help          show help alone\n"
                 "  -V, --version       show version alone\n", out);
         if (parsed < 0 || ferror(out))
-            failure(&r, "output failure", NULL, 1);
+            failure(&r, "output failure", NULL, 0, 1);
     } else {
         parsed = parse(&q, arena, argc, argv);
         if (parsed != 0) {
             r.status = parsed;
-            if (!diagnostic(&r, parsed == 2 ? "invalid invocation" : "allocation failure", NULL))
+            if (!diagnostic(&r, parsed == 2 ? "invalid invocation" : "allocation failure", NULL, 0))
                 r.status = 1;
         } else {
             /* Validate first: a pre-existing output error does not make usage valid. */
             if (ferror(out))
-                failure(&r, "output failure", NULL, 1);
+                failure(&r, "output failure", NULL, 0, 1);
             threads = q.threads != 0 ? q.threads : default_threads();
             if (!r.stop && threads > 1) {
                 sched_live = 1;
                 if (!sched_start(&sched, threads, &q, out, err))
-                    failure(&r, "cannot start listing workers", NULL, 1);
+                    failure(&r, "cannot start listing workers", NULL, 0, 1);
                 else
                     r.sched = &sched;
             }
@@ -700,12 +726,12 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
                 path = joined_size(n, 0, 0, &total) ?
                     cu_arena_push_bytes(arena, total) : NULL;
                 if (path == NULL)
-                    failure(&r, "allocation failure", NULL, 1);
+                    failure(&r, "allocation failure", NULL, 0, 1);
                 else {
                     memcpy(path, root->ptr, n);
                     path[n] = 0;
                     if (lstat(path, &st) != 0)
-                        failure(&r, "cannot stat root", path,
+                        failure(&r, "cannot stat root", path, errno,
                             errno == ENOMEM || errno == EMFILE || errno == ENFILE);
                     else {
                         if (S_ISREG(st.st_mode)) kind = CU_DIR_FILE;
@@ -725,7 +751,7 @@ static int fynd_run(int argc, char **argv, FILE *out, FILE *err, CuArena *arena)
     if (sched_live)
         sched_finish(&sched);
     if (fflush(out) == EOF || (r.status != 2 && ferror(out)))
-        failure(&r, "output flush failure", NULL, 1);
+        failure(&r, "output flush failure", NULL, 0, 1);
     return r.status;
 }
 
