@@ -630,8 +630,10 @@ static int ignore_seed_fd(CuArena *a, IgnoreFrame *origin, const char *root,
     for (i = 0; i < origin->fd_global.count; ++i)
         if (!origin->fd_global.rules[i].anchored)
             origin->fd_loose.rules[origin->fd_loose.count++] = origin->fd_global.rules[i];
-    /* Without a working directory, only the unanchored rules can apply. */
+    /* An unavailable cwd permits loose rules, not silent resource failure. */
     origin->fd_base = ignore_absolute(a, ".", &ignored);
+    if (origin->fd_base == NULL && listing_resource(ignored.number))
+        return ignore_error(error, ignored.number, root);
     return 1;
 }
 
@@ -761,7 +763,8 @@ static int ignore_verdict(CuArena *a, const IgnoreFrame *frame,
     const char *rel;
     char *mapped;
     IgnoreWork work;
-    int values[IGNORE_CLASSES], k, v, ok;
+    unsigned classes;
+    int k, v, ok;
     scratch = cu_temp_begin(a);
     ok = ignore_map(a, frame, path, &mapped, error);
     if (!ok) {
@@ -770,26 +773,24 @@ static int ignore_verdict(CuArena *a, const IgnoreFrame *frame,
         return 0;
     }
     work.left = IGNORE_WORK_LIMIT; work.failed = 0;
-    repo = NULL;
-    for (f = frame; f != NULL; f = f->parent)
-        if (f->repository) { repo = f; break; }
-    for (k = 0; k < IGNORE_CLASSES; ++k) values[k] = 0;
+    repo = NULL; classes = 0;
     for (f = frame; f != NULL; f = f->parent) {
-        /* Most frames load no rules; empty files never decide or charge work. */
+        if (repo == NULL && f->repository) repo = f;
         for (k = 0; k < IGNORE_CLASSES; ++k)
-            if (f->files[k].count != 0) break;
-        rel = k == IGNORE_CLASSES ? NULL : ignore_relative(mapped, f->directory);
-        if (rel != NULL) {
-            for (k = 0; k < IGNORE_CLASSES; ++k) {
-                if (values[k] == 0 && (k < IGNORE_GIT || repo != NULL))
-                    values[k] = ignore_file_verdict(&f->files[k], rel, strlen(rel), is_dir, &work);
-            }
-        }
-        if (f == repo) repo = NULL;
-        if (work.failed) break;
+            if (f->files[k].count != 0) classes |= 1U << (unsigned)k;
     }
+    /* Resolve each present class deepest-first; do not rescan empty classes. */
     v = 0;
-    for (k = 0; k < IGNORE_CLASSES; ++k) if (values[k] != 0) { v = values[k]; break; }
+    for (k = 0; k < IGNORE_CLASSES && v == 0 && !work.failed; ++k) {
+        if (k >= IGNORE_GIT && repo == NULL) break;
+        if ((classes & (1U << (unsigned)k)) == 0) continue;
+        for (f = frame; f != NULL; f = f->parent) {
+            rel = f->files[k].count == 0 ? NULL : ignore_relative(mapped, f->directory);
+            if (rel != NULL)
+                v = ignore_file_verdict(&f->files[k], rel, strlen(rel), is_dir, &work);
+            if (v != 0 || work.failed || (k >= IGNORE_GIT && f == repo)) break;
+        }
+    }
     if (v == 0 && !work.failed) {
         for (f = frame; f != NULL; f = f->parent) if (f->repository) break;
         if (f != NULL) {

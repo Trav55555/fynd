@@ -116,8 +116,10 @@ conventional global Git ignore file, and fd's global file. It reads no
    anchors as fynd does).
 
 Within each source class, the deepest matching file wins, then its last matching
-line. Git sources require a repository marker and stop at the nearest nested
-repository. `.fdignore` and `.ignore` remain active across repository boundaries. Global rules
+line. Matching stops after a class decides the verdict; lower-precedence classes
+do not consume the candidate's work budget. Source discovery and read errors
+remain unchanged. Git sources require a repository marker and stop at the nearest
+nested repository. `.fdignore` and `.ignore` remain active across repository boundaries. Global rules
 use repository-relative paths, not the command's root spelling. A `.git` marker
 of any kind establishes a boundary; a `.git` file is read only to find
 `info/exclude`. Git configuration, including core.excludesFile, is not parsed.
@@ -169,8 +171,10 @@ See [the performance pass](PERFORMANCE_PASS.md) for differential tests and contr
 Only missing sources, ENOENT or ENOTDIR, mean empty rules. Other read/probe errors
 produce a diagnostic and status 1, skipping the affected directory's children
 or root traversal; unrelated work can continue. Allocation/resource failures
-are terminal. Nonregular rule sources must not block the walker on a FIFO or
-device. Source symlinks are followed only to regular files. A nonblocking open
+are terminal, including failure to allocate the working-directory anchor for
+fd's global rules. A genuinely unavailable working directory still permits only
+that file's unanchored rules. Nonregular rule sources must not block the walker on
+a FIFO or device. Source symlinks are followed only to regular files. A nonblocking open
 and a second type check prevent a replacement FIFO from blocking, but do not
 make source opening race-proof or prevent all device-open side effects.
 Source-close errors are not promised. A WASI capability boundary may

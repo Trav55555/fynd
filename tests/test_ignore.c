@@ -2,6 +2,14 @@
 #include <assert.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <unistd.h>
+static int test_cwd_errno;
+static char *test_getcwd(char *buffer, size_t size)
+{
+    if (test_cwd_errno != 0) { errno = test_cwd_errno; return NULL; }
+    return getcwd(buffer, size);
+}
+#define getcwd test_getcwd
 static unsigned long test_ignore_budget = 1000000UL;
 static unsigned long test_ignore_source_budget = 16777216UL;
 static int test_probe_errno;
@@ -27,6 +35,7 @@ static CuInfoResult test_ignore_dir_info(const CuDir *d, const char *name,
 #include "../src/fynd.c"
 #include "../src/ignore.inc"
 #undef fynd_main
+#undef getcwd
 
 /* Enter directory's policy through its open listing, as visit() does. */
 static int stream_enter(CuArena *a, const IgnoreFrame *parent, const char *directory,
@@ -376,6 +385,54 @@ static void put_source(const char *path, const char *text, size_t n)
     assert(fclose(f) == 0);
 }
 
+/* A decisive class must not spend its budget on a lower-precedence file.
+ * The higher rule is in an ancestor; a matching deeper file in that SAME
+ * class must still win, and undecided candidates must still hit the limit. */
+static void precedence_work_cases(CuArena *a, const IgnoreFrame *root,
+                                   const char *directory)
+{
+    CuTemp scope;
+    IgnoreFrame upper, lower;
+    IgnoreError e;
+    char noise[128];
+    char *path;
+    size_t i, before;
+    int k, j, negate, number, v;
+    scope = cu_temp_begin(a);
+    for (i = 0; i < sizeof noise; i += 2) { noise[i] = 'z'; noise[i + 1] = '\n'; }
+    upper = *root; lower = *root;
+    upper.parent = NULL; upper.repository = 1;
+    lower.parent = &upper; lower.repository = 0;
+    lower.directory = join_path(a, directory, cu_str_cstr("nested"));
+    assert(lower.directory != NULL);
+    path = join_path(a, lower.directory, cu_str_cstr("keep")); assert(path != NULL);
+    for (k = IGNORE_FD; k < IGNORE_EXCLUDE; ++k) {
+        for (j = 0; j < IGNORE_CLASSES; ++j) {
+            upper.files[j].rules = lower.files[j].rules = NULL;
+            upper.files[j].count = lower.files[j].count = 0;
+        }
+        assert(ignore_parse(a, cu_str_n(noise, sizeof noise), &lower.files[k + 1], &number));
+        for (negate = 0; negate < 2; ++negate) {
+            assert(ignore_parse(a, cu_str_cstr(negate ? "!keep\n" : "keep\n"),
+                                &upper.files[k], &number));
+            lower.files[k].count = 0;
+            test_ignore_budget = 32;
+            assert(ignore_verdict(a, &lower, path, 0, &v, &e));
+            assert(v == (negate ? -1 : 1));
+            assert(ignore_parse(a, cu_str_cstr(negate ? "keep\n" : "!keep\n"),
+                                &lower.files[k], &number));
+            assert(ignore_verdict(a, &lower, path, 0, &v, &e));
+            assert(v == (negate ? 1 : -1));
+        }
+        upper.files[k].count = lower.files[k].count = 0;
+        before = a->scope; v = 42;
+        assert(!ignore_verdict(a, &lower, path, 0, &v, &e));
+        assert(e.number == E2BIG && v == 42 && a->scope == before);
+    }
+    test_ignore_budget = 1000000UL;
+    cu_temp_end(scope);
+}
+
 static void filesystem_cases(void)
 {
 #ifdef __wasi__
@@ -426,6 +483,7 @@ static void filesystem_cases(void)
     assert(ignore_verdict(&a, seed, p, 0, &v, &e) && v == 0);
     assert(ignore_enter(&a, seed, sub, (1U << IGNORE_PLAIN) |
         (1U << IGNORE_GIT) | IGNORE_REPOSITORY_BIT, &root, &e));
+    precedence_work_cases(&a, root, sub);
     {
         const char *names[] = {"rootonly", "rank", "ancestor", "global", "exclude", "git", "last"};
         for (k = 0; k < 7; ++k) {
@@ -757,6 +815,77 @@ static void elision_cases(void)
     cu_arena_release(&a);
 }
 
+static void fd_seed_cases(void)
+{
+#ifdef __wasi__
+    char base[] = "/tmp/fynd-fd-seed-fixture";
+#else
+    char base[] = "/tmp/fynd-fd-seed-XXXXXX";
+#endif
+    static const int errors[] = {ENOMEM, E2BIG, EMFILE, ENFILE};
+    CuArena a, faults;
+    IgnoreFrame marker;
+    const IgnoreFrame *out;
+    IgnoreError e;
+    char *directory, *path, *candidate, *oldhome, *oldxdg;
+    size_t fail, i;
+    int ok, v;
+#ifdef __wasi__
+    assert(mkdir(base, 0700) == 0);
+#else
+    assert(mkdtemp(base) != NULL);
+#endif
+    cu_arena_init(&a);
+    oldhome = getenv("HOME"); oldxdg = getenv("XDG_CONFIG_HOME");
+    if (oldhome != NULL) oldhome = ignore_copy(&a, oldhome, strlen(oldhome));
+    if (oldxdg != NULL) oldxdg = ignore_copy(&a, oldxdg, strlen(oldxdg));
+    assert(setenv("HOME", base, 1) == 0 && setenv("XDG_CONFIG_HOME", base, 1) == 0);
+    directory = join_path(&a, base, cu_str_cstr("fd")); assert(directory != NULL);
+    assert(mkdir(directory, 0700) == 0);
+    path = join_path(&a, directory, cu_str_cstr("ignore")); assert(path != NULL);
+    put_source(path, "/blocked\nloose\n", 15);
+    for (fail = 0; fail < 200; ++fail) {
+        cu_arena_init_with(&faults, 128, 1);
+        cu_arena_fail_at(&faults, fail);
+        out = &marker;
+        ok = ignore_seed(&faults, base, &out, &e);
+        if (!ok) assert(e.number == ENOMEM && out == &marker);
+        else {
+            assert(!cu_arena_failed(&faults) && faults.attempts <= fail);
+            assert(out->origin->fd_base != NULL);
+            assert(out->origin->fd_global.count == 2 && out->origin->fd_loose.count == 1);
+        }
+        cu_arena_release(&faults);
+        if (ok) break;
+    }
+    assert(fail < 200);
+    for (i = 0; i < sizeof errors / sizeof errors[0]; ++i) {
+        cu_arena_init(&faults);
+        test_cwd_errno = errors[i];
+        out = &marker;
+        assert(!ignore_seed(&faults, base, &out, &e));
+        assert(e.number == errors[i] && out == &marker);
+        cu_arena_release(&faults);
+    }
+    cu_arena_init(&faults);
+    test_cwd_errno = ENOENT;
+    assert(ignore_seed(&faults, base, &out, &e));
+    assert(out->origin->fd_base == NULL);
+    assert(out->origin->fd_global.count == 2 && out->origin->fd_loose.count == 1);
+    candidate = join_path(&a, base, cu_str_cstr("blocked")); assert(candidate != NULL);
+    assert(ignore_verdict(&faults, out, candidate, 0, &v, &e) && v == 0);
+    candidate = join_path(&a, base, cu_str_cstr("loose")); assert(candidate != NULL);
+    assert(ignore_verdict(&faults, out, candidate, 0, &v, &e) && v == 1);
+    test_cwd_errno = 0;
+    cu_arena_release(&faults);
+    assert(unlink(path) == 0 && rmdir(directory) == 0 && rmdir(base) == 0);
+    if (oldhome != NULL) assert(setenv("HOME", oldhome, 1) == 0);
+    else assert(unsetenv("HOME") == 0);
+    if (oldxdg != NULL) assert(setenv("XDG_CONFIG_HOME", oldxdg, 1) == 0);
+    else assert(unsetenv("XDG_CONFIG_HOME") == 0);
+    cu_arena_release(&a);
+}
+
 static void allocation_cases(void)
 {
     CuArena a;
@@ -791,6 +920,7 @@ int main(void)
 #ifndef __cerb__
     filesystem_cases();
     elision_cases();
+    fd_seed_cases();
     allocation_cases();
 #endif
     return 0;

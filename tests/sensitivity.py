@@ -27,11 +27,12 @@ FILES = tuple(sorted(set(MUTATION_FILES + ('include/fynd.h', 'cmd/main.c') + C_T
                                         'include/**/*.h', 'tests/**/*.py',
                                         'tests/**/*.h', 'fuzz/**/*.h')
                         for path in SOURCE.glob(pattern)}))
-EXPECTED_MUTATIONS = 46  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
+EXPECTED_MUTATIONS = 48  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
                          # + two dir-relative probe controls + two .git file controls
                          # + two listing-presence controls + two hidden re-inclusion controls
                          # + two ordered-writer controls + four fd ignore-source controls
-                         # + two case controls + one diagnostic reason control.
+                         # + two case controls + one diagnostic reason control
+                         # + fd-anchor allocation failure + shadowed matching work.
 STRICT = ['-std=c89', '-pedantic-errors', '-Wall', '-Wextra', '-Werror',
           '-Wconversion', '-Wshadow', '-Wstrict-prototypes', '-Wmissing-prototypes']
 MUTATIONS = (
@@ -40,9 +41,25 @@ MUTATIONS = (
      '    if (name.len == 9 && memcmp(name.ptr, ".fdignore", 9) == 0) return 0;',
      'ignore CLI .fdignore fixtures require a listed .fdignore to be read'),
     ('fdignore-only-in-repositories', 'src/ignore.inc',
-     '                if (values[k] == 0 && (k < IGNORE_GIT || repo != NULL))',
-     '                if (values[k] == 0 && (k == IGNORE_PLAIN || repo != NULL))',
+     '            if (v != 0 || work.failed || (k >= IGNORE_GIT && f == repo)) break;',
+     '            if (v != 0 || work.failed || (k != IGNORE_PLAIN && f == repo)) break;',
      'ignore CLI and fd oracle: .fdignore applies across a repository boundary'),
+    ('swallow-fd-anchor-resource-failure', 'src/ignore.inc',
+     '    if (origin->fd_base == NULL && listing_resource(ignored.number))',
+     '    if (origin->fd_base == NULL && listing_resource(ignored.number) && 0)',
+     'test_ignore: a failed global-fd anchor must not publish weakened seed policy'),
+    ('spend-shadowed-rule-work', 'src/ignore.inc',
+     '    if (v == 0 && !work.failed) {',
+     '    if (v != 0) {\n'
+     '        for (f = frame; f != NULL; f = f->parent) {\n'
+     '            rel = ignore_relative(mapped, f->directory);\n'
+     '            if (rel != NULL)\n'
+     '                for (k = 0; k < IGNORE_CLASSES; ++k)\n'
+     '                    (void)ignore_file_verdict(&f->files[k], rel, strlen(rel), is_dir, &work);\n'
+     '        }\n'
+     '    }\n'
+     '    if (v == 0 && !work.failed) {',
+     'test_ignore: decided candidates must not exhaust work on shadowed classes'),
     ('skip-fd-global', 'src/ignore.inc',
      '    if (v == 0 && !work.failed && frame->origin->fd_global.count != 0) {',
      '    if (v == 0 && !work.failed && frame->origin->fd_global.count != 0 && 0) {',
@@ -171,9 +188,9 @@ MUTATIONS = (
      '            } else if (base_len == 0 || first == (unsigned char)base[0]) {',
      'literal/escape/high-byte/last-match oracle rejects false-negative rejection'),
     ('skip-frames-without-plain-rules', 'src/ignore.inc',
-     '        rel = k == IGNORE_CLASSES ? NULL : ignore_relative(mapped, f->directory);',
-     '        rel = f->files[IGNORE_PLAIN].count == 0 ? NULL :\n'
-     '              ignore_relative(mapped, f->directory);',
+     '            rel = f->files[k].count == 0 ? NULL : ignore_relative(mapped, f->directory);',
+     '            rel = f->files[IGNORE_PLAIN].count == 0 ? NULL :\n'
+     '                  ignore_relative(mapped, f->directory);',
      'ignore CLI oracle rejects dropping frames that hold only Git-class rules'),
     ('suppress-name-enomem-normalization', 'src/listing.inc',
      '    next = cu_dir_next(&job->dir, entry);\n'

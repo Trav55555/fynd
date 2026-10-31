@@ -3,12 +3,65 @@
 **Verified for the documented contracts, within the limits below.** This is
 behavioral evidence, not a whole-program proof.
 
-The subsequent [full streaming benchmark](STREAMING_FULL_BENCHMARK.md) validates
-1,778 prechecks, 16,002 timed outputs, and 963 warmups across 107 workloads.
-Its source identities still match the selected qualification below. Benchmark
-artifact audits and CPU-forgery controls are separate from release qualification.
+## Current source: ignore-policy failures and precedence
 
-## Current source: shared-stack thread scheduler
+Qualified with:
+
+```sh
+make verify CUTILS=/home/travers/projects/c-utils \
+  BUILD=/tmp/fynd-design-audit.jck0jC/retained-qualification
+```
+
+Receipt: `/tmp/fynd-design-audit.jck0jC/retained-qualification/verification/run.f4vG1O`,
+exit 0. The wrapper extracted pinned c-utils revision
+`7750e1c9855f6e1155772ae1b98f11830b21d074` without changing the sibling checkout.
+The selected checker profile was `656f4076c75c5f19488a`, under the unchanged
+3 GiB/no-swap envelope. All 164 captured application inputs match the working
+files. The receipt is a local, disposable artifact, not available in a fresh clone.
+
+Five C suites, 17 build-boundary tests, 41 benchmark-helper tests, 12,387 CLI
+checks across seeds 1, 7 and 42, 470 ignore CLI checks and 1,000 Git differential
+cases pass. Both checker self-tests reject their broken controls. Required
+compiler, analyzer, sanitizer, MSan, TSan, release, WASI, i386, coverage, semantics,
+Valgrind and bounded fuzz checks pass. Authority, regions and CBMC remain explicit
+optional skips. All 48 named controls compile and are behaviorally rejected;
+compilation failure and timeout do not count as rejection.
+
+Per-module line coverage stays above the unchanged 90% floor: main 93.99%,
+ignore 97.57%, listing 91.95%, scheduler 96.66%; combined 95.94%.
+
+The new regressions failed before their fixes. Single-allocation failure tests
+now require failed fd-global anchor initialization to leave the seed unpublished;
+ENOMEM, E2BIG, EMFILE and ENFILE are terminal. ENOENT still permits unanchored
+rules but not anchored ones. A reduced work budget checks ancestor class winners,
+deeper same-class overrides, and necessary exhaustion. A separate black-box
+fixture with 1,000,001 shadowed rules now succeeds rather than exhausting the
+matching budget. A local presence mask avoids rescanning absent source classes.
+
+A separate warm diagnostic compared HEAD `02e8d6d` with the candidate using the
+same pinned dependency, compiler and flags. It used 21 randomized paired
+repetitions, three generated trees and j1/j4; all 264 timed/warmup outputs matched
+independently constructed manifests. On 10,000 files with 2,000 shadowed rules
+per child directory, medians changed from 43.431 to 9.745 ms at j1 and from
+16.104 to 3.794 ms at j4. All tiny/plain control medians were lower in that wave.
+An earlier implementation had slower serial control medians before the empty-
+class walks were removed; both reports remain under
+`/tmp/fynd-design-audit.jck0jC/bench-ignore*.json`. These are one-host descriptive
+pipe-output timings including startup, not isolated-host or cold-cache evidence,
+a replacement for the existing performance gates, or proof of zero regression.
+
+CI now runs the existing build-boundary suite and both checker self-tests before
+native tests. Those commands passed locally and the workflow YAML was parsed;
+a remote GitHub Actions run has not been observed. No commit, push, installation
+or live-binary activation occurred.
+
+The remaining sections describe historical sources and receipts. The
+[full streaming benchmark](STREAMING_FULL_BENCHMARK.md) validates 1,778 prechecks,
+16,002 timed outputs and 963 warmups across 107 workloads for its own source
+snapshot, not the modified matcher above. Benchmark artifact audits and
+CPU-forgery controls remain separate from release qualification.
+
+## Historical shared-stack scheduler acceptance
 
 Receipt: `build/verification/run.XyeMPG`, exit 0. It qualifies the
 [shared-stack scheduler](SCHEDULER.md), which replaced the FIFO pool and made
