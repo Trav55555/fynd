@@ -8,3 +8,4 @@
 {"commit": "b17a341a7619f1ef5e53e3345b2db1f809abc219", "run_id": "39870788794", "fynd_vs_fd": "1.48\u00d7 faster (geomean)"}
 {"commit": "ec87848add1fc9e2bff7a3d6cdde030c978d1ee1", "run_id": "39889091818", "fynd_vs_fd": "1.50\u00d7 faster (geomean)"}
 {"commit": "02e8d6ddea0cffb864eea23e31894b5432da019b", "run_id": "40018130501", "fynd_vs_fd": "1.51\u00d7 faster (geomean)"}
+{"commit": "cac89e4b057acc4211ec73ab7f5496aa80eae336", "run_id": "41237313976", "fynd_vs_fd": "1.51\u00d7 faster (geomean)"}
