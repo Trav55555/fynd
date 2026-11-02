@@ -439,6 +439,8 @@ static int ignore_exclude_path(CuArena *a, const char *directory, char **out,
     }
     if (S_ISREG(st.st_mode)) {
         if (!ignore_slurp(a, git, &text, error)) return 0;
+        if (text.ptr != NULL && memchr(text.ptr, 0, text.len) != NULL)
+            return ignore_error(error, EINVAL, git);
         if (text.ptr == NULL || text.len < 8 || memcmp(text.ptr, "gitdir: ", 8) != 0) return 1;
         text.ptr += 8; text.len -= 8;
         path = git;
@@ -448,6 +450,8 @@ static int ignore_exclude_path(CuArena *a, const char *directory, char **out,
     path = join_path(a, git, cu_str_cstr("commondir"));
     if (path == NULL) return ignore_error(error, ENOMEM, git);
     if (!ignore_slurp(a, path, &text, error)) return 0;
+    if (text.ptr != NULL && memchr(text.ptr, 0, text.len) != NULL)
+        return ignore_error(error, EINVAL, path);
     if (text.ptr != NULL) {
         git = ignore_git_path(a, git, text);
         if (git == NULL) return ignore_error(error, ENOMEM, path);

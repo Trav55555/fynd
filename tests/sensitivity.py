@@ -27,15 +27,23 @@ FILES = tuple(sorted(set(MUTATION_FILES + ('include/fynd.h', 'cmd/main.c') + C_T
                                         'include/**/*.h', 'tests/**/*.py',
                                         'tests/**/*.h', 'fuzz/**/*.h')
                         for path in SOURCE.glob(pattern)}))
-EXPECTED_MUTATIONS = 48  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
+EXPECTED_MUTATIONS = 50  # 19 retained + 6 scheduler + frame elision + hold release + ** collapse + sort
                          # + two dir-relative probe controls + two .git file controls
                          # + two listing-presence controls + two hidden re-inclusion controls
                          # + two ordered-writer controls + four fd ignore-source controls
                          # + two case controls + one diagnostic reason control
-                         # + fd-anchor allocation failure + shadowed matching work.
+                         # + fd-anchor allocation failure + shadowed matching work + two metadata NUL checks.
 STRICT = ['-std=c89', '-pedantic-errors', '-Wall', '-Wextra', '-Werror',
           '-Wconversion', '-Wshadow', '-Wstrict-prototypes', '-Wmissing-prototypes']
 MUTATIONS = (
+    ('allow-gitdir-nul', 'src/ignore.inc',
+     '        if (text.ptr != NULL && memchr(text.ptr, 0, text.len) != NULL)',
+     '        if (text.ptr != NULL && memchr(text.ptr, 0, text.len) != NULL && 0)',
+     'C and independent CLI reject NUL in .git metadata'),
+    ('allow-commondir-nul', 'src/ignore.inc',
+     '    if (text.ptr != NULL && memchr(text.ptr, 0, text.len) != NULL)\n        return ignore_error(error, EINVAL, path);',
+     '    if (text.ptr != NULL && memchr(text.ptr, 0, text.len) != NULL && 0)\n        return ignore_error(error, EINVAL, path);',
+     'C and independent CLI reject NUL in commondir metadata'),
     ('unlisted-fdignore-name', 'src/ignore.inc',
      '    if (name.len == 9 && memcmp(name.ptr, ".fdignore", 9) == 0) return 1U << IGNORE_FD;',
      '    if (name.len == 9 && memcmp(name.ptr, ".fdignore", 9) == 0) return 0;',

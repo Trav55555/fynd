@@ -3,7 +3,49 @@
 **Verified for the documented contracts, within the limits below.** This is
 behavioral evidence, not a whole-program proof.
 
-## Current source: ignore-policy failures and precedence
+## Current source: reject NUL in Git metadata
+
+The `.git` file and `commondir` now reject embedded NUL before converting
+metadata to a path. This deliberately strengthens malformed-metadata handling;
+the previous code could use a truncated path. Errors name the metadata file,
+leave failed frames unpublished, and permit later roots after ordinary `EINVAL`.
+Valid relative, absolute, empty and CRLF controls retain their behavior.
+
+Qualification receipt:
+`build/metadata-nul/parent/qualification/verification/run.YHu4uu`, exit 0.
+The receipt and raw artifacts are local and are not shipped in a fresh clone.
+The existing verification entry point ran through its `--scoped` path under
+the maintained parent runner, with a 3 GiB/no-swap scope, nice 15, no core dumps
+and a 3,600-second aggregate deadline. Required profiles and their individual
+limits were unchanged. The run took 1,196 seconds and extracted immutable
+c-utils `7750e1c9855f6e1155772ae1b98f11830b21d074`; the sibling checkout was not
+changed. All 164 captured application inputs still match the working files.
+
+Five native C suites, 17 build-boundary tests, 41 benchmark-helper tests,
+12,387 general CLI checks, 570 counted ignore checks and 1,000 Git differential
+cases pass. Both verification-checker self-tests reject their broken controls.
+All required compiler, analyzer, sanitizer, MSan, TSan, release, WASI, i386,
+coverage, bounded semantics, Valgrind and fuzz checks pass. Authority, regions
+and CBMC remain explicitly unconfigured skips. All 50 sensitivity controls
+compile and are behaviorally rejected, including separate bypasses of the two
+new metadata checks. Compilation failure and timeout do not count as rejection.
+
+Per-module line coverage exceeds the unchanged 90% floor: main 93.99%,
+ignore 97.58%, listing 91.95%, scheduler 96.80%; combined 96.00%.
+
+The original binary and both compiled check-bypass mutants fail the new C and
+independent CLI regressions. Tests cover NUL at several path positions, exact
+error filenames, unchanged failure outputs, later-root continuation, serial
+and threaded invocation, sorted output and `--no-ignore`. Independent read-only
+review found no actionable defect. These checks do not validate other malformed
+Git metadata syntax, promise source-close errors, or prove whole-program
+filesystem correctness. No fresh performance comparison, commit, push,
+installation or remote CI run was performed for this change.
+
+Reproduction scripts and raw evidence are under `build/metadata-nul/`.
+The following section records the preceding source and its historical receipt.
+
+## Previous source: ignore-policy failures and precedence
 
 Qualified with:
 

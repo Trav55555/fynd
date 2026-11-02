@@ -105,6 +105,10 @@ conventional global Git ignore file, and fd's global file. It reads no
    its `gitdir:` line names, or that directory's `commondir` when present.
    A relative path in either is taken from the file's own directory, and a
    `.git` file without a `gitdir:` line supplies no exclude source.
+   Embedded NUL in either metadata file is now explicitly rejected with
+   `EINVAL` naming that file, rather than interpreting a truncated path.
+   This deliberately strengthens malformed-metadata handling; it does not
+   add validation of other malformed syntax or promise source-close errors.
 5. `$XDG_CONFIG_HOME/git/ignore` for nonempty XDG_CONFIG_HOME, otherwise
    `$HOME/.config/git/ignore` for nonempty HOME.
 6. fd's global file, `$XDG_CONFIG_HOME/fd/ignore` or `$HOME/.config/fd/ignore`

@@ -592,6 +592,37 @@ static void filesystem_cases(void)
         assert(ignore_enter(&a, root, dir, IGNORE_REPOSITORY_BIT, &nested, &e));
         assert(ignore_verdict(&a, nested, shared, 0, &v, &e) && v == 1);
         assert(ignore_verdict(&a, nested, own, 0, &v, &e) && v == 0);
+        /* Metadata NUL is an explicit malformed-path error, never a prefix. */
+        {
+            static const char *const values[] = {
+                "\0../..", "../\0..", "../..\0", "absent\0suffix"
+            };
+            static const size_t lengths[] = {6, 6, 6, 13};
+            size_t ni;
+            char *metadata, *expected;
+            expected = join_path(&a, dir, cu_str_cstr("../../common/worktrees/wt/commondir"));
+            assert(expected != NULL);
+            for (ni = 0; ni < sizeof lengths / sizeof lengths[0]; ++ni) {
+                put_source(p, values[ni], lengths[ni]);
+                sentinel = root;
+                assert(!ignore_enter(&a, root, dir, IGNORE_REPOSITORY_BIT, &sentinel, &e));
+                assert(e.number == EINVAL && sentinel == root && strcmp(e.path, expected) == 0);
+            }
+            put_source(p, "../..\r\n", 7);
+            metadata = p;
+            for (ni = 0; ni < sizeof lengths / sizeof lengths[0]; ++ni) {
+                FILE *g;
+                g = fopen(marker, "wb"); assert(g != NULL);
+                assert(fwrite("gitdir: ", 1, 8, g) == 8);
+                assert(fwrite(values[ni], 1, lengths[ni], g) == lengths[ni]);
+                assert(fclose(g) == 0);
+                sentinel = root;
+                assert(!ignore_enter(&a, root, dir, IGNORE_REPOSITORY_BIT, &sentinel, &e));
+                assert(e.number == EINVAL && sentinel == root && strcmp(e.path, marker) == 0);
+            }
+            put_source(marker, crlf, strlen(crlf));
+            p = metadata;
+        }
         /* Without commondir, as for a submodule, the git directory's own. */
         assert(unlink(p) == 0);
         p = join_path(&a, gitdir, cu_str_cstr("info")); assert(p != NULL);

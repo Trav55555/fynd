@@ -132,6 +132,43 @@ def literals(s):
         os.chmod(path, 0o600)
 
 
+def metadata_nul(s):
+    s.put('nul-later/ok')
+    s.put('nul-meta/info/exclude', b'blocked\n')
+    for kind in ('gitdir', 'commondir'):
+        root = 'nul-' + kind
+        s.put(root + '/blocked')
+        s.put(root + '/kept')
+        marker = root + '/.git'
+        metadata = marker if kind == 'gitdir' else 'nul-meta/commondir'
+        prefix = b'gitdir: ' if kind == 'gitdir' else b''
+        valid = b'../nul-meta' if kind == 'gitdir' else b'.'
+        for value in (b'\0' + valid, valid[:1] + b'\0' + valid[1:],
+                      valid + b'\0', b'absent\0suffix'):
+            s.put(marker, b'gitdir: ../nul-meta\r\n')
+            s.put(metadata, prefix + value)
+            s.check('metadata NUL continues: ' + kind, ['nul-later/ok'],
+                    (root, 'nul-later'), status=1, error=True,
+                    groups=[[], ['nul-later/ok']])
+            # Independently assert the diagnostic names the complete metadata path.
+            for jobs in ('-j1', '-j2', '-j4', '-j8', '--sort'):
+                rc, out, err = run([s.binary, jobs, '-0', '-t', 'f', '', root],
+                                   s.env, s.root)
+                actual = os.fsencode(os.path.join(s.root, metadata if kind == 'gitdir'
+                                                  else root + '/../nul-meta/commondir'))
+                expected_error = b"fynd: cannot load ignore rules '" + actual + b"'\n"
+                assert rc == 1 and not out and err == expected_error, (rc, out, err, actual)
+            s.check('metadata bypass: ' + kind, [root + '/blocked', root + '/kept'],
+                    (root,), flags=('--no-ignore',))
+        s.put(metadata, prefix + valid + b'\r\n')
+        s.check('metadata CRLF: ' + kind, [root + '/kept'], (root,))
+        s.put(metadata, b'')
+        s.check('empty metadata: ' + kind,
+                [root + '/blocked', root + '/kept'] if kind == 'gitdir'
+                else [root + '/kept'], (root,))
+        s.put(metadata, prefix + valid)
+
+
 def precedence(s):
     # Marker file deliberately points nowhere: no worktree gitdir resolution.
     s.put('repo/.git', b'gitdir: /nonexistent\n')
@@ -310,6 +347,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='fynd-ignore-') as root:
         s = Suite(os.path.abspath(a.binary), root)
         literals(s)
+        metadata_nul(s)
         precedence(s)
         fd_sources(s)
         external(s, a.cases, a.seed)
