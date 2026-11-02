@@ -57,11 +57,12 @@ make CUTILS=/path/to/c-utils
 ```
 
 [CUTILS_REVISION](CUTILS_REVISION) and [the content manifest](ci/pinned_cutils.json)
-pin exactly 16 consumed inputs: `include/cu.h` and 15 `src/*.c` files. Native
-builds reject changed, missing, extra, symlinked, or nonregular entries in those
+pin a verified inventory of 26 files: `include/cu.h` and 25 `src/*.c` files.
+Native builds compile 16 of those C files, as listed in the manifest's `sources`.
+They reject changed, missing, extra, symlinked, or nonregular entries in the
 `include/` and `src/` directories, including symlinked directories. The selected
-root itself may be a symlink. This checks consumed content, not Git HEAD or the
-rest of the checkout; a Git-free archive works without any Git invocation.
+root itself may be a symlink. This checks the full pinned inventory, not Git HEAD
+or the rest of the checkout; a Git-free archive works without any Git invocation.
 
 Every native build/test target checks the pin even when its binary is current,
 without forcing recompilation. Rebuilds compile a unique private verified copy
